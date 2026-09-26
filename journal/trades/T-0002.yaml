@@ -12,7 +12,9 @@ direction: "long"
 session: null
 timeframes:
   htf: "4h"
-  execution: null
+  execution: "4h"             # trader, 2026-09-26: "5) 4h"
+  chain: ["4h"]               # structure and execution on one timeframe
+  top_down: null              # not stated for this trade
 
 setups: [choch, inducement, liquidity_sweep, extreme_demand]
 regime: [bullish]

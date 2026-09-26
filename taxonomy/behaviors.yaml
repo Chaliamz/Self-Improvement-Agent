@@ -12,3 +12,4 @@ tags:
   waited_for_liquidity:      {label: Waited for liquidity}
   followed_htf:              {label: Followed higher-timeframe structure}
   avoided_emotional_reentry: {label: Avoided emotional re-entry}
+  did_top_down:              {label: Did top-down analysis (HTF to LTF), introduced_in: "trader statement 2026-09-26"}

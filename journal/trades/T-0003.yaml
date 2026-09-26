@@ -1,0 +1,118 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0003
+status: closed
+opened: 2026-04-19            # chart: Apr 19 2026, entry about 20:40 UTC+3
+closed: 2026-04-19
+asset: "SOLUSDT"
+market: "crypto perp (BTCC)"
+direction: "short"
+session: null                 # the trader's session names are not yet known
+timeframes:
+  htf: null                   # no higher timeframe was analysed
+  execution: "1m"             # trader wrote "1M"; the chart interval is 1 minute
+  chain: ["1m"]
+  top_down: false             # trader: "there wasn't any Top Down Analysis"
+
+setups: [key_level, deviation, retest]
+regime: [bearish]             # 1m structure: lower highs and lower lows through the session
+
+strategy:
+  id: key-level-sr
+  version: "1.0"
+  experiment: null
+  variant: null
+
+plan:
+  entry: 85.5412              # position-tool label
+  stop: 85.7453               # position-tool label: the latest high before the break
+  targets: [84.9409]          # position-tool label
+  invalidation: "Price reclaims the level again: stop above the latest high before the break."
+  entry_model: deviation_retest
+  confluences:
+    - "Red line: key level drawn from a wick; tapped multiple times, reclaimed and lost again"
+  confirmations:
+    - "Level lost again (deviation)"
+    - "Retest of the level from below"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # trader: "Risk 1%"
+  leverage: 20                # trader: "20 because of low invalidation %"
+  margin_mode: isolated       # the trader's stated standing rule
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits:
+    - {price: 84.9409, reason: "Closed at profit, 2.94R (trader). Full exit at the target price assumed."}
+  fees: null
+  duration_minutes: 45        # trader-stated; conflicts with the chart timing, see evidence
+
+result:
+  pnl: null
+  r: null                     # derived price-based; matches the trader's 2.94
+  hypothetical_r: null
+
+journal:
+  before: |
+    Reconstructed from the trader's account on 2026-09-26 (after the outcome, so not hindsight-proof).
+    Bias bearish, 1m execution. Key level: red line drawn from a wick. Price tapped it multiple
+    times, reclaimed it and lost it again. Plan: short the deviation on the retest of the level.
+    Stop: the latest high before price broke below the level, in case it reclaims the level. Leverage 20x
+    because the invalidation % was low. Risk 1%.
+  during: |
+    Held about 45 minutes (trader).
+  after: |
+    Closed in profit at 2.94R. Trader: "It was a risky trade however because there wasn't any Top Down
+    Analysis while I was focused only at a LTF chart so the setup would get invalidated."
+    Key point (trader): find a key S/R level, wait for price to react multiple times to confirm it is
+    valid, then long on reclaim-retest-accept or short if the level is lost again, which it was.
+
+evidence:
+  observed:
+    - "BTCC SOL/USDT perpetual, 1m, Apr 19 2026, UTC+3. Position tool: entry 85.5412, stop 85.7453, target 84.9409."
+    - "(85.5412 - 84.9409) / (85.7453 - 85.5412) = 2.94R: matches the trader's stated 2.94."
+    - "Prices marked 'about' were read from chart pixels, calibrated on 18 axis ticks (max residual 0.0034, about 1.5 px)."
+    - "The red line (about 85.543) starts at the 18:36 wick low (about 85.547)."
+    - "20:04-20:09: closes below the level (low about 85.31). 20:12: close back above (about 85.61)."
+    - "20:22: high about 85.95. 20:27: pullback low about 85.567 held above the level."
+    - "20:32: high about 85.740, the latest high before the break (the stop is 85.7453). 20:33: close below the level (about 85.47)."
+    - "20:40: retest from below, high about 85.558, which fills the 85.5412 short. After entry the highest price was that same candle; the stop was never approached."
+    - "The target was traded through at about 21:01-21:07 (lows about 84.94, 84.916, 84.925, 84.923), about 21-27 minutes after entry. The 21:24 candle closed at about 84.941."
+    - "Chart note (Greek, translated): 'Possible resistance point. For validity, ideally we see extra resistances/supports.'"
+    - "RSI pane (with its moving average) read about 40-45 near entry. The trader did not use it."
+  interpreted:
+    - "The chart matches the trader's account: level from a wick, lost, reclaimed, lost again, retested from below, short."
+    - "The 1m structure was bearish (lower highs from about 86.9 to about 85.74), which supports the short bias on this timeframe alone."
+    - "Risk decomposition (tj size, fees excluded): stop 0.239%, effective leverage 4.19x, margin 4.8% lost at the stop at 20x, max 209.6x under the 50% rule, isolated liquidation about 89.37."
+    - "The 45-minute duration conflicts with the chart: a resting TP at 84.9409 would have filled at about 21:01-21:04. Either the TP was not resting or the exit was manual at about 21:25. R is the same either way."
+  hypotheses:
+    - "Fees may matter most on tight-stop scalps. HYPOTHETICAL fees (BTCC's actual fees unknown), via tj: 0.02%/side turns 2.94R gross into 2.38R net; 0.05%/side turns it into 1.78R and fees are 30% of 1R. Both fall below the 2.5R minimum. Sizing 1% on price distance alone would really risk 1.17% or 1.42% of equity."
+    - "Trades with top-down analysis may perform differently from LTF-only trades. Compare with ./tj compare top_down yes no once there is enough data."
+  charts: [journal/charts/T-0003-sol-1m.webp]
+
+review:
+  scores:
+    setup: 4                  # textbook per the trader's key-level rules: multiple reactions, loss, retest
+    context: 1                # no top-down analysis; the only context is the 1m chart itself
+    execution: 4              # limit at the level on the retest; filled on the 20:40 wick
+    risk: 4                   # 1% risk, stop at the stated invalidation, 20x within the 50% rule; fees unknown
+    management: 4             # held to the planned target
+  setup_validity: valid
+  followed_plan: true
+  loss_type: null
+  mistakes: [skipped_top_down]
+  behaviors: [waited_for_confirmation, followed_setup, took_planned_profits]
+  outside_control: []
+  lesson: >-
+    A clean LTF execution of the key-level deviation-retest, taken without top-down analysis, so the
+    context dimension is empty. The outcome was good; the process was mixed. Do not let the win reinforce
+    skipping the higher timeframes.
+  actionable_change: "Process: run the top-down analysis before LTF entries; record the timeframe chain on every trade."
+  strategy_change: "no"
+  evidence_strength: low

@@ -42,3 +42,15 @@ tags:
     label: Extreme supply level
     definition: "Mirror of extreme demand: the full wick-to-wick range of the high-volume candle at the higher high."
     introduced_in: "trader statement 2026-09-26 (rules mirror for shorts)"
+  key_level:
+    label: Key level (S/R)
+    definition: "Support/resistance level drawn from a wick. It is valid once price has reacted to it multiple times (trader, T-0003)."
+    introduced_in: T-0003
+  deviation:
+    label: Deviation (fakeout)
+    definition: "Price moves through a level and fails to hold beyond it (trader's words: 'deviation/fakeout')."
+    introduced_in: T-0003
+  retest:
+    label: Retest
+    definition: "Price returns to a level it just broke or lost and tests it from the other side."
+    introduced_in: T-0003

@@ -13,6 +13,7 @@ tags:
   poor_entry_location:         {label: Poor entry location, aliases: [poor_entry]}
   chasing:                     {label: Chasing (incl. chasing a breakout), aliases: [chasing_breakout]}
   ignored_htf:                 {label: Ignored higher timeframe}
+  skipped_top_down:            {label: Skipped top-down analysis (LTF only), introduced_in: T-0003}
   low_quality_setup:           {label: Traded a low-quality setup}
   outside_strategy:            {label: Traded outside the strategy}
   oversized_position:          {label: Oversized position, aliases: [oversizing]}

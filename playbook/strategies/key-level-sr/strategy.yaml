@@ -1,0 +1,12 @@
+# A new strategy always starts UNVALIDATED (§40). The validator refuses
+# `developing` / `established` without the evidence counts in config.yaml.
+
+id: key-level-sr
+name: "Key level S/R: reclaim-retest-accept / deviation-retest"
+status: unvalidated
+current_version: "1.0"
+created: 2026-09-26
+summary: >-
+  Trader, with T-0003: "Found a key level Support/Resistance waiting for price to react multiple times
+  to confirm its valid so either i would take long for reclaim-retest-accept or short in case of losing
+  the level again, which it did." Demonstrated once, as a 1m scalp without top-down analysis.

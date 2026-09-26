@@ -32,10 +32,21 @@ fees:
 
 instruments:                          # list of markets/assets traded
   - "AAVEUSDT perpetual (BloFin)"
+  - "SOLUSDT perpetual (BTCC)"
 sessions: null                        # the trader's own session names
-timeframes:                           # HTF context / execution timeframes used
-  structure: "4h"
-  execution: "4h"
+timeframes:                           # notation: m minutes, h hours, D days, W weeks, M months
+  swing:
+    structure: "4h"                   # T-0001
+    execution: "4h"
+  scalp:
+    structure: null                   # T-0003 used no higher timeframe; to be learned from top-down examples
+    execution: "1m"                   # T-0003 (trader wrote "1M"; the chart interval is 1 minute)
+
+# How the trader analyses, in their words.
+process:
+  top_down: >-
+    Top Down Analysis: start from a main (higher) timeframe, zoom into lower timeframes to identify
+    key levels, and go to the lowest timeframes for execution (trader, 2026-09-26). More examples to come.
 
 # The trader's own terms, in their words. These win over generic taxonomy labels.
 terminology:
@@ -49,15 +60,23 @@ terminology:
   reclaim: "Price back above a swept level, holding it as support; secondary entry."
   confluences: "Liquidity sweep; strong bullish momentum + volume; inducement; potential resistance level."
   confirmations: "Bullish Reversal (4H); extreme demand level."
+  Top Down Analysis: "Main timeframe first, then lower timeframes for key levels, then the lowest timeframes for execution."
+  HTF / LTF: "Higher timeframe / lower timeframe."
+  key level: "Support/resistance drawn from a wick; valid after multiple reactions."
+  deviation: "Price moves through a level and fails to hold: a fakeout."
+  retest: "Price returns to a broken level and tests it from the other side."
+  reclaim-retest-accept: "Long sequence: level reclaimed, retested from above, and held."
 
 # Where each resolved value came from: {path: "stated 2026-09-26 in T-0003 review"}
 sources:
   instruments: "T-0001 chart (BloFin AAVE/USDT perp), 2026-09-26"
-  timeframes.structure: "Trader: 'chart time frame is 4H', 2026-09-26"
+  timeframes.swing.structure: "Trader: 'chart time frame is 4H', 2026-09-26"
   terminology: "Trader's T-0001 message, 2026-09-26"
   risk.risk_per_trade_pct: "Trader: 'Risk management always goes to 1%', 2026-09-26"
   risk.max_risk_per_trade_pct: "Inferred from 'always 1%': fixed risk means 1% is also the ceiling. Confirm."
-  timeframes.execution: "Trader: '5) 4h', 2026-09-26"
+  timeframes.swing.execution: "Trader: '5) 4h', 2026-09-26"
+  timeframes.scalp.execution: "Trader: 'Time execution: 1M' (1-minute chart), T-0003"
+  process.top_down: "Trader: 'memorize Top Down analysis', 2026-09-26"
   leverage.margin_mode: "Trader: 'which means I use an isolated margin', 2026-09-26"
   leverage.max_margin_loss_at_stop_pct: "Trader: 'leverage planning not to exceed -50%', 2026-09-26"
   risk.min_rr: "Trader: 'I could enter a trade with 1:2,5RR as well', 2026-09-26"
