@@ -80,12 +80,25 @@ def _trade(row: analysis.Row, kb: KB) -> dict:
                        dig(t, "risk.margin_mode"), mmr, num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct")))
     derived = jsonable(row.d)
     derived.update({"exposure": exp, "planned_rr": model.planned_rr(t), "holding_hours": analysis.holding_hours(row), "top_down": dig(t, "timeframes.top_down"),
+                    "rule_checks": analysis.rule_checks(row, kb) if row.trade.status in analysis.TAKEN else None,
                     "sort_date": row.when.isoformat() if row.when else None})
     return {**jsonable(t), "derived": derived}
 
 
 def _summary(rs: list, kb: KB) -> dict:
     return jsonable(analysis.summarize_rows(rs, kb))
+
+
+def _rules(kb: KB, rs: list) -> dict:
+    """The trader's stated rules against every taken trade, and realized results split by compliance."""
+    defs = analysis.rule_definitions(kb)
+    checks = [analysis.rule_checks(row, kb) for row in analysis.rows(kb, analysis.TAKEN)]
+    counts = {d["key"]: {"kept": sum(1 for c in checks if c[d["key"]] is True),
+                         "broken": sum(1 for c in checks if c[d["key"]] is False),
+                         "unknown": sum(1 for c in checks if c[d["key"]] is None)} for d in defs}
+    kept = [row for row in rs if not analysis.rule_broken(analysis.rule_checks(row, kb))]
+    broken = [row for row in rs if analysis.rule_broken(analysis.rule_checks(row, kb))]
+    return {"definitions": defs, "counts": counts, "none_broken": _summary(kept, kb), "any_broken": _summary(broken, kb)}
 
 
 def build_payload(kb: KB) -> dict:
@@ -145,6 +158,7 @@ def build_payload(kb: KB) -> dict:
             "loss_types": loss_types,
             "mistake_free": _summary(clean, kb),
             "with_mistakes": _summary(dirty, kb),
+            "rules": _rules(kb, rs),
             "counterfactual": [{"id": row.trade.id, "hypothetical_r": row.d.counterfactual_r}
                                for row in analysis.counterfactuals(kb)],
         },

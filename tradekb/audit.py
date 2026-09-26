@@ -96,6 +96,41 @@ def run(kb: KB, check_outputs: bool = True) -> Audit:
             if lev and "margin_loss_pct" in exp:
                 a.check(abs(exp["margin_loss_pct"] - exp["stop_pct"] * lev) < TOL, f"{t['id']}: margin loss at stop")
 
+    # rule compliance: the numeric rules recomputed from raw fields, and the counts re-tallied
+    prof = kb.profile or {}
+    limit = _num((prof.get("leverage") or {}).get("max_margin_loss_at_stop_pct"))
+    cap = _num((prof.get("risk") or {}).get("max_risk_per_trade_pct"))
+    taken = [t for t in trades if t["status"] in ("closed", "open")]
+    for t in trades:
+        rc = t["derived"].get("rule_checks")
+        a.check((rc is not None) == (t in taken), f"{t['id']}: rule checks present exactly on taken trades")
+        if rc is None:
+            continue
+        tags = set((t.get("review") or {}).get("mistakes") or [])
+        entry = _num((t.get("fills") or {}).get("entry_avg"))
+        entry = entry if entry is not None else _num((t.get("plan") or {}).get("entry"))
+        stop, lev = _num((t.get("plan") or {}).get("stop")), _num((t.get("risk") or {}).get("leverage"))
+        if "excessive_leverage" in tags:
+            want = False
+        elif None in (entry, stop, lev, limit) or not entry or entry == stop:
+            want = None
+        else:
+            want = abs(entry - stop) / entry * 100 * lev <= limit + 1e-9
+        a.check(rc["leverage"] == want, f"{t['id']}: leverage rule {rc['leverage']} equals recompute {want}")
+        rp = _num((t.get("risk") or {}).get("risk_pct"))
+        want = False if "oversized_position" in tags else None if None in (rp, cap) else rp <= cap + 1e-9
+        a.check(rc["risk_pct"] == want, f"{t['id']}: risk rule {rc['risk_pct']} equals recompute {want}")
+    rules = p["stats"]["rules"]
+    for d in rules["definitions"]:
+        c = rules["counts"][d["key"]]
+        tally = {k: sum(1 for t in taken if t["derived"]["rule_checks"][d["key"]] is v) for k, v in (("kept", True), ("broken", False), ("unknown", None))}
+        a.check(c == tally, f"rule '{d['key']}': kept/broken/unknown re-tally {tally}")
+    split = [t for t in realized if False in t["derived"]["rule_checks"].values()]
+    a.check(rules["any_broken"]["n"] == len(split) and rules["none_broken"]["n"] == len(realized) - len(split),
+            "rule split: none-broken + any-broken cover every measured trade")
+    a.check(abs((rules["any_broken"]["total"] or 0) + (rules["none_broken"]["total"] or 0) - o["total"]) < TOL,
+            "rule split: the two totals sum to overall R")
+
     # aggregates
     rs = [t["derived"]["r"] for t in realized]
     a.check(o["n"] == len(rs), f"overall n = {o['n']} measured trades")

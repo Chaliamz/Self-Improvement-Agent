@@ -1,4 +1,4 @@
-"""Build outputs, the terminal's JavaScript risk math (parity with tradekb/risk.py), and schema rules."""
+"""Build outputs, the terminal script, rule compliance, and schema rules."""
 import json
 import re
 import shutil
@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from tradekb import analysis
+from tradekb.export import build_payload
 from tradekb.risk import SizingInput, exposure, size_position
 from tradekb.store import load_kb
 from tradekb.validate import validate
@@ -18,66 +20,8 @@ NODE = shutil.which("node")
 TEMPLATE = REPO / "templates" / "terminal.html"
 
 
-def risk_math_js() -> str:
-    text = TEMPLATE.read_text(encoding="utf-8")
-    match = re.search(r"/\* RISK-MATH:BEGIN.*?\*/(.*?)/\* RISK-MATH:END \*/", text, re.S)
-    assert match, "RISK-MATH block missing from the terminal template"
-    return match.group(1)
-
-
-CASES = [
-    dict(entry=100, stop=98, risk_amount=100, equity=10_000, leverage=10, targets=(104, 106)),
-    dict(entry=90.41, stop=87.59, risk_amount=100, equity=10_000, leverage=10, targets=(103.30,)),
-    dict(entry=64200, stop=64850, risk_amount=250, equity=25_000, leverage=20, fee_rate=0.0005, targets=(62900,)),
-    dict(entry=100, stop=97, risk_amount=100, equity=10_000, leverage=50),
-    dict(entry=100, stop=99, risk_amount=100, fee_rate=0.0005, slippage_pct=0.05, qty_step=0.1),
-    dict(entry=50, stop=51, risk_amount=20, equity=1_000, margin_mode="cross", mmr_rate=0.01),
-    dict(entry=90.41, stop=87.59, risk_amount=100, equity=10_000, leverage=20, max_margin_loss_pct=50, min_rr=2.5,
-         targets=(103.30,)),
-    dict(entry=90.41, stop=87.59, risk_amount=100, equity=10_000, leverage=10, max_margin_loss_pct=50, min_rr=5,
-         fee_rate=0.0006, targets=(103.30,)),
-]
-KEYS = {"qty": "qty", "notional": "notional", "loss_at_stop": "lossAtStop", "risk_pct": "riskPct",
-        "effective_leverage": "effectiveLeverage", "margin_required": "marginRequired",
-        "liquidation": "liquidation", "liq_to_stop_ratio": "liqToStop", "per_unit_loss": "perUnitLoss",
-        "margin_loss_pct": "marginLossPct", "max_leverage_for_rule": "maxLeverageForRule"}
-
-
 @unittest.skipUnless(NODE, "node not installed")
-class JavaScriptParityTest(unittest.TestCase):
-    def test_risk_math_matches_python(self):
-        js_cases = [{"entry": c["entry"], "stop": c["stop"], "riskAmount": c["risk_amount"], "equity": c.get("equity"),
-                     "leverage": c.get("leverage"), "marginMode": c.get("margin_mode", "isolated"),
-                     "mmrRate": c.get("mmr_rate", 0.005), "feeRate": c.get("fee_rate", 0.0),
-                     "slippagePct": c.get("slippage_pct", 0.0), "qtyStep": c.get("qty_step"),
-                     "targets": list(c.get("targets", ())), "maxMarginLossPct": c.get("max_margin_loss_pct"),
-                     "minRr": c.get("min_rr")} for c in CASES]
-        script = risk_math_js() + f"\nconsole.log(JSON.stringify({json.dumps(js_cases)}.map(c => RiskMath.size(c))));"
-        out = subprocess.run([NODE, "-e", script], capture_output=True, text=True, timeout=30)
-        self.assertEqual(out.returncode, 0, out.stderr)
-        results = json.loads(out.stdout)
-        for case, js in zip(CASES, results):
-            py = size_position(SizingInput(**case))
-            for py_key, js_key in KEYS.items():
-                a, b = getattr(py, py_key), js[js_key]
-                if a is None:
-                    self.assertIsNone(b, f"{py_key} for {case}")
-                else:
-                    self.assertAlmostEqual(a, b, places=9, msg=f"{py_key} for {case}")
-            self.assertEqual(py.side, js["side"])
-            self.assertEqual([lvl for lvl, _ in py.flags], [lvl for lvl, _ in js["flags"]], f"flag levels for {case}")
-            for tp_py, tp_js in zip(py.targets, js["targets"]):
-                self.assertAlmostEqual(tp_py.rr_gross, tp_js["rrGross"], places=9)
-                self.assertAlmostEqual(tp_py.rr_net, tp_js["rrNet"], places=9)
-
-    def test_js_rejects_what_python_rejects(self):
-        script = risk_math_js() + """
-const bad = [{entry: 100, stop: 100, riskAmount: 1}, {entry: 100, stop: 102, riskAmount: 1, side: "long"},
-             {entry: 100, stop: 98, riskAmount: 1, targets: [99]}];
-console.log(JSON.stringify(bad.map(c => { try { RiskMath.size(c); return "ok"; } catch (e) { return "error"; } })));"""
-        out = subprocess.run([NODE, "-e", script], capture_output=True, text=True, timeout=30)
-        self.assertEqual(json.loads(out.stdout), ["error", "error", "error"])
-
+class InlineScriptTest(unittest.TestCase):
     def test_inline_script_parses(self):
         text = TEMPLATE.read_text(encoding="utf-8")
         scripts = re.findall(r"<script>(.*?)</script>", text, re.S)
@@ -186,6 +130,60 @@ class ReadinessAndRulesTest(KBTestCase):
         warns = [i.msg for i in self.issues("WARN")]
         self.assertTrue(any("above your 50% limit" in m for m in warns))
         self.assertTrue(any("below your 2.5R minimum" in m for m in warns))
+
+
+class RuleComplianceTest(KBTestCase):
+    """The trader's stated rules (live profile: 1% cap, 50% margin rule, 2.5R minimum) checked per taken trade."""
+
+    def checks(self):
+        kb = load_kb()
+        return {row.trade.id: analysis.rule_checks(row, kb) for row in analysis.rows(kb, analysis.TAKEN)}
+
+    def test_fields_decide_each_rule(self):
+        # stop 3.837% x 20 = 76.7% of margin: broken. 4.07R planned: kept. 1% risk: kept.
+        self.write_trade("T-0001", direction="short", plan={"entry": 0.012980, "stop": 0.013478, "targets": [0.010954]},
+                         risk={"risk_pct": 1.0, "leverage": 20}, timeframes={"execution": "5m", "chain": ["4h", "5m"], "top_down": False},
+                         review={"setup_validity": "invalid", "mistakes": [], "behaviors": ["respected_invalidation"]}, result={"r": -1.0})
+        # stop 3.12% x 10 = 31.2%: kept. 1.5R planned: broken. 2% risk: broken. Nothing recorded: unknown.
+        self.write_trade("T-0002", plan={"entry": 90.41, "stop": 87.59, "targets": [94.64]}, risk={"risk_pct": 2.0, "leverage": 10},
+                         result={"r": 1.5})
+        c = self.checks()
+        self.assertEqual(c["T-0001"], {"top_down": False, "setup_valid": False, "risk_pct": True, "leverage": False,
+                                       "min_rr": True, "stop": True})
+        self.assertEqual(c["T-0002"], {"top_down": None, "setup_valid": None, "risk_pct": False, "leverage": True,
+                                       "min_rr": False, "stop": None})
+
+    def test_tagged_mistake_breaks_its_rule_without_fields(self):
+        self.write_trade("T-0001", risk={"risk_amount": 100}, timeframes={"top_down": True},
+                         review={"mistakes": ["excessive_leverage", "moved_stop", "oversized_position", "ignored_htf"],
+                                 "behaviors": ["respected_invalidation"]}, result={"r": -1.0})
+        c = self.checks()["T-0001"]
+        self.assertEqual((c["leverage"], c["stop"], c["risk_pct"], c["top_down"]), (False, False, False, False))
+
+    def test_only_taken_trades_are_checked_and_split_sums(self):
+        self.write_trade("T-0001", risk={"risk_pct": 1.0}, result={"r": 2.0})
+        self.write_trade("T-0002", risk={"risk_pct": 3.0}, result={"r": -1.0})
+        self.write_trade("T-0003", status="missed", closed=None, result={"hypothetical_r": 3.0})
+        p = build_payload(load_kb())
+        by_id = {t["id"]: t for t in p["trades"]}
+        self.assertIsNone(by_id["T-0003"]["derived"]["rule_checks"])
+        rules = p["stats"]["rules"]
+        self.assertEqual(rules["counts"]["risk_pct"], {"kept": 1, "broken": 1, "unknown": 0})
+        self.assertEqual((rules["none_broken"]["n"], rules["none_broken"]["total"]), (1, 2.0))
+        self.assertEqual((rules["any_broken"]["n"], rules["any_broken"]["total"]), (1, -1.0))
+        self.assertEqual([d["key"] for d in rules["definitions"]], ["top_down", "setup_valid", "risk_pct", "leverage", "min_rr", "stop"])
+        self.assertIn("50% of margin", rules["definitions"][3]["rule"])
+
+
+class AcknowledgedBreachTest(KBTestCase):
+    def test_tagged_breach_is_info_untagged_is_warn(self):
+        trade = dict(plan={"entry": 100, "stop": 96, "targets": [112]}, risk={"risk_pct": 1.0, "leverage": 20}, result={"r": -1.0})
+        self.write_trade("T-0001", **trade)
+        self.write_trade("T-0002", **trade, review={"mistakes": ["excessive_leverage"], "behaviors": []})
+        lev = [(i.level, i.where) for i in self.issues() if "of the posted margin" in i.msg]
+        self.assertIn(("WARN", "T-0001.yaml"), lev)
+        self.assertIn(("INFO", "T-0002.yaml"), lev)
+        self.assertTrue(any("acknowledged: tagged excessive_leverage" in i.msg for i in self.issues("INFO")))
 
 
 class SchemaRulesTest(KBTestCase):

@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from statistics import fmean
 from typing import Callable
 
-from .model import COUNTERFACTUAL, REALIZED, Derived, derive, num
+from .model import COUNTERFACTUAL, REALIZED, Derived, derive, entry_price, num, planned_rr
 from .stats import Summary, summarize
 from .store import KB, Trade, as_date, dig, trade_number
 
@@ -242,6 +242,55 @@ def loss_type_breakdown(rs: list[Row]) -> dict[str, list[Row]]:
     for row in losses:
         out[str(dig(row.t, "review.loss_type", "(unclassified)"))].append(row)
     return dict(sorted(out.items()))
+
+
+# The trader's stated rules, checked per taken trade. True = kept, False = broken, None = unknown.
+# A tagged mistake is the reviewer's judgement and marks its rule broken even when the fields are missing.
+STOP_VIOLATIONS = frozenset({"moved_stop", "widened_stop", "removed_stop", "ignored_invalidation"})
+RULE_BREAK_TAGS = {"top_down": {"skipped_top_down", "ignored_htf"}, "risk_pct": {"oversized_position"},
+                   "leverage": {"excessive_leverage"}, "stop": set(STOP_VIOLATIONS)}
+TAKEN = frozenset({"closed", "open"})
+
+
+def rule_definitions(kb: KB) -> list[dict]:
+    p = kb.profile
+    cap, limit, floor = (dig(p, "risk.max_risk_per_trade_pct"), dig(p, "leverage.max_margin_loss_at_stop_pct"),
+                         dig(p, "risk.min_rr"))
+    return [
+        {"key": "top_down", "label": "Top-down", "rule": "HTF context, key levels, then LTF execution (timeframes.top_down)"},
+        {"key": "setup_valid", "label": "Valid setup", "rule": "Setup valid under the strategy version (review.setup_validity)"},
+        {"key": "risk_pct", "label": "Risk", "rule": f"Risk per trade at most {cap}%" if cap is not None else "Risk cap not stated"},
+        {"key": "leverage", "label": "Leverage", "rule": f"Stop % x leverage at most {limit}% of margin" if limit is not None else "Margin rule not stated"},
+        {"key": "min_rr", "label": "R:R", "rule": f"Best target at least {floor}R" if floor is not None else "Minimum R:R not stated"},
+        {"key": "stop", "label": "Stop", "rule": "Stop respected: not moved, widened or removed"},
+    ]
+
+
+def rule_checks(row: Row, kb: KB) -> dict[str, bool | None]:
+    t, p = row.t, kb.profile
+    out: dict[str, bool | None] = {}
+    top_down = dig(t, "timeframes.top_down")
+    out["top_down"] = top_down if isinstance(top_down, bool) else None
+    out["setup_valid"] = {"valid": True, "invalid": False}.get(dig(t, "review.setup_validity"))
+    risk_pct, cap = num(dig(t, "risk.risk_pct")), num(dig(p, "risk.max_risk_per_trade_pct"))
+    out["risk_pct"] = None if None in (risk_pct, cap) else risk_pct <= cap + 1e-9
+    entry, stop, lev = entry_price(t), num(dig(t, "plan.stop")), num(dig(t, "risk.leverage"))
+    limit = num(dig(p, "leverage.max_margin_loss_at_stop_pct"))
+    out["leverage"] = (None if None in (entry, stop, lev, limit) or not entry or entry == stop
+                       else abs(entry - stop) / entry * 100 * lev <= limit + 1e-9)
+    rrs, floor = [x for x in planned_rr(t) if x is not None], num(dig(p, "risk.min_rr"))
+    out["min_rr"] = None if not rrs or floor is None else max(rrs) >= floor - 1e-9
+    behaviors = set(dig(t, "review.behaviors") or [])
+    out["stop"] = True if "respected_invalidation" in behaviors else None
+    mistakes = set(dig(t, "review.mistakes") or [])
+    for key, tags in RULE_BREAK_TAGS.items():
+        if mistakes & tags:
+            out[key] = False
+    return out
+
+
+def rule_broken(checks: dict[str, bool | None]) -> bool:
+    return any(v is False for v in checks.values())
 
 
 def holding_hours(row: Row) -> float | None:

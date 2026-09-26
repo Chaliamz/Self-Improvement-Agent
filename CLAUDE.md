@@ -38,9 +38,9 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
 | `playbook/PLAYBOOK.md` | consolidated knowledge (§27) | every entry cites trade IDs and n |
 | `playbook/automation.yaml` | gated road from journal to bot (stages, criteria, safety) | computed gates update on build; a manual gate goes `done` only with `evidence:` |
 | `config.yaml` | thresholds (evidence tiers, promotion gates) | assumptions; change only with a stated reason |
-| `terminal.html` | the trader's single-file terminal (journal, stats, strategy, risk, calculator) | **generated** by `./tj build`; never edit by hand |
+| `terminal.html` | the trader's single-file terminal (journal, stats, rule compliance, strategy + checklist, risk) | **generated** by `./tj build`; never edit by hand |
 | `exports/kb.json` | schema-versioned machine export: the contract for the future trading bot | **generated** by `./tj build`; never edit by hand |
-| `templates/terminal.html` | terminal source; its RISK-MATH block mirrors `tradekb/risk.py` | change both together; `tests/test_terminal.py` enforces parity |
+| `templates/terminal.html` | terminal source; displays only what `./tj build` computed (no math of its own) | `tests/test_render.py` walks every tab and background in headless Chromium |
 
 ## Workflows
 
@@ -70,8 +70,11 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
    the proof that the thesis was not written with hindsight (§33, §37).
 2. `./tj size --entry E --stop S [--leverage L --margin-mode M --target T]` for the risk
    decomposition. Surface every CRITICAL/WARN flag and every "ASSUMED"/"default" input.
-3. Reply in the §18 structure. Do not tell the trader whether to take it.
-4. Later: update the same record to `open`, then `closed` (workflow A from step 2).
+3. Run the strategy version's `checklist` item by item and report each as pass / fail / unknown with
+   the evidence. T-0004 is the reference failure: a 5m CHoCH the 30m had not confirmed (item 3), entry
+   below the zone (item 4), stop just beyond the obvious swing (item 5), 20x on a 3.84% stop (item 6).
+4. Reply in the §18 structure. Do not tell the trader whether to take it.
+5. Later: update the same record to `open`, then `closed` (workflow A from step 2).
 
 ### C. Missed or not-taken trades
 `--status missed|not_taken`. Any outcome goes in `result.hypothetical_r` only, labelled

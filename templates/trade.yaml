@@ -14,7 +14,8 @@ timeframes:                   # notation: m minutes, h hours, D days, W weeks, M
   htf: null                   # higher-timeframe context
   execution: null             # entry timeframe
   chain: []                   # timeframes analysed, highest first, e.g. ["1D", "4h", "15m", "1m"]
-  top_down: null              # true if a top-down analysis (HTF -> LTF) was done before entry
+  top_down: null              # true only for a complete top-down (main TF -> intermediate -> execution);
+                              # false when skipped or incomplete (e.g. 4h -> 5m without the 15m-30m)
 
 setups: []                    # canonical tags from taxonomy/setups.yaml
 regime: []                    # canonical tags from taxonomy/regimes.yaml
@@ -47,7 +48,7 @@ fills:
   entry_avg: null             # actual average entry; null => plan.entry
   exits: []                   # - {price: 0, qty: 0, reason: "tp1"}   (or fraction: 0.5 instead of qty)
   fees: null                  # total fees paid
-  duration_minutes: null      # time in the trade, when stated (dates alone cannot resolve scalps)
+  duration_minutes: null      # time in the trade: stated, or measured on the chart (say which)
 
 result:
   pnl: null                   # realized NET PnL

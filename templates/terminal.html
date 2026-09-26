@@ -92,6 +92,7 @@ th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--gri
 th { color: var(--ink-2); font-weight: 600; background: var(--surface-2); position: sticky; top: 0; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 td.wrap-cell { white-space: normal; min-width: 200px; }
+td.tags-cell { white-space: normal; min-width: 420px; }
 tbody tr:last-child td { border-bottom: 0; }
 tbody tr.clickable { cursor: pointer; }
 tbody tr.clickable:hover td { background: var(--surface-2); }
@@ -102,7 +103,7 @@ tbody tr.clickable:hover td { background: var(--surface-2); }
 .tag { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); margin: 0 4px 4px 0; }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: center; }
 .filters label { display: flex; gap: 6px; align-items: center; color: var(--ink-2); font-size: 12.5px; }
-.filters select, .filters input, .calc input, .calc select { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; min-width: 0; }
+.filters select, .filters input { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; min-width: 0; }
 .chart-host { width: 100%; min-height: 240px; position: relative; }
 svg text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 svg .grid { stroke: var(--grid); stroke-width: 1; shape-rendering: crispEdges; }
@@ -141,17 +142,15 @@ dialog::backdrop { background: rgba(0,0,0,.55); }
 .dlg-head h2 { margin: 0; font-size: 16px; }
 .dlg-body { padding: 16px; }
 .chart-img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--border); cursor: zoom-in; }
-.calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
-.calc label { display: flex; flex-direction: column; gap: 4px; color: var(--ink-2); font-size: 12.5px; }
-.flag { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); margin-top: 8px; }
-.flag .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex: none; }
 .empty { color: var(--ink-2); font-style: italic; margin: 4px 0; }
 /* backgrounds: one decorative layer at a time, chosen in the header. Never over the data. */
 body { position: relative; isolation: isolate; }
 #bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; opacity: var(--bg-opacity); }
 #bg > * { position: absolute; inset: 0; display: none; }
 :root[data-bg="aurora"] #bg .bg-aurora, :root[data-bg="aurora"] #bg .bg-grid,
-:root[data-bg="constellation"] #bg #bg-canvas,
+:root[data-bg-kind="canvas"] #bg #bg-canvas,
+:root[data-bg="starfield"] #bg .bg-static, :root[data-bg="waves"] #bg .bg-static, :root[data-bg="depth"] #bg .bg-static,
+:root[data-bg="nebula"] #bg .bg-nebula,
 :root[data-bg="synthwave"] #bg .bg-synth,
 :root[data-bg="tape"] #bg .bg-glow, :root[data-bg="tape"] #bg .bg-grid, :root[data-bg="tape"] #bg #bg-tape,
 :root[data-bg="off"] #bg .bg-static { display: block; }
@@ -182,6 +181,25 @@ body { position: relative; isolation: isolate; }
   animation: floor-roll 2.4s linear infinite; }
 @keyframes floor-roll { to { background-position: 0 56px, 0 0; } }
 @keyframes sun-pulse { to { opacity: .4; transform: translateX(-50%) scale(1.04); } }
+/* nebula: slow-turning purple, teal and red clouds under a twinkling dust layer */
+.bg-nebula::before, .bg-nebula::after { content: ""; position: absolute; }
+.bg-nebula::before { inset: -35%; filter: blur(40px) saturate(1.3); animation: nebula-turn 120s linear infinite;
+  background:
+    radial-gradient(28% 24% at 32% 38%, color-mix(in srgb, var(--brand) 42%, transparent), transparent 70%),
+    radial-gradient(24% 20% at 66% 58%, color-mix(in srgb, var(--up) 30%, transparent), transparent 70%),
+    radial-gradient(20% 18% at 56% 30%, color-mix(in srgb, var(--down) 26%, transparent), transparent 70%),
+    radial-gradient(34% 28% at 40% 72%, color-mix(in srgb, var(--pos) 22%, transparent), transparent 70%),
+    radial-gradient(18% 16% at 74% 36%, color-mix(in srgb, var(--brand) 30%, transparent), transparent 70%); }
+.bg-nebula::after { inset: 0; opacity: .55; animation: twinkle 7s ease-in-out infinite alternate;
+  background-image:
+    radial-gradient(1.4px 1.4px at 12px 18px, var(--ink-2) 50%, transparent 51%),
+    radial-gradient(1px 1px at 88px 64px, var(--brand) 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 150px 130px, var(--ink-2) 50%, transparent 51%),
+    radial-gradient(1px 1px at 40px 150px, var(--up) 50%, transparent 51%),
+    radial-gradient(1.6px 1.6px at 170px 30px, var(--ink-2) 50%, transparent 51%);
+  background-size: 190px 190px; }
+@keyframes nebula-turn { from { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.12); } to { transform: rotate(360deg) scale(1); } }
+@keyframes twinkle { from { opacity: .25; } to { opacity: .6; } }
 /* candle tape (the previous background) */
 .bg-glow { background:
     radial-gradient(40% 34% at 18% 22%, var(--glow-up), transparent 70%),
@@ -198,9 +216,6 @@ body { position: relative; isolation: isolate; }
 svg .bar-up { fill: var(--up); } svg .bar-down { fill: var(--down); }
 svg .grow-down { transform-box: fill-box; transform-origin: top; animation: grow .7s cubic-bezier(.2,.7,.2,1) both; }
 svg .whisker { stroke: var(--ink-2); stroke-width: 1.5; }
-svg .dd-line { fill: none; stroke: var(--down); stroke-width: 2; stroke-linejoin: round; }
-svg .dd-line.flat { stroke: var(--neutral); }
-svg .dd-area { fill: var(--down-wash); }
 svg .axis-title { fill: var(--ink-2); font-size: 11.5px; }
 svg .row-label { fill: var(--ink); font-size: 12px; }
 svg .hit:hover + .mark, svg .hit:focus + .mark { opacity: .8; }
@@ -234,6 +249,15 @@ svg .draw { animation: fade .6s ease both; }
 .crit .mark { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; background: var(--neutral); }
 .crit .mark.ok { background: var(--up); }
 .crit .t { font-size: 12px; color: var(--ink-2); }
+.rc { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+.rc.ok { background: var(--up-wash); color: var(--up-text); } .rc.bad { background: var(--down-wash); color: var(--down-text); }
+.rc.na { color: var(--muted); border: 1px dashed var(--border); font-weight: 400; }
+td.rc-cell, th.rc-cell { text-align: center; }
+.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 12px; }
+ol.checklist { margin: 0; padding-left: 0; list-style: none; counter-reset: none; }
+ol.checklist li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--grid); }
+ol.checklist li:first-child { border-top: 0; }
+ol.checklist .box { flex: none; width: 18px; height: 18px; margin-top: 1px; border: 2px solid var(--brand); border-radius: 5px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top: 1px solid var(--border); overflow-wrap: anywhere; }
 @media (max-width: 600px) { .hero .value { font-size: 44px; } .kv { grid-template-columns: 1fr; gap: 2px 0; } .kv dd { margin-bottom: 8px; } }
@@ -247,8 +271,10 @@ footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top:
       <div class="top-actions">
         <label class="sr" for="bg-select" style="position:absolute;left:-9999px">Background</label>
         <select id="bg-select" aria-label="Background animation">
-          <option value="aurora">Aurora</option><option value="constellation">Constellation</option>
-          <option value="synthwave">Synthwave</option><option value="tape">Candle tape</option><option value="off">No animation</option>
+          <option value="aurora">Aurora</option><option value="nebula">Nebula</option><option value="constellation">Constellation</option>
+          <option value="starfield">Starfield</option><option value="synthwave">Synthwave</option><option value="matrix">Price rain</option>
+          <option value="waves">Waves</option><option value="depth">Order-book depth</option><option value="tape">Candle tape</option>
+          <option value="off">No animation</option>
         </select>
         <button class="btn" id="theme-btn" type="button">Theme</button>
       </div>
@@ -261,6 +287,7 @@ footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top:
 <div id="bg" aria-hidden="true">
   <div class="bg-static"></div>
   <div class="bg-aurora"><i></i><i></i><i></i></div>
+  <div class="bg-nebula"></div>
   <canvas id="bg-canvas"></canvas>
   <div class="bg-synth"><div class="sun"></div><div class="floor"></div></div>
   <div class="bg-glow"></div>
@@ -274,101 +301,6 @@ footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top:
 <script id="kb-charts" type="application/json">/*__CHARTS_JSON__*/null</script>
 <script>
 "use strict";
-/* RISK-MATH:BEGIN — mirrors tradekb/risk.py; tests/test_terminal.py checks parity in node. */
-const RiskMath = (() => {
-  function inferSide(entry, stop) {
-    if (stop < entry) return "long";
-    if (stop > entry) return "short";
-    throw new Error("entry equals stop: stop distance is zero, position size is undefined");
-  }
-  function positive(name, v, optional) {
-    if ((v === null || v === undefined) && optional) return;
-    if (!(typeof v === "number" && isFinite(v) && v > 0)) throw new Error(name + " must be > 0");
-  }
-  function decimals(step) {
-    const s = String(step);
-    return s.includes("e-") ? Number(s.split("e-")[1]) : (s.split(".")[1] || "").length;
-  }
-  function floorToStep(qty, step) {
-    const n = Math.floor(qty / step + 1e-9);
-    return Number((n * step).toFixed(decimals(step)));
-  }
-  function liquidation(entry, side, qty, o) {
-    const { leverage = null, marginMode = "isolated", mmrRate = 0.005, equity = null } = o;
-    let p;
-    if (marginMode === "isolated") {
-      if (!leverage) return null;
-      p = side === "long" ? entry * (1 - 1 / leverage) / (1 - mmrRate) : entry * (1 + 1 / leverage) / (1 + mmrRate);
-    } else if (marginMode === "cross") {
-      if (!equity || qty <= 0) return null;
-      p = side === "long" ? (entry - equity / qty) / (1 - mmrRate) : (entry + equity / qty) / (1 + mmrRate);
-    } else throw new Error("margin mode must be isolated or cross");
-    return p > 0 ? p : null;
-  }
-  function size(inp) {
-    const { entry, stop, riskAmount, side: asserted = null, equity = null, leverage = null, marginMode = "isolated",
-            mmrRate = 0.005, feeRate = 0, slippagePct = 0, qtyStep = null, targets = [], maxRiskPct = null,
-            maxLeverage = null, maxMarginLossPct = null, minRr = null, feeShareWarn = 0.2, liqBufferWarn = 1.5 } = inp;
-    positive("entry", entry); positive("stop", stop); positive("risk amount", riskAmount);
-    positive("equity", equity, true); positive("leverage", leverage, true); positive("qty step", qtyStep, true);
-    if (!(mmrRate >= 0 && mmrRate < 1)) throw new Error("maintenance margin rate must be in [0, 1)");
-    if (feeRate < 0 || slippagePct < 0) throw new Error("fees and slippage cannot be negative");
-    const side = inferSide(entry, stop);
-    if (asserted && asserted !== side) throw new Error("stop is on the wrong side of entry for a " + asserted);
-    const flags = [];
-    if (feeRate > 0.01) flags.push(["WARN", "fee rate above 1% per side: enter it as a percent, e.g. 0.06"]);
-    const slip = slippagePct / 100;
-    const stopFill = side === "long" ? stop * (1 - slip) : stop * (1 + slip);
-    const feePerUnit = feeRate * (entry + stopFill);
-    const perUnitLoss = Math.abs(entry - stopFill) + feePerUnit;
-    const qtyRaw = riskAmount / perUnitLoss;
-    const qty = qtyStep ? floorToStep(qtyRaw, qtyStep) : qtyRaw;
-    if (qty <= 0) flags.push(["CRITICAL", "risk budget is smaller than one quantity step at this stop distance"]);
-    const lossAtStop = qty * perUnitLoss, notional = qty * entry;
-    const stopDistancePct = Math.abs(entry - stop) / entry * 100;
-    const feeShare = feePerUnit / perUnitLoss;
-    if (feeShare > feeShareWarn) flags.push(["WARN", `fees are ${(feeShare * 100).toFixed(0)}% of the loss at stop: net R:R is materially below gross`]);
-    let riskPct = null, effectiveLeverage = null;
-    if (equity) {
-      riskPct = lossAtStop / equity * 100;
-      effectiveLeverage = notional / equity;
-      if (maxRiskPct !== null && riskPct > maxRiskPct + 1e-9) flags.push(["CRITICAL", `loss at stop is ${riskPct.toFixed(2)}% of equity, above your max ${maxRiskPct}%`]);
-    }
-    const lossPctOfNotional = perUnitLoss / entry * 100;
-    const maxLeverageForRule = maxMarginLossPct !== null ? maxMarginLossPct / lossPctOfNotional : null;
-    const marginLossPct = leverage ? lossPctOfNotional * leverage : null;
-    if (marginLossPct !== null && maxMarginLossPct !== null && marginLossPct > maxMarginLossPct + 1e-9)
-      flags.push(["CRITICAL", `loss at stop is ${marginLossPct.toFixed(1)}% of the posted margin, above your ${maxMarginLossPct}% limit: use ${maxLeverageForRule.toFixed(1)}x or less`]);
-    let marginRequired = null;
-    if (leverage) {
-      marginRequired = notional / leverage;
-      if (equity && marginRequired > equity) flags.push(["CRITICAL", "margin required exceeds equity"]);
-      if (maxLeverage !== null && leverage > maxLeverage) flags.push(["WARN", `leverage ${leverage}x is above your max ${maxLeverage}x`]);
-      if (marginMode === "isolated" && mmrRate >= 1 / leverage) flags.push(["CRITICAL", "this leverage liquidates at or before entry"]);
-    }
-    let liq = null, liqToStop = null;
-    if (qty > 0 && (leverage || marginMode === "cross")) liq = liquidation(entry, side, qty, { leverage, marginMode, mmrRate, equity });
-    if (liq !== null) {
-      const stopDist = Math.abs(entry - stopFill);
-      liqToStop = Math.abs(entry - liq) / stopDist;
-      const beyond = side === "long" ? liq >= stopFill : liq <= stopFill;
-      if (beyond) flags.push(["CRITICAL", "liquidation is reached BEFORE the stop: the stop cannot protect this position"]);
-      else if (liqToStop < liqBufferWarn) flags.push(["WARN", `liquidation is only ${liqToStop.toFixed(2)}x the stop distance from entry`]);
-    }
-    const rr = targets.map(tp => {
-      positive("target", tp);
-      if ((side === "long" && tp <= entry) || (side === "short" && tp >= entry)) throw new Error(`target ${tp} is not on the profit side of entry`);
-      return { price: tp, rrGross: Math.abs(tp - entry) / Math.abs(entry - stop),
-               rrNet: (Math.abs(tp - entry) - feeRate * (entry + tp)) / perUnitLoss };
-    });
-    if (minRr !== null && rr.length && Math.max(...rr.map(t => t.rrGross)) < minRr)
-      flags.push(["WARN", `best target gives ${Math.max(...rr.map(t => t.rrGross)).toFixed(2)}R, below your ${minRr}R minimum`]);
-    return { side, qty, qtyRaw, notional, stopFill, stopDistancePct, perUnitLoss, feePerUnit, lossAtStop, riskPct,
-             effectiveLeverage, marginRequired, liquidation: liq, liqToStop, marginLossPct, maxLeverageForRule, targets: rr, flags };
-  }
-  return { inferSide, floorToStep, liquidation, size };
-})();
-/* RISK-MATH:END */
 
 const KB = JSON.parse(document.getElementById("kb-data").textContent);
 const CHARTS = JSON.parse(document.getElementById("kb-charts").textContent) || {};
@@ -440,12 +372,12 @@ function meter(frac) {
                     "aria-valuenow": Math.round(frac * 100) }, h("span", { style: `width:${Math.max(0, Math.min(1, frac)) * 100}%` }));
 }
 function table(cols, rows, opts = {}) {
-  const thead = h("thead", {}, h("tr", {}, cols.map(c => h("th", { class: c.num ? "num" : null, scope: "col", text: c.label }))));
+  const thead = h("thead", {}, h("tr", {}, cols.map(c => h("th", { class: c.th || (c.num ? "num" : null), scope: "col", text: c.label, title: c.title || null }))));
   const tbody = h("tbody", {}, rows.map(r => {
     const tr = h("tr", { class: [opts.onRow ? "clickable" : "", opts.rowClass ? opts.rowClass(r) || "" : ""].join(" ").trim() || null },
       cols.map(c => {
         const v = c.render ? c.render(r) : r[c.key];
-        return h("td", { class: [c.num ? "num" : "", c.wrap ? "wrap-cell" : ""].join(" ").trim() || null },
+        return h("td", { class: [c.num ? "num" : "", c.wrap ? "wrap-cell" : "", c.td || ""].join(" ").trim() || null },
                  v instanceof Node ? v : (v === null || v === undefined || v === "" ? "—" : String(v)));
       }));
     if (opts.onRow) tr.addEventListener("click", e => { if (!e.target.closest("button")) opts.onRow(r); });
@@ -650,8 +582,10 @@ function hitTip(el, value, lines, anchor) {
 }
 function perTradeChart(host, curve) {
   responsive(host, W => {
-    const H = 230, m = { t: 20, r: 12, b: 30, l: 52 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
-    const vals = curve.map(c => c.r), yt = niceTicks(Math.min(0, ...vals), Math.max(0, ...vals));
+    const vals = curve.map(c => c.r);
+    // a labelled negative bar puts its label below the plot: leave room above the trade IDs
+    const H = 230, m = { t: 20, r: 12, b: vals.some(v => v < 0) ? 44 : 30, l: 52 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const yt = niceTicks(Math.min(0, ...vals), Math.max(0, ...vals));
     const y0 = yt[0], y1 = yt[yt.length - 1], Y = v => m.t + ih - (v - y0) / (y1 - y0) * ih;
     const band = iw / curve.length, bw = Math.min(24, band * 0.6);
     const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `R of each of ${curve.length} closed trades` });
@@ -674,43 +608,6 @@ function perTradeChart(host, curve) {
         root.append(s("text", { x: cx, y: up ? top - 6 : bottom + 14, "text-anchor": "middle", class: "cap-label" }, fmtR(c.r)));
       if (i % every === 0) root.append(s("text", { x: cx, y: H - 8, "text-anchor": "middle" }, c.id));
     });
-    return root;
-  });
-}
-function drawdownChart(host, curve) {
-  const pts = [{ id: "Start", date: null, dd: 0 }];
-  let peak = 0;
-  for (const c of curve) { peak = Math.max(peak, c.cum_r); pts.push({ id: c.id, date: c.date, dd: c.cum_r - peak }); }
-  responsive(host, W => {
-    const H = 230, m = { t: 16, r: 16, b: 30, l: 52 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
-    const low = Math.min(...pts.map(p => p.dd));
-    const yt = niceTicks(low < 0 ? low : -1, 0), y0 = yt[0], y1 = yt[yt.length - 1];
-    const X = i => m.l + (pts.length === 1 ? iw / 2 : i * iw / (pts.length - 1)), Y = v => m.t + ih - (v - y0) / (y1 - y0) * ih;
-    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img",
-                            "aria-label": low < 0 ? `Deepest drawdown ${fmtR(low)}` : "No drawdown so far" });
-    for (const v of yt) {
-      root.append(s("line", { x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v), class: v === 0 ? "axis" : "grid" }));
-      root.append(s("text", { x: m.l - 8, y: Y(v), "text-anchor": "end", "dominant-baseline": "middle" }, fmtTick(v)));
-    }
-    const d = pts.map((p, i) => `${i ? "L" : "M"}${X(i)},${Y(p.dd)}`).join("");
-    root.append(s("path", { d: `${d}L${X(pts.length - 1)},${Y(0)}L${X(0)},${Y(0)}Z`, class: "dd-area draw" }),
-                s("path", { d, class: low < 0 ? "dd-line" : "dd-line flat" }));
-    pts.forEach((p, i) => {
-      if (i % Math.max(1, Math.ceil(pts.length / Math.max(2, Math.floor(iw / 70)))) === 0 || i === pts.length - 1)
-        root.append(s("text", { x: X(i), y: H - 8, "text-anchor": i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle" }, p.id));
-    });
-    if (low >= 0) root.append(s("text", { x: m.l + iw / 2, y: m.t + ih / 2, "text-anchor": "middle", class: "axis-title" }, "No drawdown yet: every closed trade set a new equity high"));
-    const cross = s("line", { class: "crosshair", y1: m.t, y2: m.t + ih, visibility: "hidden" });
-    const hit = s("rect", { x: m.l - 8, y: m.t, width: iw + 16, height: ih, fill: "transparent", tabindex: 0, "aria-label": "Drawdown chart" });
-    root.append(cross, hit);
-    const show = (i, cx, cy) => { cross.setAttribute("x1", X(i)); cross.setAttribute("x2", X(i)); cross.setAttribute("visibility", "visible");
-      showTip(fmtR(pts[i].dd), [{ key: "var(--down)", text: `Drawdown · ${pts[i].id}` }, { text: pts[i].date || "" }], cx, cy); };
-    const nearest = cx => { const b = root.getBoundingClientRect(); let best = 0, dist = Infinity;
-      pts.forEach((_, i) => { const dd = Math.abs(b.left + X(i) - cx); if (dd < dist) { dist = dd; best = i; } }); return best; };
-    hit.addEventListener("pointermove", e => show(nearest(e.clientX), e.clientX, e.clientY));
-    hit.addEventListener("pointerleave", () => { hideTip(); cross.setAttribute("visibility", "hidden"); });
-    hit.addEventListener("focus", () => { const b = root.getBoundingClientRect(), i = pts.length - 1; show(i, b.left + X(i), b.top + Y(pts[i].dd)); });
-    hit.addEventListener("blur", () => { hideTip(); cross.setAttribute("visibility", "hidden"); });
     return root;
   });
 }
@@ -853,24 +750,44 @@ function renderOverview() {
 
   const recent = newestFirst(trades).slice(0, 6);
   const latestLesson = newestFirst(closed).find(t => dig(t, "review.lesson"));
-  const ptHost = h("div", { class: "chart-host" }), ddHost = h("div", { class: "chart-host" });
+  const ptHost = h("div", { class: "chart-host" });
   const ptCard = card("R per trade", "Each closed trade in order. Only the best and worst results are labelled; hover for the rest.",
     curve.length ? ptHost : h("p", { class: "empty", text: "No measurable trades yet." }),
     h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
       table([{ key: "id", label: "Trade" }, { key: "date", label: "Date" }, { label: "R", num: true, render: r => rSpan(r.r) }], curve)));
-  const ddCard = card("Drawdown", "Distance below the running equity high, in R. Zero means a new high.",
-    curve.length ? ddHost : h("p", { class: "empty", text: "No measurable trades yet." }),
-    h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
-      table([{ key: "id", label: "Trade" }, { label: "Cumulative", num: true, render: r => rSpan(r.cum_r) },
-             { label: "Drawdown", num: true, render: r => { let pk = 0; for (const c of curve) { pk = Math.max(pk, c.cum_r); if (c.id === r.id) break; } return rSpan(r.cum_r - pk); } }], curve)));
-  const el = h("div", { class: "stack" }, banner, hero, tiles, h("div", { class: "grid2" }, eqCard, histCard), h("div", { class: "grid2" }, ptCard, ddCard),
+  const rulesCard = ruleComplianceCard();
+  const el = h("div", { class: "stack" }, banner, hero, tiles, h("div", { class: "grid2" }, eqCard, histCard), h("div", { class: "grid2" }, ptCard, rulesCard),
     card("Recent trades", "Newest first. Click a row for the full record.", journalTable(recent)),
     latestLesson ? card(`Latest lesson · ${latestLesson.id}`, null, h("p", { class: "prose", text: latestLesson.review.lesson })) : null);
   mount(() => {
-    if (curve.length) { equityChart(eqHost, curve); perTradeChart(ptHost, curve); drawdownChart(ddHost, curve); }
+    if (curve.length) { equityChart(eqHost, curve); perTradeChart(ptHost, curve); }
     histogramChart(histHost, KB.stats.histogram);
   });
   return el;
+}
+
+const RULE_MARK = { true: ["ok", "✓", "Kept"], false: ["bad", "✗", "Broken"], null: ["na", "—", "Not recorded"] };
+function ruleMark(v) {
+  const [cls, glyph, word] = RULE_MARK[v === true ? "true" : v === false ? "false" : "null"];
+  return h("span", { class: "rc " + cls, text: glyph, title: word, "aria-label": word });
+}
+function ruleComplianceCard() {
+  const R = KB.stats.rules, defs = R.definitions;
+  const rows = newestFirst(trades.filter(t => t.derived.rule_checks));
+  const cols = [
+    { label: "Trade", render: t => h("button", { class: "linkish", type: "button", text: t.id, onclick: () => openTrade(t.id) }) },
+    { label: "Result", num: true, render: t => t.status === "closed" ? rSpan(t.derived.r) : badge(t.status) },
+    ...defs.map(d => ({ label: d.label, title: d.rule, th: "rc-cell", td: "rc-cell", render: t => ruleMark(t.derived.rule_checks[d.key]) })),
+  ];
+  const kept = defs.map(d => { const c = R.counts[d.key], known = c.kept + c.broken; return `${d.label} ${known ? `${c.kept}/${known}` : "—"}`; });
+  const splitTile = (label, sm) => tile(label, sm.n ? fmtR(sm.total) : "—",
+    sm.n ? `${sm.n} trade${sm.n === 1 ? "" : "s"} · expectancy ${fmtR(sm.expectancy)}` : "No measured trades", sm.n ? tone(sm.total) : null);
+  return card("Rule compliance", "Your stated rules against every taken trade: ✓ kept · ✗ broken · — not recorded. Hover a column for the rule. A tagged mistake marks its rule broken.",
+    rows.length ? table(cols, rows, { rowClass: t => t.derived.outcome === "win" ? "row-win" : t.derived.outcome === "loss" ? "row-loss" : null })
+                : h("p", { class: "empty", text: "No taken trades yet." }),
+    h("p", { class: "note", style: "margin:10px 0 0", text: "Kept where recorded: " + kept.join(" · ") }),
+    h("div", { class: "split" }, splitTile("No rule broken", R.none_broken), splitTile("At least one rule broken", R.any_broken)),
+    h("p", { class: "note", style: "margin:8px 0 0", text: `Descriptive only at n=${KB.stats.overall.n}. The gap is a question to test, not evidence of an edge.` }));
 }
 
 function journalTable(rows) {
@@ -893,7 +810,7 @@ function journalTable(rows) {
     { label: "Lev", num: true, render: t => isNum(dig(t, "risk.leverage")) ? t.risk.leverage + "x" : "—" },
     { label: "Plan R:R", num: true, render: t => (t.derived.planned_rr || []).filter(isNum).map(x => x.toFixed(2)).join(", ") || "—" },
     { key: "closed", label: "Closed" },
-    { label: "Setups", wrap: true, render: t => tags(t.setups, "setups") },
+    { label: "Setups", td: "tags-cell", render: t => tags(t.setups, "setups") },
   ], rows, { onRow: t => openTrade(t.id), empty: "No trades recorded yet.",
               rowClass: t => t.derived.outcome === "win" ? "row-win" : t.derived.outcome === "loss" ? "row-loss" : null });
 }
@@ -981,7 +898,8 @@ const RULE_LABELS = {
   required_conditions: "Required conditions", confirmation: "Confirmations", confluences: "Confluences", zones: "Zones",
   entry_models: "Entry models", entry_model: "Entry model", stop_model: "Stop model", target_model: "Target model",
   risk_model: "Risk model", leverage_model: "Leverage model", management: "Management", do_not_trade_when: "Do not trade when",
-  common_mistakes: "Common mistakes", open_questions: "Open questions",
+  common_mistakes: "Common mistakes", open_questions: "Open questions", timeframe_alignment: "Timeframe alignment",
+  checklist: "Pre-entry checklist",
 };
 function ruleValue(v) {
   if (v === null || v === undefined) return unstated();
@@ -995,12 +913,20 @@ function ruleValue(v) {
 }
 function renderStrategy() {
   if (!KB.strategies.length) return card("Strategies", "No strategy recorded yet.");
-  return h("div", { class: "stack" }, KB.strategies.map(st => {
+  // most-evidenced strategy first; ties keep the export's order
+  const ordered = [...KB.strategies].sort((a, b) => b.measured_trades.length - a.measured_trades.length);
+  return h("div", { class: "stack" }, ordered.map(st => {
     const meta = st.meta, cur = String(meta.current_version), rules = st.versions[cur] || {};
     const promo = st.promotion || {}, n = st.measured_trades.length;
-    const skip = new Set(["version", "date", "source", "supersedes"]);
+    const skip = new Set(["version", "date", "source", "supersedes", "checklist"]);
+    const checklist = Array.isArray(rules.checklist) && rules.checklist.length
+      ? [h("h3", { text: `Pre-entry checklist · v${cur}` }), h("p", { class: "note", text: "Every item must pass before entry. Any failed item means no trade." }),
+         h("ol", { class: "checklist" }, rules.checklist.map(item => h("li", {}, h("span", { class: "box", "aria-hidden": "true" }),
+           h("span", { text: String(item).replace(/^\d+\.\s*/, "") }))))]
+      : null;
     const dl = h("dl", { class: "kv" }, Object.entries(rules).filter(([k]) => !skip.has(k))
-      .flatMap(([k, v]) => [h("dt", { text: RULE_LABELS[k] || titleCase(k) }), h("dd", {}, ruleValue(v))]));
+      .flatMap(([k, v]) => [h("dt", { text: RULE_LABELS[k] || titleCase(k) }),
+                            h("dd", {}, k === "common_mistakes" && Array.isArray(v) && v.length ? list(v.map(x => tagLabel("mistakes", x))) : ruleValue(v))]));
     const versions = Object.keys(st.versions).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
       .map(v => ({ v, date: st.versions[v].date, source: st.versions[v].source, current: v === cur }));
     return h("div", { class: "stack" },
@@ -1011,6 +937,7 @@ function renderStrategy() {
           tile("Measured trades", String(n), n ? st.measured_trades.join(", ") : "None yet"),
           tile("Next status", promo.developing ? `${Math.min(n, promo.developing)} / ${promo.developing}` : "—",
                promo.developing ? `Developing needs ${promo.developing}, established ${promo.established}` : null)),
+        checklist,
         h("h3", { text: `Rules · v${cur}` }), h("p", { class: "note", text: rules.source || "" }), dl),
       h("div", { class: "grid2" },
         card("Version history", "Committed versions are immutable. Old versions are kept so results can be compared.",
@@ -1059,52 +986,7 @@ function renderRisk() {
 
   return h("div", { class: "stack" },
     card("Risk rules", "Only what the trader has stated. Unresolved rules are gaps to fill, never defaults to assume.", profileTable),
-    card("Exposure per trade", "Leverage is not risk. With a fixed % risk, the stop distance sets the position size; leverage only changes the margin posted and the liquidation distance. * = margin mode not recorded, isolated assumed.", expTable),
-    card("Position calculator", "Sizes a position from risk and stop. Same formulas as ./tj size. Liquidation is an approximation: the exchange's figure is authoritative.", calculator()));
-}
-
-function calculator() {
-  const p = KB.profile || {};
-  const field = (label, attrs) => { const input = h("input", { type: "number", step: "any", inputmode: "decimal", ...attrs }); return [h("label", {}, label, input), input]; };
-  const [lEq, eq] = field("Account equity", { value: dig(p, "account.equity") ?? "", placeholder: "e.g. 10000" });
-  const [lRisk, risk] = field("Risk per trade (%)", { value: dig(p, "risk.risk_per_trade_pct") ?? "", placeholder: "1" });
-  const [lEntry, entry] = field("Entry price", { placeholder: "90.41" });
-  const [lStop, stop] = field("Stop price", { placeholder: "87.59" });
-  const [lTp, tp] = field("Target price", { placeholder: "103.30" });
-  const [lLev, lev] = field("Leverage setting (x)", { placeholder: "10" });
-  const [lFee, fee] = field("Fee per side (%)", { value: isNum(dig(p, "fees.taker_rate")) ? p.fees.taker_rate * 100 : "", placeholder: "0.06" });
-  const [lMmr, mmr] = field("Maintenance margin (%)", { value: isNum(dig(p, "leverage.maintenance_margin_rate")) ? p.leverage.maintenance_margin_rate * 100 : 0.5 });
-  const mode = h("select", {}, ["isolated", "cross"].map(v => h("option", { value: v, text: titleCase(v) })));
-  if (dig(p, "leverage.margin_mode")) mode.value = p.leverage.margin_mode;
-  const out = h("div", {});
-  const v = el => el.value === "" ? null : Number(el.value);
-  const recalc = () => {
-    out.replaceChildren();
-    if ([entry, stop, eq, risk].some(el => v(el) === null)) { out.append(h("p", { class: "empty", text: "Enter equity, risk %, entry and stop." })); return; }
-    try {
-      const res = RiskMath.size({ entry: v(entry), stop: v(stop), riskAmount: v(eq) * v(risk) / 100, equity: v(eq), leverage: v(lev),
-        marginMode: mode.value, mmrRate: (v(mmr) ?? 0.5) / 100, feeRate: (v(fee) ?? 0) / 100, targets: v(tp) === null ? [] : [v(tp)],
-        maxRiskPct: dig(p, "risk.max_risk_per_trade_pct") ?? null, maxLeverage: dig(p, "leverage.max_leverage") ?? null,
-        maxMarginLossPct: dig(p, "leverage.max_margin_loss_at_stop_pct") ?? null, minRr: dig(p, "risk.min_rr") ?? null });
-      const rr = res.targets[0];
-      out.append(h("div", { class: "tiles", style: "margin-top:12px" },
-        tile("Side", titleCase(res.side), `Stop ${fmtPct(res.stopDistancePct)} from entry`),
-        tile("Quantity", res.qty.toPrecision(6), "Base units"),
-        tile("Notional", fmtNum(res.notional), `${fmtX(res.effectiveLeverage)} effective leverage`),
-        tile("Loss at stop", fmtNum(res.lossAtStop), `${fmtPct(res.riskPct)} of equity, fees included`),
-        tile("Margin posted", res.marginRequired === null ? "—" : fmtNum(res.marginRequired), v(lev) ? `At ${v(lev)}x` : "No leverage set"),
-        tile("Margin loss at stop", res.marginLossPct === null ? "—" : fmtPct(res.marginLossPct, 1),
-             res.maxLeverageForRule ? `Max ${res.maxLeverageForRule.toFixed(1)}x under your rule` : null,
-             res.marginLossPct === null || !isNum(dig(p, "leverage.max_margin_loss_at_stop_pct")) ? null : res.marginLossPct > p.leverage.max_margin_loss_at_stop_pct ? "down" : "up"),
-        tile("Liquidation", res.liquidation === null ? "—" : fmtNum(res.liquidation), res.liqToStop ? `${fmtX(res.liqToStop)} the stop distance` : null),
-        tile("Reward : risk", rr ? rr.rrGross.toFixed(2) : "—", rr ? `${rr.rrNet.toFixed(2)} after fees` : "Add a target",
-             rr && isNum(dig(p, "risk.min_rr")) ? (rr.rrGross >= p.risk.min_rr ? "up" : "down") : null)));
-      for (const [level, msg] of res.flags) out.append(h("div", { class: "flag" }, h("span", { class: "dot", style: `background:${STATUS[level][0]}` }), h("span", {}, h("strong", { text: STATUS[level][1] + ": " }), msg)));
-    } catch (err) { out.append(h("div", { class: "flag" }, h("span", { class: "dot", style: "background:var(--critical)" }), err.message)); }
-  };
-  [eq, risk, entry, stop, tp, lev, fee, mmr, mode].forEach(el => el.addEventListener("input", recalc));
-  recalc();
-  return h("div", {}, h("div", { class: "calc" }, lEq, lRisk, lEntry, lStop, lTp, lLev, h("label", {}, "Margin mode", mode), lFee, lMmr), out);
+    card("Exposure per trade", "Leverage is not risk. With a fixed % risk, the stop distance sets the position size; leverage only changes the margin posted and the liquidation distance. * = margin mode not recorded, isolated assumed.", expTable));
 }
 
 function renderBehaviour() {
@@ -1269,52 +1151,167 @@ applyTheme(store.get("tj-theme"));
 
 backgroundTape();
 const bgSelect = document.getElementById("bg-select");
-let constellation = null;
-function startConstellation() {
-  const canvas = document.getElementById("bg-canvas"), ctx = canvas.getContext("2d");
+/* Canvas scenes share one engine: sizing, pointer, pause when hidden, one static frame under reduced motion.
+   Colours are read from the theme tokens every frame, so a theme switch recolours a running scene. */
+const SCENES = {
+  constellation: {
+    init(S) {
+      const n = Math.max(24, Math.min(80, Math.round(S.W * S.H / 16000)));
+      S.pts = Array.from({ length: n }, () => ({ x: S.rnd() * S.W, y: S.rnd() * S.H, vx: (S.rnd() - 0.5) * 0.25, vy: (S.rnd() - 0.5) * 0.25, up: S.rnd() < 0.5 }));
+    },
+    draw(S, ctx, c, k) {
+      const link = 140;
+      ctx.clearRect(0, 0, S.W, S.H);
+      for (const p of S.pts) { p.x += p.vx * k; p.y += p.vy * k; if (p.x < 0 || p.x > S.W) p.vx *= -1; if (p.y < 0 || p.y > S.H) p.vy *= -1; }
+      ctx.lineWidth = 1;
+      for (let i = 0; i < S.pts.length; i++) {
+        const a = S.pts[i];
+        for (let j = i + 1; j < S.pts.length; j++) {
+          const b = S.pts[j], d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (d < link) { ctx.globalAlpha = (1 - d / link) * 0.35; ctx.strokeStyle = c.brand; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+        }
+        if (S.pointer) {
+          const d = Math.hypot(a.x - S.pointer.x, a.y - S.pointer.y);
+          if (d < 180) { ctx.globalAlpha = (1 - d / 180) * 0.5; ctx.strokeStyle = c.up; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(S.pointer.x, S.pointer.y); ctx.stroke(); }
+        }
+      }
+      for (const p of S.pts) { ctx.globalAlpha = 0.8; ctx.fillStyle = p.up ? c.up : c.brand; ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, Math.PI * 2); ctx.fill(); }
+    },
+  },
+  starfield: {
+    init(S) {
+      const n = Math.max(160, Math.min(600, Math.round(S.W * S.H / 2600)));
+      // spawn anywhere on screen at depth z: projected position is uniform over the viewport
+      S.f = Math.max(S.W, S.H) * 0.5;
+      S.star = (z = 1) => ({ x: (S.rnd() * 2 - 1) * S.W / 2 / S.f * z, y: (S.rnd() * 2 - 1) * S.H / 2 / S.f * z, z, hue: S.rnd() });
+      S.stars = Array.from({ length: n }, () => S.star(0.08 + S.rnd() * 0.92));
+    },
+    draw(S, ctx, c, k) {
+      ctx.clearRect(0, 0, S.W, S.H);
+      const cx = S.W / 2 + (S.pointer ? (S.pointer.x - S.W / 2) * 0.05 : 0), cy = S.H / 2 + (S.pointer ? (S.pointer.y - S.H / 2) * 0.05 : 0);
+      const f = S.f;
+      ctx.lineCap = "round";
+      for (const st of S.stars) {
+        const z0 = st.z; st.z -= 0.0035 * k;
+        if (st.z <= 0.02) { Object.assign(st, S.star()); continue; }
+        const x = cx + st.x / st.z * f, y = cy + st.y / st.z * f, px = cx + st.x / z0 * f, py = cy + st.y / z0 * f;
+        if (x < -20 || x > S.W + 20 || y < -20 || y > S.H + 20) { Object.assign(st, S.star()); continue; }
+        const near = 1 - st.z;
+        ctx.globalAlpha = 0.35 + near * 0.65;
+        ctx.strokeStyle = st.hue < 0.12 ? c.up : st.hue < 0.2 ? c.down : st.hue < 0.45 ? c.brand : c.ink;
+        ctx.lineWidth = 1 + near * 2.4;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(x + 0.01, y + 0.01); ctx.stroke();
+      }
+    },
+  },
+  matrix: {
+    warm: 40,
+    init(S) {
+      S.size = 15; S.cols = Math.ceil(S.W / S.size); S.acc = 3;
+      S.drops = Array.from({ length: S.cols }, () => ({ y: S.rnd() * S.H / S.size, v: 0.35 + S.rnd() * 0.65, down: S.rnd() < 0.22 }));
+    },
+    draw(S, ctx, c, k) {
+      S.acc += k; if (S.acc < 3) return; const steps = S.acc / 3; S.acc = 0;
+      ctx.globalCompositeOperation = "destination-out"; ctx.globalAlpha = 1; ctx.fillStyle = "rgba(0,0,0,0.09)"; ctx.fillRect(0, 0, S.W, S.H);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.font = `600 ${S.size - 2}px ui-monospace, SFMono-Regular, Menlo, monospace`; ctx.textAlign = "center";
+      const glyphs = "0123456789.+−%R▲▼";
+      S.drops.forEach((d, i) => {
+        const y = d.y * S.size;
+        ctx.globalAlpha = 0.75; ctx.fillStyle = d.down ? c.down : c.up;
+        ctx.fillText(glyphs[Math.floor(S.rnd() * glyphs.length)], i * S.size + S.size / 2, y);
+        ctx.globalAlpha = 0.9; ctx.fillStyle = c.brand;
+        ctx.fillText(glyphs[Math.floor(S.rnd() * glyphs.length)], i * S.size + S.size / 2, y + S.size);
+        d.y += d.v * steps;
+        if (y > S.H + S.size * 4 && S.rnd() > 0.96) { d.y = -S.rnd() * 20; d.v = 0.35 + S.rnd() * 0.65; d.down = S.rnd() < 0.22; }
+      });
+    },
+  },
+  waves: {
+    init(S) {
+      S.t = 0;
+      S.layers = [["brand", 0.34, 0.0021, 0.013, 0.55], ["up", 0.28, 0.0032, -0.017, 0.62], ["pos", 0.22, 0.0017, 0.009, 0.7],
+                  ["down", 0.2, 0.0041, 0.021, 0.78], ["brand", 0.16, 0.0055, -0.024, 0.86]]
+        .map(([key, amp, freq, speed, base], i) => ({ key, amp, freq, speed, base, ph: S.rnd() * 6.28, j: 1.7 + i * 0.37 }));
+    },
+    draw(S, ctx, c, k) {
+      S.t += k;
+      ctx.clearRect(0, 0, S.W, S.H);
+      for (const L of S.layers) {
+        const A = S.H * 0.12 * L.amp / 0.34, y0 = S.H * L.base, pts = [];
+        for (let x = 0; x <= S.W + 8; x += 8) {
+          const p = x * L.freq + L.ph + S.t * L.speed;
+          pts.push([x, y0 + Math.sin(p) * A + Math.sin(p * L.j + S.t * 0.006) * A * 0.35]);
+        }
+        ctx.globalAlpha = 0.07; ctx.fillStyle = c[L.key];
+        ctx.beginPath(); ctx.moveTo(0, S.H); pts.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(S.W, S.H); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha = 0.55; ctx.strokeStyle = c[L.key]; ctx.lineWidth = 1.5;
+        ctx.beginPath(); pts.forEach(([x, y], n) => n ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+      }
+    },
+  },
+  depth: {
+    init(S) {
+      S.t = 0; S.n = 64;
+      S.base = { bid: Array.from({ length: S.n }, () => 0.4 + S.rnd()), ask: Array.from({ length: S.n }, () => 0.4 + S.rnd()) };
+      S.ph = Array.from({ length: S.n * 2 }, () => S.rnd() * 6.28);
+    },
+    draw(S, ctx, c, k) {
+      S.t += k * 0.02;
+      ctx.clearRect(0, 0, S.W, S.H);
+      const mid = S.W / 2 + Math.sin(S.t * 0.35) * S.W * 0.03, top = S.H * 0.45, bottom = S.H, step = (S.W / 2) / S.n;
+      const side = (key, dir, col, phOff) => {
+        let cum = 0; const pts = [[mid, bottom]];
+        for (let i = 0; i < S.n; i++) {
+          cum += S.base[key][i] * (0.75 + 0.25 * Math.sin(S.t + S.ph[i + phOff]));
+          pts.push([mid + dir * i * step, null, cum], [mid + dir * (i + 1) * step, null, cum]);
+        }
+        const scale = (bottom - top) / (cum * 1.05);
+        const path = () => { ctx.beginPath(); ctx.moveTo(mid, bottom); pts.slice(1).forEach(([x, , v]) => ctx.lineTo(x, bottom - v * scale)); };
+        ctx.globalAlpha = 0.14; ctx.fillStyle = col; path(); ctx.lineTo(mid + dir * S.n * step, bottom); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha = 0.7; ctx.strokeStyle = col; ctx.lineWidth = 1.5; path(); ctx.stroke();
+      };
+      side("bid", -1, c.up, 0); side("ask", 1, c.down, S.n);
+      ctx.globalAlpha = 0.6; ctx.strokeStyle = c.brand; ctx.lineWidth = 1; ctx.setLineDash([4, 6]);
+      ctx.beginPath(); ctx.moveTo(mid, top - 20); ctx.lineTo(mid, bottom); ctx.stroke(); ctx.setLineDash([]);
+    },
+  },
+};
+let scene = null;
+function startScene(name) {
+  const def = SCENES[name], canvas = document.getElementById("bg-canvas"), ctx = canvas.getContext("2d");
   const css = getComputedStyle(document.documentElement);
-  const col = name => css.getPropertyValue(name).trim() || "#a594f9";
-  let W = 0, H = 0, dpr = 1, pts = [], raf = 0, pointer = null, running = true;
-  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const tok = (n, fb) => css.getPropertyValue(n).trim() || fb;
+  const colours = () => ({ brand: tok("--brand", "#a594f9"), up: tok("--up", "#26a69a"), down: tok("--down", "#ef5350"), pos: tok("--pos", "#3987e5"), ink: tok("--ink-2", "#c3c2b7") });
+  let seed = 11; const S = { rnd: () => (seed = (seed * 16807) % 2147483647) / 2147483647, pointer: null, W: 0, H: 0 };
+  let raf = 0, running = true, last = 0;
   const size = () => {
-    dpr = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight;
-    canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const n = Math.max(24, Math.min(80, Math.round(W * H / 16000)));
-    pts = Array.from({ length: n }, () => ({ x: rnd() * W, y: rnd() * H, vx: (rnd() - 0.5) * 0.25, vy: (rnd() - 0.5) * 0.25, up: rnd() < 0.5 }));
+    const dpr = Math.min(2, window.devicePixelRatio || 1); S.W = innerWidth; S.H = innerHeight;
+    canvas.width = S.W * dpr; canvas.height = S.H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    def.init(S);
+    // pre-roll trail scenes so they open full; under reduced motion this is the only frame drawn
+    for (let i = 0, n = def.warm || (reduceMotion ? 1 : 0); i < n; i++) paint(3);
   };
-  const frame = () => {
-    const brand = col("--brand"), up = col("--up"), link = 140;
-    ctx.clearRect(0, 0, W, H);
-    for (const p of pts) {
-      if (!reduceMotion) { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1; }
-    }
-    ctx.lineWidth = 1;
-    for (let i = 0; i < pts.length; i++) {
-      for (let j = i + 1; j < pts.length; j++) {
-        const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d = Math.hypot(dx, dy);
-        if (d < link) { ctx.globalAlpha = (1 - d / link) * 0.35; ctx.strokeStyle = brand; ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke(); }
-      }
-      if (pointer) {
-        const d = Math.hypot(pts[i].x - pointer.x, pts[i].y - pointer.y);
-        if (d < 180) { ctx.globalAlpha = (1 - d / 180) * 0.5; ctx.strokeStyle = up; ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pointer.x, pointer.y); ctx.stroke(); }
-      }
-    }
-    for (const p of pts) { ctx.globalAlpha = 0.8; ctx.fillStyle = p.up ? up : brand; ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, Math.PI * 2); ctx.fill(); }
-    ctx.globalAlpha = 1;
+  const paint = k => { ctx.save(); def.draw(S, ctx, colours(), k); ctx.restore(); };
+  const frame = now => {
+    const k = last ? Math.min(3, (now - last) / 16.7) : 1; last = now;
+    paint(k);
     if (running && !reduceMotion) raf = requestAnimationFrame(frame);
   };
-  const onMove = e => { pointer = { x: e.clientX, y: e.clientY }; };
-  const onVis = () => { if (document.hidden) { cancelAnimationFrame(raf); } else if (running && !reduceMotion) { raf = requestAnimationFrame(frame); } };
-  size(); addEventListener("resize", size); addEventListener("pointermove", onMove); document.addEventListener("visibilitychange", onVis);
-  frame();
-  return { stop() { running = false; cancelAnimationFrame(raf); removeEventListener("resize", size); removeEventListener("pointermove", onMove);
-                    document.removeEventListener("visibilitychange", onVis); ctx.clearRect(0, 0, W, H); } };
+  const onMove = e => { S.pointer = { x: e.clientX, y: e.clientY }; };
+  const onVis = () => { if (document.hidden) cancelAnimationFrame(raf); else if (running && !reduceMotion) { last = 0; raf = requestAnimationFrame(frame); } };
+  addEventListener("resize", size); addEventListener("pointermove", onMove); document.addEventListener("visibilitychange", onVis);
+  size();
+  if (!reduceMotion) frame(performance.now());
+  return { name, stop() { running = false; cancelAnimationFrame(raf); removeEventListener("resize", size); removeEventListener("pointermove", onMove);
+                          document.removeEventListener("visibilitychange", onVis); ctx.clearRect(0, 0, S.W, S.H); } };
 }
 function applyBackground(mode) {
   if (![...bgSelect.options].some(o => o.value === mode)) mode = "aurora";
-  document.documentElement.dataset.bg = mode; bgSelect.value = mode;
-  if (mode === "constellation" && !constellation) constellation = startConstellation();
-  if (mode !== "constellation" && constellation) { constellation.stop(); constellation = null; }
+  const root = document.documentElement;
+  root.dataset.bg = mode; root.dataset.bgKind = SCENES[mode] ? "canvas" : "css"; bgSelect.value = mode;
+  if (scene && scene.name !== mode) { scene.stop(); scene = null; }
+  if (SCENES[mode] && !scene) scene = startScene(mode);
 }
 bgSelect.addEventListener("change", () => { store.set("tj-bg", bgSelect.value); applyBackground(bgSelect.value); });
 applyBackground(new URLSearchParams(location.search).get("bg") || store.get("tj-bg") || "aurora");

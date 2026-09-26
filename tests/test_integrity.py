@@ -48,8 +48,19 @@ class TimeframeRulesTest(KBTestCase):
         (dest / "v1.0.yaml").write_text(yaml.safe_dump(v))
         self.write_trade("T-0001", result={"r": 1.0}, strategy={"id": "sd", "version": "1.0"}, timeframes={"execution": "1m"})
         self.write_trade("T-0002", result={"r": 1.0}, strategy={"id": "sd", "version": "1.0"})
-        self.assertTrue(any("differs from sd v1.0 (4h)" in i.msg for i in self.issues("WARN")))
-        self.assertTrue(any(i.where == "T-0002.yaml" and "states 4h" in i.msg for i in self.issues("INFO")))
+        self.assertTrue(any("execution timeframe 1m is not one of sd v1.0's (4h)" in i.msg for i in self.issues("WARN")))
+        self.assertTrue(any(i.where == "T-0002.yaml" and "sd v1.0 uses 4h" in i.msg for i in self.issues("INFO")))
+
+    def test_strategy_execution_timeframe_list(self):
+        dest = self.tmp / "playbook" / "strategies" / "sd"
+        shutil.copytree(REPO / "templates" / "strategy", dest)
+        (dest / "strategy.yaml").write_text((dest / "strategy.yaml").read_text().replace("__SLUG__", "sd"))
+        v = yaml.safe_load((dest / "v1.0.yaml").read_text()); v["timeframes"] = {"execution": ["4h", "30m", "5m"]}
+        (dest / "v1.0.yaml").write_text(yaml.safe_dump(v))
+        for tid, tf in (("T-0001", "4h"), ("T-0002", "5m"), ("T-0003", "1m")):
+            self.write_trade(tid, result={"r": 1.0}, strategy={"id": "sd", "version": "1.0"}, timeframes={"execution": tf})
+        tf_warns = [i.where for i in self.issues("WARN") if "is not one of" in i.msg]
+        self.assertEqual(tf_warns, ["T-0003.yaml"])
 
 
 class HoldingAndGroupingTest(KBTestCase):

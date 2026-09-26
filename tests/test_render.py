@@ -17,7 +17,8 @@ from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
 TABS = ["overview", "journal", "performance", "strategy", "risk", "behaviour", "readiness", "gaps"]
-BACKGROUNDS = ["aurora", "constellation", "synthwave", "tape", "off"]
+BACKGROUNDS = ["aurora", "nebula", "constellation", "starfield", "synthwave", "matrix", "waves", "depth", "tape", "off"]
+CANVAS = {"constellation", "starfield", "matrix", "waves", "depth"}
 
 
 def chromium() -> str | None:
@@ -35,7 +36,15 @@ addEventListener("load", () => {
   const tabs = %TABS%, bgs = %BGS%, out = { tabs: {} };
   let i = 0;
   const finish = () => {
-    for (const mode of bgs) { applyBackground(mode); out["bg_" + mode] = document.documentElement.dataset.bg; }
+    const cv = document.getElementById("bg-canvas");
+    const ink = () => { const d = cv.getContext("2d").getImageData(0, 0, cv.width, cv.height).data; let n = 0;
+                        for (let p = 3; p < d.length; p += 64) if (d[p]) n++; return n; };
+    for (const mode of bgs) {
+      applyBackground(mode);
+      const de = document.documentElement;
+      out["bg_" + mode] = de.dataset.bg; out["kind_" + mode] = de.dataset.bgKind; out["ink_" + mode] = ink();
+      out["shown_" + mode] = [...document.querySelectorAll("#bg > *")].filter(el => getComputedStyle(el).display !== "none").length;
+    }
     const dlg = document.getElementById("trade-dialog");
     for (const t of KB.trades) { openTrade(t.id); out["dialog_" + t.id] = dlg.open && dlg.querySelectorAll(".card").length; dlg.close(); }
     const pre = document.createElement("pre"); pre.id = "probe";
@@ -99,7 +108,7 @@ class RenderTest(unittest.TestCase):
 
     def test_charts_present(self):
         tabs = self.results[1280]["out"]["tabs"]
-        self.assertGreaterEqual(tabs["overview"]["svg"], 4, "overview: cumulative R, distribution, R per trade, drawdown")
+        self.assertGreaterEqual(tabs["overview"]["svg"], 3, "overview: cumulative R, distribution, R per trade")
         self.assertGreaterEqual(tabs["performance"]["svg"], 3, "performance: group bars and two scatters")
         self.assertGreaterEqual(tabs["journal"]["rows"], 1)
 
@@ -107,6 +116,12 @@ class RenderTest(unittest.TestCase):
         out = self.results[1280]["out"]
         for mode in BACKGROUNDS:
             self.assertEqual(out["bg_" + mode], mode)
+            self.assertEqual(out["kind_" + mode], "canvas" if mode in CANVAS else "css", mode)
+            if mode in CANVAS:
+                self.assertGreater(out["ink_" + mode], 0, f"{mode}: the canvas scene drew nothing")
+            else:
+                self.assertEqual(out["ink_" + mode], 0, f"{mode}: a stopped scene left pixels on the canvas")
+            self.assertGreaterEqual(out["shown_" + mode], 1, f"{mode}: no background layer visible")
         dialogs = {k: v for k, v in out.items() if k.startswith("dialog_")}
         self.assertTrue(dialogs)
         for key, cards in dialogs.items():

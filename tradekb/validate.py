@@ -147,8 +147,6 @@ def _check_timeframes(t: dict, where: str, add: _Sink, opened, closed) -> None:
         add(ERROR, where, "timeframes.top_down must be true, false or null")
     elif top_down is True and len(chain) < 2:
         add(WARN, where, "top_down is true but timeframes.chain lists fewer than two timeframes")
-    elif top_down is False and len(chain) > 1:
-        add(WARN, where, "top_down is false but timeframes.chain lists several timeframes")
     execution = dig(t, "timeframes.execution")
     if execution is not None and str(execution).endswith("M"):
         add(WARN, where, f"timeframes.execution '{execution}' means {str(execution)[:-1]} month(s). For minutes write "
@@ -196,8 +194,15 @@ def _check_risk(t: dict, kb: KB, where: str, add: _Sink) -> None:
             add(WARN, where, f"risk_pct {pct}% disagrees with risk_amount/equity = {implied:.2f}%")
     max_pct = num(dig(kb.profile, "risk.max_risk_per_trade_pct"))
     actual_pct = pct if pct is not None else (stated / equity * 100 if stated and equity else None)
+    mistakes = set(dig(t, "review.mistakes", []) or [])
+    def breach(tag: str, msg: str) -> None:
+        """A breach already tagged as a mistake is acknowledged: keep it visible, stop it nagging."""
+        if tag in mistakes:
+            add(INFO, where, f"{msg} (acknowledged: tagged {tag})")
+        else:
+            add(WARN, where, msg)
     if max_pct is not None and actual_pct is not None and actual_pct > max_pct + 1e-9:
-        add(WARN, where, f"RISK: {actual_pct:.2f}% of equity at risk exceeds your max {max_pct}% per trade")
+        breach("oversized_position", f"RISK: {actual_pct:.2f}% of equity at risk exceeds your max {max_pct}% per trade")
 
     leverage, direction = num(dig(t, "risk.leverage")), t.get("direction")
     entry, stop, size = model.entry_price(t), num(dig(t, "plan.stop")), model.position_size(t)
@@ -217,9 +222,9 @@ def _check_risk(t: dict, kb: KB, where: str, add: _Sink) -> None:
     if leverage and entry and stop and entry != stop and max_margin_loss is not None:
         margin_loss = abs(entry - stop) / entry * 100 * leverage
         if margin_loss > max_margin_loss + 1e-9:
-            add(WARN, where, f"RISK: stop distance x leverage = {margin_loss:.1f}% of the posted margin, above your "
-                             f"{max_margin_loss:g}% limit (max {max_margin_loss / (abs(entry - stop) / entry * 100):.1f}x "
-                             f"for this stop)")
+            breach("excessive_leverage", f"RISK: stop distance x leverage = {margin_loss:.1f}% of the posted margin, above your "
+                                         f"{max_margin_loss:g}% limit (max {max_margin_loss / (abs(entry - stop) / entry * 100):.1f}x "
+                                         f"for this stop)")
     min_rr = num(dig(kb.profile, "risk.min_rr"))
     rrs = [x for x in model.planned_rr(t) if x is not None]
     if min_rr is not None and rrs and max(rrs) < min_rr - 1e-9 and t.get("status") in ("planned", "open", "closed"):
@@ -331,11 +336,12 @@ def _check_trade(trade: Trade, kb: KB, add: _Sink) -> None:
             add(WARN, where, f"strategy '{sid}' set without strategy.version: A/B by version impossible")
         else:
             stated_tf = ((strat.versions[str(version)] or {}).get("timeframes") or {}).get("execution")
+            allowed_tf = [str(x) for x in stated_tf] if isinstance(stated_tf, list) else ([str(stated_tf)] if stated_tf else [])
             trade_tf = dig(t, "timeframes.execution")
-            if stated_tf and trade_tf and str(stated_tf) != str(trade_tf):
-                add(WARN, where, f"execution timeframe {trade_tf} differs from {sid} v{version} ({stated_tf})")
-            elif stated_tf and not trade_tf:
-                add(INFO, where, f"timeframes.execution is empty; {sid} v{version} states {stated_tf}")
+            if allowed_tf and trade_tf and str(trade_tf) not in allowed_tf:
+                add(WARN, where, f"execution timeframe {trade_tf} is not one of {sid} v{version}'s ({', '.join(allowed_tf)})")
+            elif allowed_tf and not trade_tf:
+                add(INFO, where, f"timeframes.execution is empty; {sid} v{version} uses {', '.join(allowed_tf)}")
             models = (strat.versions[str(version)] or {}).get("entry_models") or {}
             entry_model = dig(t, "plan.entry_model")
             if entry_model is not None and models and str(entry_model) not in models:
