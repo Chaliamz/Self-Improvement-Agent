@@ -34,3 +34,20 @@ changes:
 #    status: testing
 #    experiment: EXP-001
 #    resulting_version: null
+  - id: CHG-002
+    kind: clarification
+    date: 2026-09-26
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-26: "1) stop mostly gets placed to invalidate a setup ... I place my stop loss
+      below demand/supply or swing low/high or below/above a liquidity level. 2) on AAVE chart, stop was
+      the liquidity level which reclaimed support level from left ... in case price would reverse back
+      there and prices moves lower or enters a consolidation phase. 3) its the full wick to wick range
+      which formed a massive volume and point of interest. 4) ... leverage planning not to exceed -50%
+      ('-31,4% was the example of AAVE stop') which means I use an isolated margin. 5) I prefer hunting
+      1:3RR minimum, however I could enter a trade with 1:2,5RR as well. 6) yes [rules mirror for shorts]"
+    fields: [direction, market_structure, zones, entry_models, stop_model, target_model, filters,
+             leverage_model, do_not_trade_when, open_questions]
+    note: "Rules in force when T-0001 was taken. T-0001 and T-0002 retagged to 1.2."
+    resulting_version: "1.2"

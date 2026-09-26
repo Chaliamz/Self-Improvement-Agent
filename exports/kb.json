@@ -1,5 +1,5 @@
 {
-  "fingerprint": "f2746cc77df638d8",
+  "fingerprint": "825768fe01a57a4d",
   "schema_version": 1,
   "tool_version": "1.0.0",
   "phase": {
@@ -18,11 +18,14 @@
       "max_risk_per_trade_pct": 1.0,
       "max_daily_loss_r": null,
       "max_open_risk_pct": null,
-      "max_consecutive_losses_before_pause": null
+      "max_consecutive_losses_before_pause": null,
+      "min_rr": 2.5,
+      "preferred_rr": 3.0
     },
     "leverage": {
       "max_leverage": null,
-      "margin_mode": null,
+      "margin_mode": "isolated",
+      "max_margin_loss_at_stop_pct": 50,
       "maintenance_margin_rate": null
     },
     "fees": {
@@ -40,7 +43,10 @@
     "terminology": {
       "CHoCH": "Change of character. Bullish CHoCH requires a candle CLOSE above the last lower high.",
       "inducement": "Equal lows = liquidity resting below.",
-      "extreme demand level": "The red box: primary long entry zone. Construction rule pending (strategy v1.1 open question 3).",
+      "extreme demand level": "The red box: the full wick-to-wick range of the candle at the lower low that formed massive volume and a point of interest.",
+      "extreme supply level": "Mirror of extreme demand, at the higher high.",
+      "POI": "Point of interest.",
+      "invalidation %": "Distance from entry to stop, in percent.",
       "lower low": "A candle must CLOSE below the previous low (its wick). Vice versa for a higher high.",
       "reclaim": "Price back above a swept level, holding it as support; secondary entry.",
       "confluences": "Liquidity sweep; strong bullish momentum + volume; inducement; potential resistance level.",
@@ -52,7 +58,11 @@
       "terminology": "Trader's T-0001 message, 2026-09-26",
       "risk.risk_per_trade_pct": "Trader: 'Risk management always goes to 1%', 2026-09-26",
       "risk.max_risk_per_trade_pct": "Inferred from 'always 1%': fixed risk means 1% is also the ceiling. Confirm.",
-      "timeframes.execution": "Trader: '5) 4h', 2026-09-26"
+      "timeframes.execution": "Trader: '5) 4h', 2026-09-26",
+      "leverage.margin_mode": "Trader: 'which means I use an isolated margin', 2026-09-26",
+      "leverage.max_margin_loss_at_stop_pct": "Trader: 'leverage planning not to exceed -50%', 2026-09-26",
+      "risk.min_rr": "Trader: 'I could enter a trade with 1:2,5RR as well', 2026-09-26",
+      "risk.preferred_rr": "Trader: 'I prefer hunting 1:3RR minimum', 2026-09-26"
     }
   },
   "unresolved": [
@@ -63,7 +73,6 @@
     "risk.max_open_risk_pct",
     "risk.max_consecutive_losses_before_pause",
     "leverage.max_leverage",
-    "leverage.margin_mode",
     "leverage.maintenance_margin_rate",
     "fees.maker_rate",
     "fees.taker_rate",
@@ -147,13 +156,18 @@
       },
       "extreme_demand": {
         "label": "Extreme demand level",
-        "definition": "Trader's primary long entry zone. In T-0001, the red box at the lower low from which the CHoCH leg started. Exact definition not yet stated.",
+        "definition": "The red box: the full wick-to-wick range of the candle at the lower low that formed massive volume and a point of interest (trader, 2026-09-26).",
         "introduced_in": "T-0001"
       },
       "reclaim": {
         "label": "Reclaim (support reclaim)",
         "definition": "Price closes back above a level it swept (in T-0001 the former inducement / equal lows) and holds it as support. Used as a secondary entry.",
         "introduced_in": "T-0001"
+      },
+      "extreme_supply": {
+        "label": "Extreme supply level",
+        "definition": "Mirror of extreme demand: the full wick-to-wick range of the high-volume candle at the higher high.",
+        "introduced_in": "trader statement 2026-09-26 (rules mirror for shorts)"
       }
     },
     "regimes": {
@@ -360,9 +374,9 @@
         "id": "supply-demand-structure",
         "name": "Supply/Demand + Price Action / Market Structure (liquidity confluences)",
         "status": "unvalidated",
-        "current_version": "1.1",
+        "current_version": "1.2",
         "created": "2026-09-26",
-        "summary": "Trader's main strategy, in their words: \"supply/demand level and price action/market structure, adding few confluences with liquidity levels\". The long-side sequence was demonstrated in T-0001. The mirror case (supply zones, shorts) is presumed but not yet stated or demonstrated."
+        "summary": "Trader's main strategy, in their words: \"supply/demand level and price action/market structure, adding few confluences with liquidity levels\". The long-side sequence was demonstrated in T-0001. The trader confirmed that every rule mirrors for shorts from supply (2026-09-26)."
       },
       "versions": {
         "1.0": {
@@ -463,6 +477,75 @@
             "5. Is there a minimum R:R below which you skip a setup?",
             "6. Do all rules mirror for shorts (supply zones, bearish CHoCH by a close below the last higher low)?"
           ]
+        },
+        "1.2": {
+          "version": "1.2",
+          "date": "2026-09-26",
+          "source": "Trader's answers, 2026-09-26, to the v1.1 open questions. Clarifies v1.1; no rule changed (CHG-002).",
+          "supersedes": "1.1",
+          "direction": "Both. Longs from demand, shorts from supply. Every rule mirrors (trader: '6) yes').",
+          "timeframes": {
+            "structure": "4h",
+            "execution": "4h"
+          },
+          "market_structure": [
+            "Lower low: a candle must CLOSE below the previous low (its wick). A wick below without a close is not a lower low.",
+            "Higher high: a candle must CLOSE above the previous high (its wick).",
+            "Bullish CHoCH: a candle CLOSE above the last lower high.",
+            "Bearish CHoCH: a candle CLOSE below the last higher low (mirror, confirmed)."
+          ],
+          "market_conditions": [],
+          "required_conditions": [
+            "CHoCH on the 4H in the trade's direction, close-based (see market_structure)."
+          ],
+          "confirmation": [
+            "Reversal on the 4H (bullish for longs, bearish for shorts)",
+            "Extreme demand level (longs) / extreme supply level (shorts)"
+          ],
+          "confluences": [
+            "Liquidity sweep",
+            "Strong momentum + volume in the trade's direction",
+            "Inducement (equal lows below for longs, equal highs above for shorts)",
+            "Potential opposing level (used for the target)"
+          ],
+          "zones": {
+            "extreme_demand": "The full wick-to-wick range of the candle at the lower low that formed massive volume and a point of interest (trader, 2026-09-26). T-0001: 85.61 to 88.05.",
+            "extreme_supply": "Mirror: the full wick-to-wick range of the high-volume candle at the higher high."
+          },
+          "entry_models": {
+            "extreme_demand": "Primary (long): at the extreme demand level.",
+            "extreme_supply": "Primary (short): at the extreme supply level (mirror).",
+            "reclaim": "Secondary: longs when price reclaims a swept level as support; shorts when price loses a swept level and retests it as resistance. Used when the primary entry was missed (T-0001)."
+          },
+          "stop_model": "Placed where the setup is invalidated. Longs: below the demand zone, the swing low, or a liquidity level. Shorts: above the supply zone, the swing high, or a liquidity level (trader, 2026-09-26). T-0001: at a liquidity level from the left that had been reclaimed as support. A return there means price reverses lower or goes into consolidation, and the setup is invalid.",
+          "target_model": "Next opposing level. High R:R is hunted: 1:3 minimum preferred, 1:2.5 accepted (trader, 2026-09-26).",
+          "filters": {
+            "min_rr": 2.5,
+            "preferred_rr": 3.0
+          },
+          "risk_model": "1% of equity per trade, always.",
+          "leverage_model": "Isolated margin. Leverage is chosen so that the loss on the posted margin at the stop (stop distance % x leverage) does not exceed 50%: leverage <= 50 / stop %. T-0001: 3.14% x 10x = 31.4%. Leverage never changes the 1% risk.",
+          "management": {
+            "default": "Hold until TP hits.",
+            "breakeven": "Barely used.",
+            "partials": "Barely used.",
+            "trailing": null,
+            "reentry": null,
+            "max_hold": null,
+            "early_exit": null,
+            "invalidation": "Stop at the invalidation level (see stop_model)."
+          },
+          "do_not_trade_when": [
+            "Best target gives less than 2.5R."
+          ],
+          "common_mistakes": [],
+          "open_questions": [
+            "1. Which lows does the close-below rule apply to? After the AAVE CHoCH, candles closed below the Apr 15 swing low (about 97.08) and later below the equal lows (about 87.12 close on Apr 20). Was structure still bullish because only the lower low at the red box (about 85.73) mattered? Or did those closes turn it bearish?",
+            "2. When the zone edge, the swing low and a liquidity level are all possible stops, which one is chosen: the nearest that invalidates the setup, the one under the most liquidity, or another rule?",
+            "3. 'Massive volume': how much more than usual? For example, at least 2x the average of the previous 20 candles.",
+            "4. Target: when several opposing levels exist, is it the first one that gives at least 2.5R, or the strongest level?",
+            "5. Equal lows/highs: how close must they be to count as equal? In T-0001 they sat within about 0.4 (about 0.45% of price)."
+          ]
         }
       },
       "changes": [
@@ -487,6 +570,28 @@
           ],
           "note": "These rules were in force when T-0001 was taken; v1.0 recorded them incompletely. T-0001 and T-0002 are retagged to 1.1 so per-version statistics are not split by a documentation change.",
           "resulting_version": "1.1"
+        },
+        {
+          "id": "CHG-002",
+          "kind": "clarification",
+          "date": "2026-09-26",
+          "status": "adopted",
+          "rule_changed": false,
+          "statement": "Trader, 2026-09-26: \"1) stop mostly gets placed to invalidate a setup ... I place my stop loss below demand/supply or swing low/high or below/above a liquidity level. 2) on AAVE chart, stop was the liquidity level which reclaimed support level from left ... in case price would reverse back there and prices moves lower or enters a consolidation phase. 3) its the full wick to wick range which formed a massive volume and point of interest. 4) ... leverage planning not to exceed -50% ('-31,4% was the example of AAVE stop') which means I use an isolated margin. 5) I prefer hunting 1:3RR minimum, however I could enter a trade with 1:2,5RR as well. 6) yes [rules mirror for shorts]\"",
+          "fields": [
+            "direction",
+            "market_structure",
+            "zones",
+            "entry_models",
+            "stop_model",
+            "target_model",
+            "filters",
+            "leverage_model",
+            "do_not_trade_when",
+            "open_questions"
+          ],
+          "note": "Rules in force when T-0001 was taken. T-0001 and T-0002 retagged to 1.2.",
+          "resulting_version": "1.2"
         }
       ],
       "measured_trades": [
@@ -524,7 +629,7 @@
       ],
       "strategy": {
         "id": "supply-demand-structure",
-        "version": "1.1",
+        "version": "1.2",
         "experiment": null,
         "variant": null
       },
@@ -644,7 +749,7 @@
       ],
       "strategy": {
         "id": "supply-demand-structure",
-        "version": "1.1",
+        "version": "1.2",
         "experiment": null,
         "variant": null
       },
@@ -672,7 +777,7 @@
         "risk_amount": null,
         "risk_pct": 1.0,
         "leverage": 10,
-        "margin_mode": null,
+        "margin_mode": "isolated",
         "size": null,
         "notional": null
       },
@@ -694,7 +799,7 @@
       "journal": {
         "before": "Reconstructed from the trader's account on 2026-09-26 (after the outcome, so not hindsight-proof).\n4H AAVE. Bearish leg made a lower low; strong bullish reversal followed but did not CLOSE above\nthe last lower high (green \"CH\" line), so no bullish CHoCH yet. Equal lows formed at 89.36 =\ninducement (liquidity resting below). Price then broke the last lower high: structure bearish ->\nbullish. Noted the wick + higher low at the yellow line as a potential level.\nPlan: long at the extreme demand level (red box). That entry was missed (not at home; see T-0002).\nPrice swept the equal lows into the extreme demand zone, then reclaimed the 89.36 line (former\ninducement) as support. Took the long on that reclaim with TP at the yellow line.\n",
         "during": "Held 2026-04-20 to 2026-05-10 through choppy conditions (trader's words).\n",
-        "after": "Trader, 2026-09-26: \"Entry to SL range (invalidation) was 3,14% so I used 10x leverage\", 1% risk.\nThe chart levels (90.41 / 87.59) give 3.12%; the 0.02-point gap is unexplained (actual fill?).\nTP hit. Trader stated R:R 4.57. Trader stated the method: supply/demand levels + price action /\nmarket structure, with liquidity levels as confluences; asked for these to be memorised.\n"
+        "after": "Trader, 2026-09-26: \"Entry to SL range (invalidation) was 3,14% so I used 10x leverage\", 1% risk.\nThe chart levels (90.41 / 87.59) give 3.12%; the 0.02-point gap is unexplained (actual fill?).\nStop placement (trader): \"the liquidity level which reclaimed support level from left ... in case\nprice would reverse back there and prices moves lower or enters a consolidation phase.\"\nLeverage check (trader): 3.14% x 10x = 31.4% loss on margin at the stop, inside the 50% rule.\nTP hit. Trader stated R:R 4.57. Trader stated the method: supply/demand levels + price action /\nmarket structure, with liquidity levels as confluences; asked for these to be memorised.\n"
       },
       "evidence": {
         "observed": [
@@ -745,8 +850,8 @@
           "Not available when price reached the extreme demand zone (primary entry missed, T-0002)",
           "20-day chop between about 90 and 101 before the target"
         ],
-        "lesson": "When the primary entry at extreme demand was missed, a reclaim of the swept inducement level gave a defined-risk re-entry that captured the move. This is one example: track reclaim entries and extreme-demand entries separately. The stop sat inside the zone, above the sweep low. The trader defines it as the invalidation level (\"possible deviation/fakeout\"); the mechanical placement is still open (strategy v1.1, open question 1).",
-        "actionable_change": "Process only: make the stop placement mechanical (v1.1 open question 1) before any automation.",
+        "lesson": "When the primary entry at extreme demand was missed, a reclaim of the swept inducement level gave a defined-risk re-entry that captured the move. This is one example: track reclaim entries and extreme-demand entries separately. The stop sat at a liquidity level from the left that had been reclaimed as support. A return there would have invalidated the reclaim (reversal lower or consolidation), so the stop protects the reclaim thesis, not the whole demand zone.",
+        "actionable_change": "Process only: define which stop candidate the bot picks when several exist (strategy v1.2, open question 2).",
         "strategy_change": "no",
         "evidence_strength": "low"
       },
@@ -765,10 +870,13 @@
         "exposure": {
           "side": "long",
           "stop_pct": 3.119123990708985,
+          "max_leverage_for_rule": 16.03014184397167,
           "notional_pct": 32.06028368794334,
           "effective_leverage": 0.3206028368794334,
+          "margin_loss_pct": 31.19123990708985,
+          "margin_loss_breach": false,
           "margin_pct": 3.206028368794334,
-          "liq_mode_assumed": true,
+          "liq_mode_assumed": false,
           "liq_isolated": 81.77788944723618,
           "liq_distance_pct": 9.547738693467338,
           "liq_to_stop": 3.061032110909163,
@@ -997,7 +1105,7 @@
       ],
       "version": [
         {
-          "label": "supply-demand-structure@v1.1",
+          "label": "supply-demand-structure@v1.2",
           "ids": [
             "T-0001"
           ],
@@ -1341,23 +1449,275 @@
       }
     ]
   },
+  "readiness": {
+    "stages": [
+      {
+        "id": "specify",
+        "name": "1. Specify the rules",
+        "goal": "Every rule becomes mechanical: a program reading it takes the same trades you do. Losses and shorts are required because a rulebook learned only from winning longs has never seen its failure modes.",
+        "status": "active",
+        "criteria": [
+          {
+            "label": "Measured trades journaled",
+            "target": null,
+            "evidence": null,
+            "kind": "computed",
+            "metric": "measured_trades",
+            "value": 1,
+            "min": 20,
+            "max": null,
+            "met": false,
+            "progress": 0.05
+          },
+          {
+            "label": "Losses journaled and classified (A-E)",
+            "target": null,
+            "evidence": null,
+            "kind": "computed",
+            "metric": "classified_losses",
+            "value": 0,
+            "min": 5,
+            "max": null,
+            "met": false,
+            "progress": 0.0
+          },
+          {
+            "label": "Long trades",
+            "target": null,
+            "evidence": null,
+            "kind": "computed",
+            "metric": "longs",
+            "value": 1,
+            "min": 3,
+            "max": null,
+            "met": false,
+            "progress": 0.3333333333333333
+          },
+          {
+            "label": "Short trades",
+            "target": null,
+            "evidence": null,
+            "kind": "computed",
+            "metric": "shorts",
+            "value": 0,
+            "min": 3,
+            "max": null,
+            "met": false,
+            "progress": 0.0
+          },
+          {
+            "label": "Open strategy questions answered",
+            "target": null,
+            "evidence": null,
+            "kind": "computed",
+            "metric": "open_questions",
+            "value": 5,
+            "min": null,
+            "max": 0,
+            "met": false,
+            "progress": 0.0
+          }
+        ]
+      },
+      {
+        "id": "codify",
+        "name": "2. Codify and verify the detector",
+        "goal": "Code that scans 4H OHLCV + volume finds the setups you journaled, with the same zone, stop and target. If the code disagrees with you, a backtest would test a different strategy.",
+        "status": "locked",
+        "criteria": [
+          {
+            "label": "Detector reproduces journaled setups",
+            "target": "At least 80% of journaled setups found with matching zone, stop and target; every miss explained",
+            "evidence": null,
+            "kind": "manual",
+            "state": "pending",
+            "met": false,
+            "progress": 0.0
+          }
+        ]
+      },
+      {
+        "id": "backtest",
+        "name": "3. Backtest out of sample",
+        "goal": "Hundreds of historical setups are replayed with fees, slippage and funding. This is where the sample size comes from: manual trading cannot produce it fast enough.",
+        "status": "locked",
+        "criteria": [
+          {
+            "label": "Out-of-sample expectancy is positive",
+            "target": "95% CI lower bound of expectancy > 0 on held-out data; n from the sample-size table, never below 100",
+            "evidence": null,
+            "kind": "manual",
+            "state": "pending",
+            "met": false,
+            "progress": 0.0
+          },
+          {
+            "label": "Result holds across conditions",
+            "target": "At least 2 trend regimes and 3 assets; no single asset or month carries the result",
+            "evidence": null,
+            "kind": "manual",
+            "state": "pending",
+            "met": false,
+            "progress": 0.0
+          },
+          {
+            "label": "Drawdown is survivable at 1% risk",
+            "target": "Worst simulated drawdown and losing streak accepted by the trader before going live",
+            "evidence": null,
+            "kind": "manual",
+            "state": "pending",
+            "met": false,
+            "progress": 0.0
+          }
+        ]
+      },
+      {
+        "id": "paper",
+        "name": "4. Forward test without money",
+        "goal": "The bot runs live on the exchange's data and logs orders without sending them.",
+        "status": "locked",
+        "criteria": [
+          {
+            "label": "Forward signals match the backtest",
+            "target": "At least 30 signals; expectancy inside the backtest's confidence interval; zero execution errors",
+            "evidence": null,
+            "kind": "manual",
+            "state": "pending",
+            "met": false,
+            "progress": 0.0
+          }
+        ]
+      },
+      {
+        "id": "live_small",
+        "name": "5. Live at reduced risk",
+        "goal": "Real orders at a quarter of the normal risk, with every safety control switched on.",
+        "status": "locked",
+        "criteria": [
+          {
+            "label": "Safety controls verified",
+            "target": "All items in `safety` below are in place and tested",
+            "evidence": null,
+            "kind": "manual",
+            "state": "pending",
+            "met": false,
+            "progress": 0.0
+          },
+          {
+            "label": "Live results match the backtest",
+            "target": "At least 30 live trades at 0.25% risk; results inside the backtest's confidence interval",
+            "evidence": null,
+            "kind": "manual",
+            "state": "pending",
+            "met": false,
+            "progress": 0.0
+          }
+        ]
+      },
+      {
+        "id": "live_full",
+        "name": "6. Full risk",
+        "goal": "Scale to the normal 1% risk only after live evidence agrees with the backtest.",
+        "status": "locked",
+        "criteria": [
+          {
+            "label": "Scaled to 1% risk",
+            "target": "Trader's explicit decision, recorded with the live report as evidence",
+            "evidence": null,
+            "kind": "manual",
+            "state": "pending",
+            "met": false,
+            "progress": 0.0
+          }
+        ]
+      }
+    ],
+    "active": "specify",
+    "metrics": {
+      "measured_trades": 1,
+      "classified_losses": 0,
+      "longs": 1,
+      "shorts": 0,
+      "open_questions": 5,
+      "unresolved_profile": 11
+    },
+    "sample_size": {
+      "alpha": 0.05,
+      "power": 0.8,
+      "scenarios": [
+        {
+          "win_rate": 0.25,
+          "avg_win": 3.0,
+          "expectancy": 0.0,
+          "sd": 1.7320508075688772,
+          "n": null
+        },
+        {
+          "win_rate": 0.25,
+          "avg_win": 4.0,
+          "expectancy": 0.25,
+          "sd": 2.165063509461097,
+          "n": 589
+        },
+        {
+          "win_rate": 0.3,
+          "avg_win": 3.0,
+          "expectancy": 0.19999999999999996,
+          "sd": 1.8330302779823358,
+          "n": 660
+        },
+        {
+          "win_rate": 0.3,
+          "avg_win": 4.0,
+          "expectancy": 0.5,
+          "sd": 2.29128784747792,
+          "n": 165
+        },
+        {
+          "win_rate": 0.35,
+          "avg_win": 3.5,
+          "expectancy": 0.5749999999999998,
+          "sd": 2.1463632031881277,
+          "n": 110
+        },
+        {
+          "win_rate": 0.4,
+          "avg_win": 3.0,
+          "expectancy": 0.6000000000000002,
+          "sd": 1.9595917942265424,
+          "n": 84
+        },
+        {
+          "win_rate": 0.45,
+          "avg_win": 3.0,
+          "expectancy": 0.8,
+          "sd": 1.9899748742132397,
+          "n": 49
+        }
+      ],
+      "note": "Trades needed so that, if the edge is real, the 95% confidence interval of expectancy excludes zero 80% of the time. Two-outcome model (every loss -1R), so real needs are somewhat higher."
+    },
+    "safety": [
+      "API keys never go into chat, the repository or kb.json. They live only in the bot server's secret store or environment.",
+      "Keys have trade permission only: withdrawals disabled, IP-whitelisted to the bot's server.",
+      "The bot trades a dedicated sub-account funded with only the capital it may risk.",
+      "Every order is placed with its exchange-side stop, sized by the 1% rule, with leverage capped by the 50% margin-loss rule.",
+      "Kill switches halt trading after a daily loss limit or a run of consecutive losses, and alert the trader.",
+      "Execution is deterministic code, not a language model: the same market data always produces the same orders, and every decision is logged."
+    ]
+  },
   "gaps": {
     "unmeasurable": [],
     "unreviewed": []
   },
   "build": {
-    "fingerprint": "f2746cc77df638d8",
-    "generated_at": "2026-09-26T17:37:54+00:00",
+    "fingerprint": "825768fe01a57a4d",
+    "generated_at": "2026-09-26T18:07:22+00:00",
     "validation": [
       {
         "level": "INFO",
-        "where": "T-0001.yaml",
-        "msg": "risk.margin_mode unknown: liquidation vs stop not checked"
-      },
-      {
-        "level": "INFO",
         "where": "profile/trader.yaml",
-        "msg": "12 unresolved parameter(s): learn them from the trader, never assume: account.base_currency, account.equity, account.equity_as_of, risk.max_daily_loss_r, risk.max_open_risk_pct, risk.max_consecutive_losses_before_pause, leverage.max_leverage, leverage.margin_mode, leverage.maintenance_margin_rate, fees.maker_rate, fees.taker_rate, sessions"
+        "msg": "11 unresolved parameter(s): learn them from the trader, never assume: account.base_currency, account.equity, account.equity_as_of, risk.max_daily_loss_r, risk.max_open_risk_pct, risk.max_consecutive_losses_before_pause, leverage.max_leverage, leverage.maintenance_margin_rate, fees.maker_rate, fees.taker_rate, sessions"
       }
     ]
   }

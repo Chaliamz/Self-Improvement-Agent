@@ -19,7 +19,7 @@ regime: [range, bullish]      # range = trader's "choppy conditions" during the 
 
 strategy:
   id: supply-demand-structure
-  version: "1.1"            # retagged from 1.0 by CHG-001 (clarification)
+  version: "1.2"            # retagged by CHG-001 and CHG-002 (clarifications)
   experiment: null
   variant: null
 
@@ -43,7 +43,7 @@ risk:
   risk_amount: null
   risk_pct: 1.0                # trader: "always 1%"
   leverage: 10                 # trader: stop 3.14% -> 10x
-  margin_mode: null
+  margin_mode: isolated       # trader: "which means I use an isolated margin"
   size: null
   notional: null
 
@@ -73,6 +73,9 @@ journal:
   after: |
     Trader, 2026-09-26: "Entry to SL range (invalidation) was 3,14% so I used 10x leverage", 1% risk.
     The chart levels (90.41 / 87.59) give 3.12%; the 0.02-point gap is unexplained (actual fill?).
+    Stop placement (trader): "the liquidity level which reclaimed support level from left ... in case
+    price would reverse back there and prices moves lower or enters a consolidation phase."
+    Leverage check (trader): 3.14% x 10x = 31.4% loss on margin at the stop, inside the 50% rule.
     TP hit. Trader stated R:R 4.57. Trader stated the method: supply/demand levels + price action /
     market structure, with liquidity levels as confluences; asked for these to be memorised.
 
@@ -117,9 +120,9 @@ review:
   lesson: >-
     When the primary entry at extreme demand was missed, a reclaim of the swept inducement level
     gave a defined-risk re-entry that captured the move. This is one example: track reclaim entries
-    and extreme-demand entries separately. The stop sat inside the zone, above the sweep low. The
-    trader defines it as the invalidation level ("possible deviation/fakeout"); the mechanical
-    placement is still open (strategy v1.1, open question 1).
-  actionable_change: "Process only: make the stop placement mechanical (v1.1 open question 1) before any automation."
+    and extreme-demand entries separately. The stop sat at a liquidity level from the left that
+    had been reclaimed as support. A return there would have invalidated the reclaim (reversal lower
+    or consolidation), so the stop protects the reclaim thesis, not the whole demand zone.
+  actionable_change: "Process only: define which stop candidate the bot picks when several exist (strategy v1.2, open question 2)."
   strategy_change: "no"
   evidence_strength: low

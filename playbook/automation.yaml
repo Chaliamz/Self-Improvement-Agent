@@ -1,0 +1,97 @@
+# Road from a discretionary journal to an automated bot.
+#
+# Stages are strictly ordered: a later stage stays locked until every criterion of the
+# earlier one is met. Computed criteria are evaluated from the journal by ./tj build.
+# Manual criteria move to `done` only with `evidence:` (a report, test run or commit).
+#
+# Thresholds are deliberate assumptions, explained in `goal`. Change them only with a reason.
+
+stages:
+  - id: specify
+    name: "1. Specify the rules"
+    goal: >-
+      Every rule becomes mechanical: a program reading it takes the same trades you do. Losses and
+      shorts are required because a rulebook learned only from winning longs has never seen its
+      failure modes.
+    criteria:
+      - {label: "Measured trades journaled", metric: measured_trades, min: 20}
+      - {label: "Losses journaled and classified (A-E)", metric: classified_losses, min: 5}
+      - {label: "Long trades", metric: longs, min: 3}
+      - {label: "Short trades", metric: shorts, min: 3}
+      - {label: "Open strategy questions answered", metric: open_questions, max: 0}
+
+  - id: codify
+    name: "2. Codify and verify the detector"
+    goal: >-
+      Code that scans 4H OHLCV + volume finds the setups you journaled, with the same zone, stop and
+      target. If the code disagrees with you, a backtest would test a different strategy.
+    criteria:
+      - label: "Detector reproduces journaled setups"
+        manual: pending
+        target: "At least 80% of journaled setups found with matching zone, stop and target; every miss explained"
+
+  - id: backtest
+    name: "3. Backtest out of sample"
+    goal: >-
+      Hundreds of historical setups are replayed with fees, slippage and funding. This is where the
+      sample size comes from: manual trading cannot produce it fast enough.
+    criteria:
+      - label: "Out-of-sample expectancy is positive"
+        manual: pending
+        target: "95% CI lower bound of expectancy > 0 on held-out data; n from the sample-size table, never below 100"
+      - label: "Result holds across conditions"
+        manual: pending
+        target: "At least 2 trend regimes and 3 assets; no single asset or month carries the result"
+      - label: "Drawdown is survivable at 1% risk"
+        manual: pending
+        target: "Worst simulated drawdown and losing streak accepted by the trader before going live"
+
+  - id: paper
+    name: "4. Forward test without money"
+    goal: "The bot runs live on the exchange's data and logs orders without sending them."
+    criteria:
+      - label: "Forward signals match the backtest"
+        manual: pending
+        target: "At least 30 signals; expectancy inside the backtest's confidence interval; zero execution errors"
+
+  - id: live_small
+    name: "5. Live at reduced risk"
+    goal: "Real orders at a quarter of the normal risk, with every safety control switched on."
+    criteria:
+      - label: "Safety controls verified"
+        manual: pending
+        target: "All items in `safety` below are in place and tested"
+      - label: "Live results match the backtest"
+        manual: pending
+        target: "At least 30 live trades at 0.25% risk; results inside the backtest's confidence interval"
+
+  - id: live_full
+    name: "6. Full risk"
+    goal: "Scale to the normal 1% risk only after live evidence agrees with the backtest."
+    criteria:
+      - label: "Scaled to 1% risk"
+        manual: pending
+        target: "Trader's explicit decision, recorded with the live report as evidence"
+
+sample_size:
+  alpha: 0.05
+  power: 0.80
+  note: >-
+    Trades needed so that, if the edge is real, the 95% confidence interval of expectancy excludes
+    zero 80% of the time. Two-outcome model (every loss -1R), so real needs are somewhat higher.
+  scenarios:
+    - {win_rate: 0.25, avg_win: 3.0}   # zero edge: can never be proven, at any sample size
+    - {win_rate: 0.25, avg_win: 4.0}
+    - {win_rate: 0.30, avg_win: 3.0}
+    - {win_rate: 0.30, avg_win: 4.0}
+    - {win_rate: 0.35, avg_win: 3.5}
+    - {win_rate: 0.40, avg_win: 3.0}
+    - {win_rate: 0.45, avg_win: 3.0}
+
+safety:
+  - "API keys never go into chat, the repository or kb.json. They live only in the bot server's secret store or environment."
+  - "Keys have trade permission only: withdrawals disabled, IP-whitelisted to the bot's server."
+  - "The bot trades a dedicated sub-account funded with only the capital it may risk."
+  - "Every order is placed with its exchange-side stop, sized by the 1% rule, with leverage capped by the 50% margin-loss rule."
+  - "Kill switches halt trading after a daily loss limit or a run of consecutive losses, and alert the trader."
+  - "Execution is deterministic code, not a language model: the same market data always produces the same orders, and every decision is logged."

@@ -4,9 +4,9 @@
 id: supply-demand-structure
 name: "Supply/Demand + Price Action / Market Structure (liquidity confluences)"
 status: unvalidated
-current_version: "1.1"
+current_version: "1.2"
 created: 2026-09-26
 summary: >-
   Trader's main strategy, in their words: "supply/demand level and price action/market structure,
   adding few confluences with liquidity levels". The long-side sequence was demonstrated in T-0001.
-  The mirror case (supply zones, shorts) is presumed but not yet stated or demonstrated.
+  The trader confirmed that every rule mirrors for shorts from supply (2026-09-26).
