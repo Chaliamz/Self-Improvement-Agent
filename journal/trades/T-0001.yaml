@@ -1,0 +1,121 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0001
+status: closed
+opened: 2026-04-20
+closed: 2026-05-10
+asset: "AAVEUSDT"
+market: "crypto perp (BloFin)"
+direction: "long"
+session: null
+timeframes:
+  htf: "4h"                   # stated: chart and structure on 4H
+  execution: null             # not stated; the reclaim is visible on the 4H chart
+
+setups: [choch, inducement, liquidity_sweep, extreme_demand, reclaim]
+regime: [range, bullish]      # range = trader's "choppy conditions" during the hold; bullish = 4H structure after CHoCH
+
+strategy:
+  id: supply-demand-structure
+  version: "1.0"
+  experiment: null
+  variant: null
+
+plan:
+  entry: 90.41                # position-tool label on chart; reclaim of the 89.36 line
+  stop: 87.59                 # position-tool label on chart
+  targets: [103.30]           # yellow line; position-tool label
+  invalidation: null          # not stated in words (see open question on stop logic)
+  confluences:                # trader's list, trader's words
+    - "Liquidity sweep"
+    - "Strong bullish momentum + volume"
+    - "Inducement"
+    - "Potential resistance level (yellow line)"
+  confirmations:
+    - "Bullish Reversal (4H)"
+    - "Extreme demand level (red box)"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: null
+  leverage: null
+  margin_mode: null
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null             # actual fill not stated; plan.entry used
+  exits:
+    - {price: 103.30, reason: "TP at yellow line, touched 2026-05-10. Full exit assumed: partials not stated."}
+  fees: null
+
+result:
+  pnl: null
+  r: null                     # derived price-based from plan + exit; trader stated R:R 4.57 (matches)
+  hypothetical_r: null
+
+journal:
+  before: |
+    Reconstructed from the trader's account on 2026-09-26 (after the outcome, so not hindsight-proof).
+    4H AAVE. Bearish leg made a lower low; strong bullish reversal followed but did not CLOSE above
+    the last lower high (green "CH" line), so no bullish CHoCH yet. Equal lows formed at 89.36 =
+    inducement (liquidity resting below). Price then broke the last lower high: structure bearish ->
+    bullish. Noted the wick + higher low at the yellow line as a potential level.
+    Plan: long at the extreme demand level (red box). That entry was missed (not at home; see T-0002).
+    Price swept the equal lows into the extreme demand zone, then reclaimed the 89.36 line (former
+    inducement) as support. Took the long on that reclaim with TP at the yellow line.
+  during: |
+    Held 2026-04-20 to 2026-05-10 through choppy conditions (trader's words).
+  after: |
+    TP hit. Trader stated R:R 4.57. Trader stated the method: supply/demand levels + price action /
+    market structure, with liquidity levels as confluences; asked for these to be memorised.
+
+evidence:
+  observed:
+    - "BloFin AAVE/USDT perpetual, 4H. Position tool: entry 90.41, stop 87.59, target 103.30 (labelled)."
+    - "(103.30 - 90.41) / (90.41 - 87.59) = 4.57 via tj: matches the trader's stated R:R."
+    - "Lower low about 85.7 on Apr 7-8, the base of the red box (about 85.6 to 88.05)."
+    - "Reversal on Apr 8 stayed below the green CH line (about 97.9); no close above it until Apr 13-14."
+    - "Equal lows around 89.0 to 89.4 on Apr 9-13 (red line 89.36). One wick about 88.75 near Apr 13 dipped below the line before the CHoCH."
+    - "Apr 14 candles: bodies topped about 103.2, wick about 104.05. Apr 17 lower wick about 103.0. The yellow line (about 103.3) sits across both."
+    - "Rally to above 115 on Apr 16-17, then full retrace on Apr 18-20. The sweep wick low was about 86.40, inside the red box and above the Apr 7-8 lower low."
+    - "The Apr 20 bullish reversal candle opened about 87.1 and closed about 89.9, back above 89.36. The entry at 90.41 came on the following candle."
+    - "After entry: low about 89.9 (Apr 22 wick), then about 91.0 in early May. The stop at 87.59 was not approached."
+    - "Highest price before TP was about 100.71 on Apr 27 (3.65R at the planned stop). Price then fell back to about 91.0 before the May 10 rally to the 103.30 target."
+    - "No volume pane on the chart. The volume confluence cannot be verified from this image."
+    - "Prices marked 'about' were read from chart pixels, calibrated on the labelled levels, to within about 0.1."
+  interpreted:
+    - "The sequence is lower low, failed CHoCH, equal-low inducement, CHoCH by close, then a pullback that swept the inducement into extreme demand. The chart matches the trader's account."
+    - "The yellow line is a flip level: the Apr 14 breakout highs, then retested as support by the Apr 17 wick (the trader's 'wick + higher low'). The trader used it later as resistance and TP."
+    - "The stop at 87.59 sits inside the extreme demand zone, about 1.2 above the sweep low (86.40) and about 1.9 above the protected lower low (85.7). It is tighter than the structural invalidation."
+  hypotheses:
+    - "A reclaim of the swept inducement level may be a valid secondary entry when the primary extreme-demand entry is missed (n=1)."
+    - "Stops inside the demand zone above the sweep low may raise nominal R:R at the cost of more stop-outs on zone retests (untested, n=1)."
+  charts: [journal/charts/T-0001-aave-4h.png]
+
+review:
+  scores:
+    setup: 4                  # full sequence present per the trader's framework; volume confluence unverifiable
+    context: 3                # 4H only; no daily/weekly context given; a 25% retrace nearly undercut the protected low
+    execution: 4              # clean confirmation entry one candle after the reclaim close
+    risk: null                # size, leverage, account risk unknown; stop rule not stated
+    management: 4             # held to the planned TP through chop; no management rules stated to test against
+  setup_validity: valid
+  followed_plan: null         # planned entry (extreme demand) missed; executed a secondary entry not in the original plan
+  loss_type: null
+  mistakes: []
+  behaviors: [waited_for_liquidity, followed_setup, took_planned_profits]
+  outside_control:
+    - "Not available when price reached the extreme demand zone (primary entry missed, T-0002)"
+    - "20-day chop between about 90 and 101 before the target"
+  lesson: >-
+    When the primary entry at extreme demand was missed, a reclaim of the swept inducement level
+    gave a defined-risk re-entry that captured the move. This is one example: track reclaim entries
+    and extreme-demand entries separately. The stop sat inside the zone, above the sweep low. Its rule
+    is not yet stated, so the risk dimension cannot be scored.
+  actionable_change: "Process only: state the stop rule and the management rule (break-even, partials) so future trades can be scored against them."
+  strategy_change: "no"
+  evidence_strength: low

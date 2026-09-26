@@ -20,3 +20,21 @@ tags:
   failed_breakout:        {label: Failed breakout}
   market_structure_shift: {label: Market structure shift}
   other:                  {label: Other (describe in journal; promote to its own tag once it recurs)}
+
+  # --- Trader's own terms (introduced with T-0001, 2026-09-26) ---
+  choch:
+    label: CHoCH (change of character)
+    definition: "Bullish CHoCH requires a candle CLOSE above the last lower high; a wick through does not count."
+    introduced_in: T-0001
+  inducement:
+    label: Inducement
+    definition: "Equal lows = liquidity resting below."
+    introduced_in: T-0001
+  extreme_demand:
+    label: Extreme demand level
+    definition: "Trader's primary long entry zone. In T-0001, the red box at the lower low from which the CHoCH leg started. Exact definition not yet stated."
+    introduced_in: T-0001
+  reclaim:
+    label: Reclaim (support reclaim)
+    definition: "Price closes back above a level it swept (in T-0001 the former inducement / equal lows) and holds it as support. Used as a secondary entry."
+    introduced_in: T-0001

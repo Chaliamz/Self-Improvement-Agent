@@ -1,0 +1,48 @@
+# Strategy version file (§5, §21). IMMUTABLE once committed: the validator
+# fails on edits to committed version files. To change a rule, create the next
+# version file and record why in changes.yaml. Never erase the original.
+#
+# Only rules the trader stated (2026-09-26, with T-0001). Unstated = null.
+
+version: "1.0"
+date: 2026-09-26
+source: "Stated by the trader with T-0001 (AAVE 4H), 2026-09-26"
+
+timeframes:
+  structure: "4h"             # T-0001
+  execution: null             # not stated
+
+market_conditions: []         # not stated
+
+required_conditions:
+  - "Bullish CHoCH: a candle CLOSE above the last lower high. A wick or move through it without a close does not count."
+
+confirmation:                 # trader's "Confirmations", trader's words
+  - "Bullish Reversal (4H)"
+  - "Extreme demand level"
+
+confluences:                  # trader's "Confluences", trader's words
+  - "Liquidity sweep"
+  - "Strong bullish momentum + volume"
+  - "Inducement (equal lows = liquidity resting below)"
+  - "Potential resistance level (used for the target)"
+
+entry_model: >-
+  Primary: long at the extreme demand level. Secondary (used in T-0001 when the primary was missed):
+  long on the reclaim of the swept inducement level (former equal lows) as support.
+stop_model: null              # not stated. T-0001 used 87.59, inside the demand zone above the sweep low
+target_model: "Next resistance level. In T-0001: the wick + higher-low level (yellow line)."
+risk_model: null              # not stated
+leverage_model: null          # not stated
+
+management:
+  breakeven: null
+  partials: null
+  trailing: null
+  reentry: null
+  max_hold: null
+  early_exit: null
+  invalidation: null
+
+do_not_trade_when: []         # not stated
+common_mistakes: []

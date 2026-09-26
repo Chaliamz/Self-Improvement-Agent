@@ -1,0 +1,81 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0002
+status: missed
+opened: 2026-04-20
+closed: null
+asset: "AAVEUSDT"
+market: "crypto perp (BloFin)"
+direction: "long"
+session: null
+timeframes:
+  htf: "4h"
+  execution: null
+
+setups: [choch, inducement, liquidity_sweep, extreme_demand]
+regime: [bullish]
+
+strategy:
+  id: supply-demand-structure
+  version: "1.0"
+  experiment: null
+  variant: null
+
+plan:
+  entry: null                 # "at extreme demand level (red box)": exact price not stated (box about 85.6 to 88.05)
+  stop: null                  # not stated
+  targets: []                 # not stated for this plan (the executed trade T-0001 used 103.30)
+  invalidation: null
+  confluences: ["Liquidity sweep", "Inducement"]
+  confirmations: ["Bullish Reversal (4H)", "Extreme demand level (red box)"]
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: null
+  leverage: null
+  margin_mode: null
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits: []
+  fees: null
+
+result:
+  pnl: null
+  r: null
+  hypothetical_r: null        # COUNTERFACTUAL not computable: planned entry and stop inside the box not stated
+
+journal:
+  before: |
+    Plan (trader's account): after the 4H CHoCH, long at the extreme demand level (red box), below
+    the equal-lows inducement at 89.36.
+  during: ""
+  after: |
+    Missed: trader was not at home when price swept the equal lows into the box on 2026-04-20
+    (wick about 86.40, inside the box). Re-entered on the reclaim instead: T-0001.
+
+evidence:
+  observed:
+    - "Price traded into the red box on 2026-04-20 (low about 86.40), so a resting order inside the box's upper part would have been reached."
+  interpreted: []
+  hypotheses:
+    - "The primary entry model needs either presence at the zone or a resting limit order. Whether a resting limit fits the strategy is not yet stated."
+  charts: [journal/charts/T-0001-aave-4h.png]
+
+review:
+  scores: {setup: null, context: null, execution: null, risk: null, management: null}
+  setup_validity: valid
+  followed_plan: null
+  loss_type: null
+  mistakes: []
+  behaviors: []
+  outside_control: ["Availability: not at home when the zone was reached"]
+  lesson: "Missed because of availability, not hesitation. Track how often the primary entry is missed this way."
+  actionable_change: null
+  strategy_change: null
+  evidence_strength: low

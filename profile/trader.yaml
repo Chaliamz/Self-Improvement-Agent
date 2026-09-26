@@ -27,12 +27,24 @@ fees:
   maker_rate: null
   taker_rate: null
 
-instruments: null                     # list of markets/assets traded
+instruments:                          # list of markets/assets traded
+  - "AAVEUSDT perpetual (BloFin)"
 sessions: null                        # the trader's own session names
-timeframes: null                      # HTF context / execution timeframes used
+timeframes:                           # HTF context / execution timeframes used
+  structure: "4h"
+  execution: null
 
 # The trader's own terms, in their words. These win over generic taxonomy labels.
-terminology: {}
+terminology:
+  CHoCH: "Change of character. Bullish CHoCH requires a candle CLOSE above the last lower high."
+  inducement: "Equal lows = liquidity resting below."
+  extreme demand level: "Primary long entry zone (red box in T-0001). Full definition pending."
+  reclaim: "Price back above a swept level, holding it as support; secondary entry."
+  confluences: "Liquidity sweep; strong bullish momentum + volume; inducement; potential resistance level."
+  confirmations: "Bullish Reversal (4H); extreme demand level."
 
 # Where each resolved value came from: {path: "stated 2026-09-26 in T-0003 review"}
-sources: {}
+sources:
+  instruments: "T-0001 chart (BloFin AAVE/USDT perp), 2026-09-26"
+  timeframes.structure: "Trader: 'chart time frame is 4H', 2026-09-26"
+  terminology: "Trader's T-0001 message, 2026-09-26"
