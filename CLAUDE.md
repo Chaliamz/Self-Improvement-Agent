@@ -37,6 +37,9 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
 | `playbook/experiments/EXP-###.yaml` | A/B tests | from `templates/experiment.yaml` |
 | `playbook/PLAYBOOK.md` | consolidated knowledge (§27) | every entry cites trade IDs and n |
 | `config.yaml` | thresholds (evidence tiers, promotion gates) | assumptions; change only with a stated reason |
+| `terminal.html` | the trader's single-file terminal (journal, stats, strategy, risk, calculator) | **generated** by `./tj build`; never edit by hand |
+| `exports/kb.json` | schema-versioned machine export: the contract for the future trading bot | **generated** by `./tj build`; never edit by hand |
+| `templates/terminal.html` | terminal source; its RISK-MATH block mirrors `tradekb/risk.py` | change both together; `tests/test_terminal.py` enforces parity |
 
 ## Workflows
 
@@ -47,12 +50,14 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
 2. `plan.stop` is the **initial** stop. If the stop was moved, record that in
    `journal.during` and tag `moved_stop`/`widened_stop`, never overwrite `plan.stop`.
 3. Score the five dimensions (§42), set `setup_validity`, `followed_plan`, `loss_type`
-   (losses), `mistakes`, `behaviors`, `lesson`, `strategy_change`.
+   (losses), `mistakes`, `behaviors`, `lesson`, `strategy_change`. Set `plan.entry_model` to one
+   of the strategy version's `entry_models`, and record the trader's confluences/confirmations.
 4. `./tj show T-####` → use its R, outcome and GOOD/BAD OUTCOME × PROCESS label.
    `./tj validate` must report 0 errors.
 5. Reply in the §44 TRADE REVIEW format. If `./tj status` flags a recurring error,
    say so (§15) as a system-design problem, without shaming.
-6. Commit: `journal: T-#### ASSET long|short +1.8R (setup)`.
+6. `./tj build` (regenerates `terminal.html` and `exports/kb.json`), then commit:
+   `journal: T-#### ASSET long|short +1.8R (setup)`.
 
 ### B. The trader presents a setup BEFORE entry
 1. `./tj new --status planned ...`; write the thesis, confirmation and invalidation into
@@ -78,7 +83,14 @@ stated, `status: unvalidated`, version `1.0`. Tag subsequent trades with `strate
 `strategy.version`.
 
 ### F. Strategy change (§20, §21, §41)
-Never edit a committed `v*.yaml` (the validator fails). Append a change record to
+Never edit a committed `v*.yaml` (the validator fails). Two kinds of change record:
+- **clarification**: the trader states rules that were already in force (filling `null`s, defining
+  terms). New version file, `kind: clarification`, `status: adopted`, `rule_changed: false`, the trader's
+  statement quoted. No evidence gate, because no performance claim is made. Retag the trades taken
+  under those rules to the new version so per-version statistics are not split by documentation.
+- **rule_change** (default): evidence-driven, as below.
+
+For a rule change, append a change record to
 `changes.yaml` with every §20 field and its evidence trade IDs. If the trader adopts it,
 create the next version file and set `resulting_version`. The validator enforces the
 evidence minimums in `config.yaml` for `provisional`/`established` changes and for
@@ -95,7 +107,7 @@ exist, tag trades with `strategy.experiment` and `strategy.variant`, evaluate wi
 2. Write the §45 TRADING SYSTEM REVIEW from that output plus `playbook/`. Every
    performance claim carries n, the CI, and the evidence tier.
 3. Update `playbook/PLAYBOOK.md` only where evidence justifies it, citing trade IDs.
-4. Commit: `review: YYYY-MM-DD system review`.
+4. `./tj build`, then commit: `review: YYYY-MM-DD system review`.
 
 ## Hard rules
 
@@ -103,7 +115,10 @@ exist, tag trades with `strategy.experiment` and `strategy.variant`, evaluate wi
 - Charts shared in chat are not saved automatically. Record what you see in
   `evidence.observed`; ask the trader to commit the image if they want it kept.
 - Canonical tags only (the validator rejects aliases and unknown tags).
-- `./tj validate` must show 0 errors before every commit.
+- `./tj validate` must show 0 errors before every commit, and no `stale` warning: run `./tj build`
+  after any knowledge-base change and commit `terminal.html` + `exports/kb.json` with it.
+- Contradictions between the trader's rules and their own trades go into the strategy version's
+  `open_questions` (INITIALIZATION step 11). Ask; never resolve them by assumption.
 - Never promote, generalise or declare a winner beyond what `./tj` output supports.
   "Insufficient evidence" is a complete answer.
 - Units: `*_pct` = percent (1.0 = 1%), `*_rate` = decimal (0.0005 = 5 bps).

@@ -3,6 +3,12 @@
 # Status ladder: observation -> hypothesis -> testing -> provisional -> established (or rejected).
 # The validator rejects `provisional` / `established` without enough evidence trades.
 
+# Two kinds:
+#   rule_change (default): evidence-driven, follows the ladder and the promotion gates.
+#   clarification: the trader states rules that were already in force. No performance claim,
+#     no evidence gate: status must be `adopted`, rule_changed must be false, and the trader's
+#     statement is quoted.
+
 changes: []
 #  - id: CHG-001
 #    date: 2026-01-01

@@ -30,6 +30,7 @@ TAG_FIELDS = (("setups", "setups"), ("regime", "regimes"), ("review.mistakes", "
               ("review.behaviors", "behaviors"))
 STRATEGY_STATUSES = ("unvalidated", "developing", "established", "retired")
 CHANGE_STATUSES = ("observation", "hypothesis", "testing", "provisional", "established", "rejected")
+CHANGE_KINDS = ("rule_change", "clarification")
 EXPERIMENT_STATUSES = ("planned", "running", "concluded", "abandoned")
 CHANGE_ID_RE = re.compile(r"^CHG-\d{3,}$")
 EXPERIMENT_ID_RE = re.compile(r"^EXP-\d{3,}$")
@@ -279,6 +280,12 @@ def _check_trade(trade: Trade, kb: KB, add: _Sink) -> None:
                               f"(have: {', '.join(strat.versions) or 'none'})")
         elif version is None:
             add(WARN, where, f"strategy '{sid}' set without strategy.version: A/B by version impossible")
+        else:
+            models = (strat.versions[str(version)] or {}).get("entry_models") or {}
+            entry_model = dig(t, "plan.entry_model")
+            if entry_model is not None and models and str(entry_model) not in models:
+                add(ERROR, where, f"plan.entry_model '{entry_model}' is not an entry model of {sid} v{version} "
+                                  f"(have: {', '.join(models)})")
     exp_id, variant = dig(t, "strategy.experiment"), dig(t, "strategy.variant")
     if exp_id is not None:
         exp = kb.experiments.get(str(exp_id))
@@ -332,8 +339,24 @@ def _check_strategies(kb: KB, add: _Sink) -> None:
             elif cid in seen:
                 add(ERROR, cw, f"duplicate change id {cid}")
             seen.add(cid)
+            kind = ch.get("kind", "rule_change")
             cstatus = ch.get("status")
-            if cstatus not in CHANGE_STATUSES:
+            if kind not in CHANGE_KINDS:
+                add(ERROR, cw, f"kind must be one of {', '.join(CHANGE_KINDS)}")
+                continue
+            if kind == "clarification":
+                # The trader stating rules that were already in force: no performance claim, no evidence gate.
+                if cstatus != "adopted":
+                    add(ERROR, cw, "a clarification has status 'adopted'")
+                if not ch.get("statement"):
+                    add(ERROR, cw, "a clarification must quote the trader's statement")
+                if ch.get("rule_changed"):
+                    add(ERROR, cw, "a clarification cannot change a rule: record a rule_change instead")
+                resulting = ch.get("resulting_version")
+                if resulting is None or str(resulting) not in strat.versions:
+                    add(ERROR, cw, f"resulting_version {resulting} has no version file")
+                continue
+            if cstatus not in CHANGE_STATUSES or cstatus == "adopted":
                 add(ERROR, cw, f"status must be one of {', '.join(CHANGE_STATUSES)}")
             evidence = ch.get("evidence") or []
             for ref in evidence:
@@ -394,7 +417,18 @@ def version_edits(kb: KB) -> list[str] | None:
     return edits
 
 
-def validate(kb: KB, allow_version_edits: bool = False) -> list[Issue]:
+def _check_build(kb: KB, add: _Sink) -> None:
+    from .export import OUTPUTS, embedded_fingerprint, fingerprint
+    current = fingerprint(kb.root)
+    for rel in OUTPUTS:
+        path = kb.root / rel
+        if not path.exists():
+            add(INFO, rel, "not built yet: run ./tj build")
+        elif embedded_fingerprint(path) != current:
+            add(WARN, rel, "stale: the knowledge base changed since the last build. Run ./tj build")
+
+
+def validate(kb: KB, allow_version_edits: bool = False, check_build: bool = True) -> list[Issue]:
     add = _Sink()
     for err in kb.load_errors:
         add(ERROR, "load", err)
@@ -415,6 +449,9 @@ def validate(kb: KB, allow_version_edits: bool = False) -> list[Issue]:
         add(WARN if allow_version_edits else ERROR, "playbook",
             f"strategy version files are immutable once committed ({edit}). "
             f"Create a new version file and record the change in changes.yaml instead")
+
+    if check_build:
+        _check_build(kb, add)
 
     gaps = unresolved(kb.profile)
     if gaps:

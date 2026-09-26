@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="kb-fingerprint" content="__FINGERPRINT__">
+<title>Trading Terminal</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --surface-2: #f1f0ec; --ink: #0b0b0b; --ink-2: #52514e; --muted: #6f6d68;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,.10);
+  --pos: #2a78d6; --neg: #e34948; --neutral: #898781; --pos-wash: rgba(42,120,214,.10);
+  --good: #0ca30c; --critical: #d03b3b; --warning: #fab219; --serious: #ec835a; --good-ink: #006300;
+  --track: #cde2fb; --fill: #2a78d6; --focus: #2a78d6; --shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10);
+    --pos: #3987e5; --neg: #e66767; --neutral: #898781; --pos-wash: rgba(57,135,229,.12);
+    --good-ink: #0ca30c; --track: #184f95; --fill: #3987e5; --focus: #3987e5; --shadow: 0 8px 24px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10);
+  --pos: #3987e5; --neg: #e66767; --neutral: #898781; --pos-wash: rgba(57,135,229,.12);
+  --good-ink: #0ca30c; --track: #184f95; --fill: #3987e5; --focus: #3987e5; --shadow: 0 8px 24px rgba(0,0,0,.5);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--pos); }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+header.top { border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 5; }
+.top-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; padding: 12px 0 8px; }
+.brand { display: flex; flex-direction: column; min-width: 0; }
+.brand h1 { font-size: 17px; margin: 0; font-weight: 650; letter-spacing: .01em; }
+.brand .sub { color: var(--ink-2); font-size: 12.5px; overflow-wrap: anywhere; }
+.top-actions { display: flex; gap: 8px; align-items: center; }
+.btn { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+.btn:hover { border-color: var(--axis); }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs::-webkit-scrollbar { display: none; }
+nav.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 12px 10px; cursor: pointer; color: var(--ink-2); white-space: nowrap; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--pos); font-weight: 600; }
+main { padding: 16px 0 48px; }
+section.panel { display: none; }
+section.panel.active { display: block; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; min-width: 0; }
+.card h2 { font-size: 15px; margin: 0 0 4px; font-weight: 650; }
+.card h3 { font-size: 13px; margin: 16px 0 6px; font-weight: 650; color: var(--ink-2); text-transform: uppercase; letter-spacing: .04em; }
+.card .note { color: var(--ink-2); font-size: 12.5px; margin: 0 0 12px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 16px; }
+.grid2 > .card { margin-bottom: 0; }
+.stack > * + * { margin-top: 16px; }
+.banner { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.banner .phase { font-weight: 650; }
+.banner .meter { flex: 1 1 200px; }
+.hero { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 16px; }
+.hero .value { font-size: 52px; line-height: 1; font-weight: 650; }
+.hero .label { color: var(--ink-2); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.tile .t-label { color: var(--ink-2); font-size: 12.5px; }
+.tile .t-value { font-size: 22px; font-weight: 650; margin-top: 2px; }
+.tile .t-sub { color: var(--muted); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; vertical-align: top; }
+th { color: var(--ink-2); font-weight: 600; background: var(--surface-2); position: sticky; top: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.wrap-cell { white-space: normal; min-width: 200px; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr.clickable { cursor: pointer; }
+tbody tr.clickable:hover td { background: var(--surface-2); }
+.linkish { background: none; border: 0; padding: 0; color: var(--pos); cursor: pointer; font-weight: 600; }
+.badge { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; font-size: 12px; white-space: nowrap; background: var(--surface-2); color: var(--ink); }
+.badge .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.badge.unstated { color: var(--ink-2); border-style: dashed; background: transparent; }
+.tag { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); margin: 0 4px 4px 0; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: center; }
+.filters label { display: flex; gap: 6px; align-items: center; color: var(--ink-2); font-size: 12.5px; }
+.filters select, .filters input, .calc input, .calc select { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; min-width: 0; }
+.chart-host { width: 100%; min-height: 240px; position: relative; }
+svg text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+svg .grid { stroke: var(--grid); stroke-width: 1; shape-rendering: crispEdges; }
+svg .axis { stroke: var(--axis); stroke-width: 1; shape-rendering: crispEdges; }
+svg .line { fill: none; stroke: var(--pos); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+svg .area { fill: var(--pos-wash); stroke: none; }
+svg .dot { fill: var(--pos); stroke: var(--surface); stroke-width: 2; }
+svg .end-label { fill: var(--ink); font-size: 12px; font-weight: 600; }
+svg .crosshair { stroke: var(--axis); stroke-width: 1; }
+svg .bar-pos { fill: var(--pos); } svg .bar-neg { fill: var(--neg); } svg .bar-neutral { fill: var(--neutral); }
+svg .bar-hit:hover + .bar-mark, svg .bar-hit:focus + .bar-mark { opacity: .8; }
+svg .cap-label { fill: var(--ink); font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+#tooltip { position: fixed; z-index: 50; pointer-events: none; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; display: none; max-width: 260px; }
+#tooltip strong { display: block; font-size: 14px; color: var(--ink); }
+#tooltip .row { display: flex; gap: 8px; align-items: center; color: var(--ink-2); }
+#tooltip .key { width: 12px; height: 2px; background: var(--pos); flex: none; }
+details.table-view { margin-top: 10px; }
+details.table-view summary { cursor: pointer; color: var(--ink-2); font-size: 12.5px; }
+details.table-view .table-wrap { margin-top: 8px; }
+.meter-bar { height: 8px; background: var(--track); border-radius: 999px; overflow: hidden; }
+.meter-bar > span { display: block; height: 100%; background: var(--fill); border-radius: 999px; }
+.kv { display: grid; grid-template-columns: minmax(120px, max-content) 1fr; gap: 6px 16px; margin: 0; }
+.kv dt { color: var(--ink-2); }
+.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+ul.clean { margin: 0; padding-left: 18px; }
+ul.clean li + li { margin-top: 3px; }
+.prose { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+.score-row { display: grid; grid-template-columns: 110px 1fr 44px; gap: 10px; align-items: center; margin: 6px 0; }
+.score-row .num { text-align: right; font-variant-numeric: tabular-nums; }
+dialog { border: 1px solid var(--border); border-radius: 14px; padding: 0; background: var(--surface); color: var(--ink); width: min(980px, calc(100vw - 32px)); max-height: 90vh; box-shadow: var(--shadow); }
+dialog::backdrop { background: rgba(0,0,0,.55); }
+.dlg-head { position: sticky; top: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 16px; display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; z-index: 1; }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-body { padding: 16px; }
+.chart-img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--border); cursor: zoom-in; }
+.calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.calc label { display: flex; flex-direction: column; gap: 4px; color: var(--ink-2); font-size: 12.5px; }
+.flag { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); margin-top: 8px; }
+.flag .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex: none; }
+.empty { color: var(--ink-2); font-style: italic; margin: 4px 0; }
+footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top: 1px solid var(--border); overflow-wrap: anywhere; }
+@media (max-width: 600px) { .hero .value { font-size: 44px; } .kv { grid-template-columns: 1fr; gap: 2px 0; } .kv dd { margin-bottom: 8px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand"><h1>Trading Terminal</h1><div class="sub" id="brand-sub"></div></div>
+      <div class="top-actions"><button class="btn" id="theme-btn" type="button">Theme</button></div>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+</header>
+<main class="wrap" id="main"></main>
+<div class="wrap"><footer id="footer"></footer></div>
+<div id="tooltip" role="tooltip"></div>
+<dialog id="trade-dialog" aria-labelledby="dlg-title"></dialog>
+
+<script id="kb-data" type="application/json">/*__KB_JSON__*/null</script>
+<script id="kb-charts" type="application/json">/*__CHARTS_JSON__*/null</script>
+<script>
+"use strict";
+/* RISK-MATH:BEGIN — mirrors tradekb/risk.py; tests/test_terminal.py checks parity in node. */
+const RiskMath = (() => {
+  function inferSide(entry, stop) {
+    if (stop < entry) return "long";
+    if (stop > entry) return "short";
+    throw new Error("entry equals stop: stop distance is zero, position size is undefined");
+  }
+  function positive(name, v, optional) {
+    if ((v === null || v === undefined) && optional) return;
+    if (!(typeof v === "number" && isFinite(v) && v > 0)) throw new Error(name + " must be > 0");
+  }
+  function decimals(step) {
+    const s = String(step);
+    return s.includes("e-") ? Number(s.split("e-")[1]) : (s.split(".")[1] || "").length;
+  }
+  function floorToStep(qty, step) {
+    const n = Math.floor(qty / step + 1e-9);
+    return Number((n * step).toFixed(decimals(step)));
+  }
+  function liquidation(entry, side, qty, o) {
+    const { leverage = null, marginMode = "isolated", mmrRate = 0.005, equity = null } = o;
+    let p;
+    if (marginMode === "isolated") {
+      if (!leverage) return null;
+      p = side === "long" ? entry * (1 - 1 / leverage) / (1 - mmrRate) : entry * (1 + 1 / leverage) / (1 + mmrRate);
+    } else if (marginMode === "cross") {
+      if (!equity || qty <= 0) return null;
+      p = side === "long" ? (entry - equity / qty) / (1 - mmrRate) : (entry + equity / qty) / (1 + mmrRate);
+    } else throw new Error("margin mode must be isolated or cross");
+    return p > 0 ? p : null;
+  }
+  function size(inp) {
+    const { entry, stop, riskAmount, side: asserted = null, equity = null, leverage = null, marginMode = "isolated",
+            mmrRate = 0.005, feeRate = 0, slippagePct = 0, qtyStep = null, targets = [], maxRiskPct = null,
+            maxLeverage = null, feeShareWarn = 0.2, liqBufferWarn = 1.5 } = inp;
+    positive("entry", entry); positive("stop", stop); positive("risk amount", riskAmount);
+    positive("equity", equity, true); positive("leverage", leverage, true); positive("qty step", qtyStep, true);
+    if (!(mmrRate >= 0 && mmrRate < 1)) throw new Error("maintenance margin rate must be in [0, 1)");
+    if (feeRate < 0 || slippagePct < 0) throw new Error("fees and slippage cannot be negative");
+    const side = inferSide(entry, stop);
+    if (asserted && asserted !== side) throw new Error("stop is on the wrong side of entry for a " + asserted);
+    const flags = [];
+    if (feeRate > 0.01) flags.push(["WARN", "fee rate above 1% per side: enter it as a percent, e.g. 0.06"]);
+    const slip = slippagePct / 100;
+    const stopFill = side === "long" ? stop * (1 - slip) : stop * (1 + slip);
+    const feePerUnit = feeRate * (entry + stopFill);
+    const perUnitLoss = Math.abs(entry - stopFill) + feePerUnit;
+    const qtyRaw = riskAmount / perUnitLoss;
+    const qty = qtyStep ? floorToStep(qtyRaw, qtyStep) : qtyRaw;
+    if (qty <= 0) flags.push(["CRITICAL", "risk budget is smaller than one quantity step at this stop distance"]);
+    const lossAtStop = qty * perUnitLoss, notional = qty * entry;
+    const stopDistancePct = Math.abs(entry - stop) / entry * 100;
+    const feeShare = feePerUnit / perUnitLoss;
+    if (feeShare > feeShareWarn) flags.push(["WARN", `fees are ${(feeShare * 100).toFixed(0)}% of the loss at stop: net R:R is materially below gross`]);
+    let riskPct = null, effectiveLeverage = null;
+    if (equity) {
+      riskPct = lossAtStop / equity * 100;
+      effectiveLeverage = notional / equity;
+      if (maxRiskPct !== null && riskPct > maxRiskPct + 1e-9) flags.push(["CRITICAL", `loss at stop is ${riskPct.toFixed(2)}% of equity, above your max ${maxRiskPct}%`]);
+    }
+    let marginRequired = null;
+    if (leverage) {
+      marginRequired = notional / leverage;
+      if (equity && marginRequired > equity) flags.push(["CRITICAL", "margin required exceeds equity"]);
+      if (maxLeverage !== null && leverage > maxLeverage) flags.push(["WARN", `leverage ${leverage}x is above your max ${maxLeverage}x`]);
+      if (marginMode === "isolated" && mmrRate >= 1 / leverage) flags.push(["CRITICAL", "this leverage liquidates at or before entry"]);
+    }
+    let liq = null, liqToStop = null;
+    if (qty > 0 && (leverage || marginMode === "cross")) liq = liquidation(entry, side, qty, { leverage, marginMode, mmrRate, equity });
+    if (liq !== null) {
+      const stopDist = Math.abs(entry - stopFill);
+      liqToStop = Math.abs(entry - liq) / stopDist;
+      const beyond = side === "long" ? liq >= stopFill : liq <= stopFill;
+      if (beyond) flags.push(["CRITICAL", "liquidation is reached BEFORE the stop: the stop cannot protect this position"]);
+      else if (liqToStop < liqBufferWarn) flags.push(["WARN", `liquidation is only ${liqToStop.toFixed(2)}x the stop distance from entry`]);
+    }
+    const rr = targets.map(tp => {
+      positive("target", tp);
+      if ((side === "long" && tp <= entry) || (side === "short" && tp >= entry)) throw new Error(`target ${tp} is not on the profit side of entry`);
+      return { price: tp, rrGross: Math.abs(tp - entry) / Math.abs(entry - stop),
+               rrNet: (Math.abs(tp - entry) - feeRate * (entry + tp)) / perUnitLoss };
+    });
+    return { side, qty, qtyRaw, notional, stopFill, stopDistancePct, perUnitLoss, feePerUnit, lossAtStop, riskPct,
+             effectiveLeverage, marginRequired, liquidation: liq, liqToStop, targets: rr, flags };
+  }
+  return { inferSide, floorToStep, liquidation, size };
+})();
+/* RISK-MATH:END */
+
+const KB = JSON.parse(document.getElementById("kb-data").textContent);
+const CHARTS = JSON.parse(document.getElementById("kb-charts").textContent) || {};
+
+/* ---------- DOM helpers: every piece of data enters the DOM as text, never as HTML ---------- */
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat()) if (kid !== null && kid !== undefined && kid !== false) el.append(kid instanceof Node ? kid : String(kid));
+  return el;
+}
+const SVGNS = "http://www.w3.org/2000/svg";
+function s(tag, attrs, text) {
+  const el = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) if (v !== null && v !== undefined) el.setAttribute(k, v);
+  if (text !== undefined) el.textContent = text;
+  return el;
+}
+
+/* ---------- formatting ---------- */
+const MINUS = "−";
+const isNum = x => typeof x === "number" && isFinite(x);
+const fmtR = x => !isNum(x) ? "—" : (x > 0 ? "+" : x < 0 ? MINUS : "") + Math.abs(x).toFixed(2) + "R";
+const fmtFrac = (x, d = 0) => !isNum(x) ? "—" : (x * 100).toFixed(d) + "%";
+const fmtPct = (x, d = 2) => !isNum(x) ? "—" : x.toFixed(d) + "%";
+const fmtNum = (x, d = 2) => !isNum(x) ? "—" : x.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtPrice = x => !isNum(x) ? "—" : String(x);
+const fmtX = x => !isNum(x) ? "—" : x.toFixed(2) + "x";
+const fmtCI = ci => !ci ? "—" : `[${fmtR(ci[0])}, ${fmtR(ci[1])}]`;
+const fmtTick = x => (x > 0 ? "+" : x < 0 ? MINUS : "") + (Number.isInteger(x) ? Math.abs(x) : Math.abs(x).toFixed(1)) + "R";
+const titleCase = str => String(str).replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase());
+const tagLabel = (tax, tag) => ((KB.taxonomy[tax] || {})[tag] || {}).label || titleCase(tag);
+
+const STATUS = {
+  win: ["var(--good)", "▲ Win"], loss: ["var(--critical)", "▼ Loss"], breakeven: ["var(--neutral)", "● Breakeven"],
+  missed: ["var(--neutral)", "○ Missed"], not_taken: ["var(--neutral)", "○ Not taken"],
+  planned: ["var(--pos)", "◇ Planned"], open: ["var(--warning)", "◐ Open"],
+  CRITICAL: ["var(--critical)", "Critical"], ERROR: ["var(--critical)", "Error"], WARN: ["var(--warning)", "Warning"],
+  INFO: ["var(--neutral)", "Info"], recurring: ["var(--serious)", "Recurring"],
+};
+function badge(key, label) {
+  const [color, text] = STATUS[key] || ["var(--neutral)", titleCase(key)];
+  return h("span", { class: "badge" }, h("span", { class: "dot", style: `background:${color}` }), label || text);
+}
+const unstated = (text = "Unstated") => h("span", { class: "badge unstated", text });
+function tradeBadge(t) {
+  if (t.status === "closed") return t.derived.outcome ? badge(t.derived.outcome) : badge("INFO", "No R");
+  return badge(t.status);
+}
+function tile(label, value, sub) {
+  return h("div", { class: "tile" }, h("div", { class: "t-label", text: label }), h("div", { class: "t-value", text: value }),
+           sub ? h("div", { class: "t-sub", text: sub }) : null);
+}
+function card(title, note, ...kids) {
+  return h("div", { class: "card" }, title ? h("h2", { text: title }) : null, note ? h("p", { class: "note", text: note }) : null, ...kids);
+}
+function meter(frac) {
+  return h("div", { class: "meter-bar", role: "meter", "aria-valuemin": 0, "aria-valuemax": 100,
+                    "aria-valuenow": Math.round(frac * 100) }, h("span", { style: `width:${Math.max(0, Math.min(1, frac)) * 100}%` }));
+}
+function table(cols, rows, opts = {}) {
+  const thead = h("thead", {}, h("tr", {}, cols.map(c => h("th", { class: c.num ? "num" : null, scope: "col", text: c.label }))));
+  const tbody = h("tbody", {}, rows.map(r => {
+    const tr = h("tr", { class: opts.onRow ? "clickable" : null },
+      cols.map(c => {
+        const v = c.render ? c.render(r) : r[c.key];
+        return h("td", { class: [c.num ? "num" : "", c.wrap ? "wrap-cell" : ""].join(" ").trim() || null },
+                 v instanceof Node ? v : (v === null || v === undefined || v === "" ? "—" : String(v)));
+      }));
+    if (opts.onRow) tr.addEventListener("click", e => { if (!e.target.closest("button")) opts.onRow(r); });
+    return tr;
+  }));
+  if (!rows.length) tbody.append(h("tr", {}, h("td", { colspan: cols.length, class: "empty", text: opts.empty || "No data yet." })));
+  return h("div", { class: "table-wrap" }, h("table", {}, thead, tbody));
+}
+function list(items, empty = "None recorded.") {
+  if (!items || !items.length) return h("p", { class: "empty", text: empty });
+  return h("ul", { class: "clean" }, items.map(i => h("li", {}, i instanceof Node ? i : String(i))));
+}
+function tags(items, tax) {
+  if (!items || !items.length) return "—";
+  return h("span", {}, items.map(t => h("span", { class: "tag", text: tax ? tagLabel(tax, t) : String(t) })));
+}
+
+/* ---------- tooltip ---------- */
+const tip = document.getElementById("tooltip");
+function showTip(value, lines, x, y) {
+  tip.replaceChildren(h("strong", { text: value }), ...lines.map(l => h("div", { class: "row" }, l.key ? h("span", { class: "key", style: `background:${l.key}` }) : null, l.text)));
+  tip.style.display = "block";
+  const r = tip.getBoundingClientRect();
+  tip.style.left = Math.max(8, Math.min(window.innerWidth - r.width - 8, x + 14)) + "px";
+  tip.style.top = Math.max(8, Math.min(window.innerHeight - r.height - 8, y - r.height - 12)) + "px";
+}
+const hideTip = () => { tip.style.display = "none"; };
+
+/* ---------- charts ---------- */
+function niceTicks(min, max, count = 4) {
+  if (min === max) { min -= 1; max += 1; }
+  const raw = (max - min) / count, mag = Math.pow(10, Math.floor(Math.log10(raw))), norm = raw / mag;
+  const step = (norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10) * mag;
+  const out = [];
+  for (let v = Math.floor(min / step) * step; v <= Math.ceil(max / step) * step + step / 2; v += step) out.push(Number(v.toFixed(10)));
+  return out;
+}
+function responsive(host, draw) {
+  let width = 0;
+  const render = () => { const w = host.clientWidth; if (w && w !== width) { width = w; host.replaceChildren(draw(w)); } };
+  new ResizeObserver(render).observe(host);
+  render();
+}
+function equityChart(host, curve) {
+  const pts = [{ id: "Start", date: null, r: 0, cum_r: 0 }, ...curve];
+  responsive(host, W => {
+    const H = 240, m = { t: 16, r: 70, b: 30, l: 52 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const vals = pts.map(p => p.cum_r), yt = niceTicks(Math.min(0, ...vals), Math.max(0, ...vals));
+    const y0 = yt[0], y1 = yt[yt.length - 1];
+    const X = i => m.l + (pts.length === 1 ? iw / 2 : i * iw / (pts.length - 1));
+    const Y = v => m.t + ih - (v - y0) / (y1 - y0) * ih;
+    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img",
+                            "aria-label": `Cumulative R over ${curve.length} closed trades, ending at ${fmtR(vals[vals.length - 1])}` });
+    for (const v of yt) {
+      root.append(s("line", { x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v), class: v === 0 ? "axis" : "grid" }));
+      root.append(s("text", { x: m.l - 8, y: Y(v), "text-anchor": "end", "dominant-baseline": "middle" }, fmtTick(v)));
+    }
+    const every = Math.max(1, Math.ceil(pts.length / Math.max(2, Math.floor(iw / 70))));
+    pts.forEach((p, i) => {
+      if (i % every === 0 || i === pts.length - 1)
+        root.append(s("text", { x: X(i), y: H - 8, "text-anchor": i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle" }, p.id));
+    });
+    const d = pts.map((p, i) => `${i ? "L" : "M"}${X(i)},${Y(p.cum_r)}`).join("");
+    root.append(s("path", { d: `${d}L${X(pts.length - 1)},${Y(0)}L${X(0)},${Y(0)}Z`, class: "area" }));
+    root.append(s("path", { d, class: "line" }));
+    pts.forEach((p, i) => { if (i > 0) root.append(s("circle", { cx: X(i), cy: Y(p.cum_r), r: 4, class: "dot" })); });
+    const last = pts[pts.length - 1];
+    root.append(s("text", { x: X(pts.length - 1) + 10, y: Y(last.cum_r), class: "end-label", "dominant-baseline": "middle" }, fmtR(last.cum_r)));
+    const cross = s("line", { class: "crosshair", y1: m.t, y2: m.t + ih, visibility: "hidden" });
+    const hit = s("rect", { x: m.l - 8, y: m.t, width: iw + 16, height: ih, fill: "transparent", tabindex: 0,
+                            "aria-label": "Cumulative R chart: use left and right arrow keys to read each trade" });
+    root.append(cross, hit);
+    let idx = pts.length - 1;
+    const show = (i, cx, cy) => {
+      idx = i; const p = pts[i];
+      cross.setAttribute("x1", X(i)); cross.setAttribute("x2", X(i)); cross.setAttribute("visibility", "visible");
+      const lines = [{ key: "var(--pos)", text: `Cumulative R · ${p.id}` }];
+      if (p.date) lines.push({ text: p.date });
+      if (i > 0) lines.push({ text: `This trade ${fmtR(p.r)}` });
+      showTip(fmtR(p.cum_r), lines, cx, cy);
+    };
+    const nearest = cx => { const b = root.getBoundingClientRect(); let best = 0, dist = Infinity;
+      pts.forEach((_, i) => { const dd = Math.abs(b.left + X(i) - cx); if (dd < dist) { dist = dd; best = i; } }); return best; };
+    hit.addEventListener("pointermove", e => show(nearest(e.clientX), e.clientX, e.clientY));
+    hit.addEventListener("pointerleave", () => { hideTip(); cross.setAttribute("visibility", "hidden"); });
+    const atPoint = i => { const b = root.getBoundingClientRect(); show(i, b.left + X(i), b.top + Y(pts[i].cum_r)); };
+    hit.addEventListener("focus", () => atPoint(idx));
+    hit.addEventListener("blur", () => { hideTip(); cross.setAttribute("visibility", "hidden"); });
+    hit.addEventListener("keydown", e => {
+      if (e.key === "ArrowRight") { atPoint(Math.min(pts.length - 1, idx + 1)); e.preventDefault(); }
+      if (e.key === "ArrowLeft") { atPoint(Math.max(0, idx - 1)); e.preventDefault(); }
+    });
+    return root;
+  });
+}
+const BIN_SHORT = ["< −1.1", "−1.1 to BE", "BE", "BE to 1", "1 to 2", "2 to 3", "≥ 3"];
+const BIN_CLASS = ["bar-neg", "bar-neg", "bar-neutral", "bar-pos", "bar-pos", "bar-pos", "bar-pos"];
+function columnPath(x, y, w, hgt, r = 4) {
+  r = Math.min(r, w / 2, hgt);
+  return `M${x},${y + hgt}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + hgt}Z`;
+}
+function histogramChart(host, bins) {
+  responsive(host, W => {
+    const H = 240, m = { t: 20, r: 12, b: 44, l: 36 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const maxN = Math.max(1, ...bins.map(b => b.count)), yt = niceTicks(0, maxN, Math.min(4, maxN)).filter(v => Number.isInteger(v));
+    const top = yt[yt.length - 1], band = iw / bins.length, bw = Math.min(24, band * 0.6);
+    const Y = v => m.t + ih - v / top * ih;
+    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Distribution of trade results in R" });
+    for (const v of yt) {
+      root.append(s("line", { x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v), class: v === 0 ? "axis" : "grid" }));
+      root.append(s("text", { x: m.l - 8, y: Y(v), "text-anchor": "end", "dominant-baseline": "middle" }, String(v)));
+    }
+    bins.forEach((b, i) => {
+      const cx = m.l + band * i + band / 2, x = cx - bw / 2;
+      const hit = s("rect", { x: m.l + band * i, y: m.t, width: band, height: ih, fill: "transparent", tabindex: 0, class: "bar-hit",
+                              "aria-label": `${b.label}: ${b.count} trade${b.count === 1 ? "" : "s"}` });
+      const tipAt = (cx2, cy2) => showTip(`${b.count} trade${b.count === 1 ? "" : "s"}`, [{ text: b.label }], cx2, cy2);
+      hit.addEventListener("pointermove", e => tipAt(e.clientX, e.clientY));
+      hit.addEventListener("pointerleave", hideTip);
+      hit.addEventListener("focus", () => { const r = root.getBoundingClientRect(); tipAt(r.left + cx, r.top + Y(b.count)); });
+      hit.addEventListener("blur", hideTip);
+      root.append(hit);
+      if (b.count > 0) {
+        root.append(s("path", { d: columnPath(x, Y(b.count), bw, Y(0) - Y(b.count)), class: `bar-mark ${BIN_CLASS[i]}` }));
+        root.append(s("text", { x: cx, y: Y(b.count) - 6, "text-anchor": "middle", class: "cap-label" }, String(b.count)));
+      }
+      const words = BIN_SHORT[i].split(" ");
+      const label = s("text", { x: cx, y: H - m.b + 16, "text-anchor": "middle" });
+      if (band < 58 && words.length > 1) {
+        const mid = Math.ceil(words.length / 2);
+        label.append(s("tspan", { x: cx, dy: 0 }, words.slice(0, mid).join(" ")), s("tspan", { x: cx, dy: 13 }, words.slice(mid).join(" ")));
+      } else label.textContent = BIN_SHORT[i];
+      root.append(label);
+    });
+    return root;
+  });
+}
+
+/* ---------- data helpers ---------- */
+const trades = KB.trades || [];
+const closed = trades.filter(t => t.status === "closed");
+const measured = closed.filter(t => isNum(t.derived.r));
+const byId = Object.fromEntries(trades.map(t => [t.id, t]));
+const dig = (o, path) => path.split(".").reduce((a, k) => (a && typeof a === "object" ? a[k] : undefined), o);
+const newestFirst = arr => [...arr].sort((a, b) => String(b.derived.sort_date).localeCompare(String(a.derived.sort_date)) || b.id.localeCompare(a.id));
+const strategyLabel = t => t.strategy && t.strategy.id ? `${t.strategy.id} v${t.strategy.version || "?"}` : "—";
+
+const GROUP_TAX = { setup: "setups", regime: "regimes" };
+const groupLabel = (key, v) => GROUP_TAX[key] ? tagLabel(GROUP_TAX[key], v) : key === "entry_model" ? titleCase(v) : v;
+const SUMMARY_COLS = (label, key) => [
+  { label, render: r => groupLabel(key, r.label) },
+  { label: "n", num: true, render: r => r.summary.n },
+  { label: "W/L/BE", render: r => `${r.summary.wins}/${r.summary.losses}/${r.summary.breakevens}` },
+  { label: "Win %", num: true, render: r => fmtFrac(r.summary.win_rate) },
+  { label: "Avg win", num: true, render: r => fmtR(r.summary.avg_win) },
+  { label: "Avg loss", num: true, render: r => fmtR(r.summary.avg_loss) },
+  { label: "Expectancy", num: true, render: r => fmtR(r.summary.expectancy) },
+  { label: "95% CI", render: r => fmtCI(r.summary.ci) },
+  { label: "PF", num: true, render: r => isNum(r.summary.profit_factor) ? r.summary.profit_factor.toFixed(2) : "—" },
+  { label: "Max DD", num: true, render: r => r.summary.n ? fmtNum(r.summary.max_drawdown) + "R" : "—" },
+  { label: "Evidence", render: r => r.summary.evidence },
+];
+
+/* ---------- panels ---------- */
+function renderOverview() {
+  const o = KB.stats.overall, cfg = KB.config, ph = KB.phase;
+  const banner = card(null, null, h("div", { class: "banner" },
+    h("span", { class: "phase", text: `Phase: ${ph.name}` }),
+    h("span", { class: "note", style: "margin:0", text: `${ph.measured} of ${ph.target} measured trades before patterns are examined` }),
+    h("div", { class: "meter" }, meter(ph.measured / ph.target))));
+  const hero = h("div", { class: "hero" },
+    h("div", {}, h("div", { class: "value", text: fmtR(o.total) }), h("div", { class: "label", text: `Net result across ${o.n} closed trade${o.n === 1 ? "" : "s"} with a measurable R` })));
+  const tiles = h("div", { class: "tiles" },
+    tile("Win rate", fmtFrac(o.win_rate), `${o.wins} W · ${o.losses} L · ${o.breakevens} BE`),
+    tile("Expectancy per trade", fmtR(o.expectancy), o.ci ? `95% CI ${fmtCI(o.ci)}` : `No interval below n=${cfg.min_n_for_ci}`),
+    tile("Profit factor", isNum(o.profit_factor) ? o.profit_factor.toFixed(2) : "—", isNum(o.profit_factor) ? null : `Shown from n=${cfg.min_n_for_ratios}`),
+    tile("Max drawdown", fmtNum(o.max_drawdown) + "R", "Peak-to-trough, cumulative R"),
+    tile("Avg win / avg loss", `${fmtR(o.avg_win)} / ${fmtR(o.avg_loss)}`, o.payoff ? `Payoff ${o.payoff.toFixed(2)}` : null),
+    tile("Longest streaks", `${o.max_win_streak} W / ${o.max_loss_streak} L`, "Breakeven ends a streak"),
+    tile("Evidence tier", o.evidence, `Moderate from n=${cfg.evidence_tiers.moderate_min_n}, higher from n=${cfg.evidence_tiers.higher_min_n}`));
+
+  const eqHost = h("div", { class: "chart-host" }), histHost = h("div", { class: "chart-host" });
+  const curve = KB.stats.equity_curve;
+  const eqCard = card("Cumulative R", "Each point is one closed trade, in order. Hover or focus the chart and use the arrow keys to read values.",
+    curve.length ? eqHost : h("p", { class: "empty", text: "No measurable trades yet." }),
+    h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
+      table([{ key: "id", label: "Trade" }, { key: "date", label: "Date" }, { label: "R", num: true, render: r => fmtR(r.r) },
+             { label: "Cumulative", num: true, render: r => fmtR(r.cum_r) }], curve)));
+  const histCard = card("R distribution", "How results spread, not just the average. The first bin isolates losses beyond −1.1R (slippage or a violated stop).",
+    histHost, h("div", { class: "legend" },
+      h("span", {}, h("i", { style: "background:var(--neg)" }), "Loss"), h("span", {}, h("i", { style: "background:var(--neutral)" }), "Breakeven"),
+      h("span", {}, h("i", { style: "background:var(--pos)" }), "Win")),
+    h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
+      table([{ key: "label", label: "Bin" }, { key: "count", label: "Trades", num: true }], KB.stats.histogram)));
+
+  const recent = newestFirst(trades).slice(0, 6);
+  const latestLesson = newestFirst(closed).find(t => dig(t, "review.lesson"));
+  const el = h("div", { class: "stack" }, banner, hero, tiles, h("div", { class: "grid2" }, eqCard, histCard),
+    card("Recent trades", "Newest first. Click a row for the full record.", journalTable(recent)),
+    latestLesson ? card(`Latest lesson · ${latestLesson.id}`, null, h("p", { class: "prose", text: latestLesson.review.lesson })) : null);
+  requestAnimationFrame(() => { if (curve.length) equityChart(eqHost, curve); histogramChart(histHost, KB.stats.histogram); });
+  return el;
+}
+
+function journalTable(rows) {
+  return table([
+    { label: "ID", render: t => h("button", { class: "linkish", type: "button", text: t.id, onclick: () => openTrade(t.id) }) },
+    { key: "opened", label: "Opened" }, { key: "closed", label: "Closed" }, { key: "asset", label: "Asset" },
+    { label: "Dir", render: t => t.direction ? titleCase(t.direction) : "—" },
+    { label: "Entry model", render: t => dig(t, "plan.entry_model") ? titleCase(t.plan.entry_model) : "—" },
+    { label: "Setups", render: t => tags(t.setups, "setups") },
+    { label: "Entry", num: true, render: t => fmtPrice(dig(t, "plan.entry")) },
+    { label: "Stop", num: true, render: t => fmtPrice(dig(t, "plan.stop")) },
+    { label: "Target", num: true, render: t => (dig(t, "plan.targets") || []).map(fmtPrice).join(", ") || "—" },
+    { label: "Stop %", num: true, render: t => fmtPct(dig(t, "derived.exposure.stop_pct")) },
+    { label: "Risk %", num: true, render: t => fmtPct(dig(t, "risk.risk_pct"), 1) },
+    { label: "Lev", num: true, render: t => isNum(dig(t, "risk.leverage")) ? t.risk.leverage + "x" : "—" },
+    { label: "Plan R:R", num: true, render: t => (t.derived.planned_rr || []).filter(isNum).map(x => x.toFixed(2)).join(", ") || "—" },
+    { label: "Result", num: true, render: t => t.status === "closed" ? fmtR(t.derived.r) : isNum(t.derived.counterfactual_r) ? fmtR(t.derived.counterfactual_r) + " (hyp.)" : "—" },
+    { label: "Outcome", render: tradeBadge },
+    { label: "Process", render: t => t.derived.label || (t.status === "closed" ? "Unscored" : "—") },
+  ], rows, { onRow: t => openTrade(t.id), empty: "No trades recorded yet." });
+}
+
+function renderJournal() {
+  const status = h("select", {}, ["all", "closed", "open", "planned", "missed", "not_taken"].map(v => h("option", { value: v, text: v === "all" ? "All statuses" : titleCase(v) })));
+  const outcome = h("select", {}, ["all", "win", "loss", "breakeven"].map(v => h("option", { value: v, text: v === "all" ? "All outcomes" : titleCase(v) })));
+  const models = [...new Set(trades.map(t => dig(t, "plan.entry_model")).filter(Boolean))];
+  const model = h("select", {}, [h("option", { value: "all", text: "All entry models" }), ...models.map(v => h("option", { value: v, text: titleCase(v) }))]);
+  const search = h("input", { type: "search", placeholder: "Search asset, tag, lesson…", "aria-label": "Search trades" });
+  const host = h("div", {});
+  const count = h("span", { class: "note", style: "margin:0" });
+  const render = () => {
+    const q = search.value.trim().toLowerCase();
+    const rows = newestFirst(trades).filter(t =>
+      (status.value === "all" || t.status === status.value) &&
+      (outcome.value === "all" || t.derived.outcome === outcome.value) &&
+      (model.value === "all" || dig(t, "plan.entry_model") === model.value) &&
+      (!q || JSON.stringify(t).toLowerCase().includes(q)));
+    host.replaceChildren(journalTable(rows));
+    count.textContent = `${rows.length} of ${trades.length} records`;
+  };
+  [status, outcome, model].forEach(el => el.addEventListener("change", render));
+  search.addEventListener("input", render);
+  render();
+  return h("div", { class: "stack" }, card("Journal", "Every trade and idea on record: executed, planned, missed. Missed and not-taken records never enter the statistics.",
+    h("div", { class: "filters" }, h("label", {}, "Status", status), h("label", {}, "Outcome", outcome), h("label", {}, "Entry", model), search, count), host));
+}
+
+function renderPerformance() {
+  const labels = { setup: "Setup", entry_model: "Entry model", version: "Strategy version", direction: "Direction", asset: "Asset",
+                   regime: "Market regime", session: "Session", timeframe: "Execution timeframe", leverage: "Leverage setting",
+                   risk: "Risk per trade", month: "Month" };
+  const multi = new Set(["setup", "regime"]);
+  const pick = h("select", { "aria-label": "Breakdown" }, Object.entries(labels).map(([k, v]) => h("option", { value: k, text: v })));
+  const host = h("div", {}), note = h("p", { class: "note" });
+  const render = () => {
+    const key = pick.value;
+    host.replaceChildren(table(SUMMARY_COLS(labels[key], key), KB.stats.by[key] || []));
+    note.textContent = multi.has(key) ? "Multi-valued field: a trade appears in every group it is tagged with, so groups overlap." : "";
+  };
+  pick.addEventListener("change", render); render();
+  const matrix = KB.stats.process_outcome;
+  const cell = (g, o) => (matrix.find(m => m.grade === g && m.outcome === o) || { n: 0 }).n;
+  const loss = Object.entries(KB.stats.loss_types).map(([k, v]) => ({ type: k, ...v }));
+  const cf = KB.stats.counterfactual;
+  return h("div", { class: "stack" },
+    card("Breakdown", "Every row carries its sample size and evidence tier. Small groups are noise until proven otherwise.",
+      h("div", { class: "filters" }, h("label", {}, "Group by", pick)), note, host),
+    h("div", { class: "grid2" },
+      card("Process vs outcome", "Good outcome with poor process is luck, not a pattern to repeat.",
+        table([{ key: "grade", label: "Process" }, { label: "Win", num: true, render: r => cell(r.grade, "win") },
+               { label: "Loss", num: true, render: r => cell(r.grade, "loss") }, { label: "Breakeven", num: true, render: r => cell(r.grade, "breakeven") }],
+              ["good", "mixed", "poor", "unscored"].map(g => ({ grade: g })))),
+      card("Loss classification (A–E)", "A = good loss · B = strategy failure · C = execution error · D = invalid setup · E = information deficiency.",
+        table([{ key: "type", label: "Type" }, { key: "label", label: "Meaning" }, { key: "n", label: "n", num: true },
+               { label: "Total R", num: true, render: r => fmtR(r.total_r) }], loss, { empty: "No losses yet." }))),
+    card("Trades without vs with tagged mistakes", "The gap estimates what execution errors cost. It is confounded by anything else that differs between the two groups.",
+      table(SUMMARY_COLS("Subset"), [{ label: "No mistakes", summary: KB.stats.mistake_free }, { label: "At least one mistake", summary: KB.stats.with_mistakes }])),
+    card("Counterfactual: missed and not taken", "Hypothetical results only. Excluded from every statistic above.",
+      table([{ label: "Trade", render: r => h("button", { class: "linkish", type: "button", text: r.id, onclick: () => openTrade(r.id) }) },
+             { label: "Hypothetical R", num: true, render: r => isNum(r.hypothetical_r) ? fmtR(r.hypothetical_r) : "Not computable" }], cf,
+            { empty: "No missed or not-taken records." })));
+}
+
+const RULE_LABELS = {
+  timeframes: "Timeframes", market_structure: "Market structure rules", market_conditions: "Market conditions",
+  required_conditions: "Required conditions", confirmation: "Confirmations", confluences: "Confluences", zones: "Zones",
+  entry_models: "Entry models", entry_model: "Entry model", stop_model: "Stop model", target_model: "Target model",
+  risk_model: "Risk model", leverage_model: "Leverage model", management: "Management", do_not_trade_when: "Do not trade when",
+  common_mistakes: "Common mistakes", open_questions: "Open questions",
+};
+function ruleValue(v) {
+  if (v === null || v === undefined) return unstated();
+  if (Array.isArray(v)) return v.length ? list(v) : unstated("None stated");
+  if (typeof v === "object") {
+    const entries = Object.entries(v);
+    if (!entries.length) return unstated("None stated");
+    return h("dl", { class: "kv" }, entries.flatMap(([k, x]) => [h("dt", { text: titleCase(k) }), h("dd", {}, ruleValue(x))]));
+  }
+  return h("span", { text: String(v) });
+}
+function renderStrategy() {
+  if (!KB.strategies.length) return card("Strategies", "No strategy recorded yet.");
+  return h("div", { class: "stack" }, KB.strategies.map(st => {
+    const meta = st.meta, cur = String(meta.current_version), rules = st.versions[cur] || {};
+    const promo = st.promotion || {}, n = st.measured_trades.length;
+    const skip = new Set(["version", "date", "source", "supersedes"]);
+    const dl = h("dl", { class: "kv" }, Object.entries(rules).filter(([k]) => !skip.has(k))
+      .flatMap(([k, v]) => [h("dt", { text: RULE_LABELS[k] || titleCase(k) }), h("dd", {}, ruleValue(v))]));
+    const versions = Object.keys(st.versions).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+      .map(v => ({ v, date: st.versions[v].date, source: st.versions[v].source, current: v === cur }));
+    return h("div", { class: "stack" },
+      card(meta.name || st.slug, meta.summary,
+        h("div", { class: "tiles" },
+          tile("Status", titleCase(meta.status), meta.status === "unvalidated" ? "New strategy: not yet evidenced" : null),
+          tile("Current version", "v" + cur, rules.date ? `Recorded ${rules.date}` : null),
+          tile("Measured trades", String(n), n ? st.measured_trades.join(", ") : "None yet"),
+          tile("Next status", promo.developing ? `${Math.min(n, promo.developing)} / ${promo.developing}` : "—",
+               promo.developing ? `Developing needs ${promo.developing}, established ${promo.established}` : null)),
+        h("h3", { text: `Rules · v${cur}` }), h("p", { class: "note", text: rules.source || "" }), dl),
+      h("div", { class: "grid2" },
+        card("Version history", "Committed versions are immutable. Old versions are kept so results can be compared.",
+          table([{ label: "Version", render: r => "v" + r.v + (r.current ? " (current)" : "") }, { key: "date", label: "Date" },
+                 { key: "source", label: "Source", wrap: true }], versions)),
+        card("Change log", "Rule changes need evidence. Clarifications record rules the trader stated that were already in force.",
+          table([{ key: "id", label: "ID" }, { label: "Kind", render: r => titleCase(r.kind || "rule_change") },
+                 { label: "Status", render: r => titleCase(r.status || "") }, { key: "resulting_version", label: "Version" },
+                 { label: "Detail", wrap: true, render: r => r.statement || r.proposed_change || r.observation || "—" }],
+                st.changes, { empty: "No changes recorded." }))));
+  }));
+}
+
+function renderRisk() {
+  const p = KB.profile || {}, src = p.sources || {};
+  const rows = [
+    ["Risk per trade", "risk.risk_per_trade_pct", v => v + "% of equity"], ["Max risk per trade", "risk.max_risk_per_trade_pct", v => v + "% of equity"],
+    ["Max daily loss", "risk.max_daily_loss_r", v => v + "R"], ["Max open risk", "risk.max_open_risk_pct", v => v + "% of equity"],
+    ["Pause after consecutive losses", "risk.max_consecutive_losses_before_pause", v => String(v)],
+    ["Max leverage", "leverage.max_leverage", v => v + "x"], ["Margin mode", "leverage.margin_mode", v => titleCase(v)],
+    ["Maintenance margin rate", "leverage.maintenance_margin_rate", v => (v * 100).toFixed(2) + "%"],
+    ["Maker fee", "fees.maker_rate", v => (v * 100).toFixed(3) + "%"], ["Taker fee", "fees.taker_rate", v => (v * 100).toFixed(3) + "%"],
+    ["Account equity", "account.equity", v => fmtNum(v)],
+  ].map(([label, path, f]) => ({ label, value: dig(p, path), f, source: src[path] }));
+  const profileTable = table([{ key: "label", label: "Rule" },
+    { label: "Value", render: r => r.value === null || r.value === undefined ? unstated("Unresolved") : r.f(r.value) },
+    { label: "Source", wrap: true, render: r => r.source || "—" }], rows);
+
+  const expRows = trades.filter(t => t.derived.exposure).map(t => ({ t, e: t.derived.exposure }));
+  const expTable = table([
+    { label: "Trade", render: r => h("button", { class: "linkish", type: "button", text: r.t.id, onclick: () => openTrade(r.t.id) }) },
+    { label: "Asset", render: r => r.t.asset }, { label: "Stop distance", num: true, render: r => fmtPct(r.e.stop_pct) },
+    { label: "Risk", num: true, render: r => fmtPct(dig(r.t, "risk.risk_pct"), 1) },
+    { label: "Notional", num: true, render: r => isNum(r.e.notional_pct) ? fmtPct(r.e.notional_pct, 1) + " of equity" : "—" },
+    { label: "Effective lev.", num: true, render: r => fmtX(r.e.effective_leverage) },
+    { label: "Lev. setting", num: true, render: r => isNum(dig(r.t, "risk.leverage")) ? r.t.risk.leverage + "x" : "—" },
+    { label: "Margin posted", num: true, render: r => isNum(r.e.margin_pct) ? fmtPct(r.e.margin_pct) + " of equity" : "—" },
+    { label: "Liquidation (isolated)", num: true, render: r => isNum(r.e.liq_isolated) ? fmtNum(r.e.liq_isolated) + (r.e.liq_mode_assumed ? " *" : "") : "—" },
+    { label: "Liq. / stop distance", num: true, render: r => fmtX(r.e.liq_to_stop) },
+    { label: "Check", render: r => r.e.liq_before_stop ? badge("CRITICAL", "Liq. before stop") : isNum(r.e.liq_to_stop) ? badge("win", "Stop fires first") : "—" },
+  ], expRows, { empty: "No trades with entry and stop yet." });
+
+  return h("div", { class: "stack" },
+    card("Risk rules", "Only what the trader has stated. Unresolved rules are gaps to fill, never defaults to assume.", profileTable),
+    card("Exposure per trade", "Leverage is not risk. With a fixed % risk, the stop distance sets the position size; leverage only changes the margin posted and the liquidation distance. * = margin mode not recorded, isolated assumed.", expTable),
+    card("Position calculator", "Sizes a position from risk and stop. Same formulas as ./tj size. Liquidation is an approximation: the exchange's figure is authoritative.", calculator()));
+}
+
+function calculator() {
+  const p = KB.profile || {};
+  const field = (label, attrs) => { const input = h("input", { type: "number", step: "any", inputmode: "decimal", ...attrs }); return [h("label", {}, label, input), input]; };
+  const [lEq, eq] = field("Account equity", { value: dig(p, "account.equity") ?? "", placeholder: "e.g. 10000" });
+  const [lRisk, risk] = field("Risk per trade (%)", { value: dig(p, "risk.risk_per_trade_pct") ?? "", placeholder: "1" });
+  const [lEntry, entry] = field("Entry price", { placeholder: "90.41" });
+  const [lStop, stop] = field("Stop price", { placeholder: "87.59" });
+  const [lTp, tp] = field("Target price", { placeholder: "103.30" });
+  const [lLev, lev] = field("Leverage setting (x)", { placeholder: "10" });
+  const [lFee, fee] = field("Fee per side (%)", { value: isNum(dig(p, "fees.taker_rate")) ? p.fees.taker_rate * 100 : "", placeholder: "0.06" });
+  const [lMmr, mmr] = field("Maintenance margin (%)", { value: isNum(dig(p, "leverage.maintenance_margin_rate")) ? p.leverage.maintenance_margin_rate * 100 : 0.5 });
+  const mode = h("select", {}, ["isolated", "cross"].map(v => h("option", { value: v, text: titleCase(v) })));
+  if (dig(p, "leverage.margin_mode")) mode.value = p.leverage.margin_mode;
+  const out = h("div", {});
+  const v = el => el.value === "" ? null : Number(el.value);
+  const recalc = () => {
+    out.replaceChildren();
+    if ([entry, stop, eq, risk].some(el => v(el) === null)) { out.append(h("p", { class: "empty", text: "Enter equity, risk %, entry and stop." })); return; }
+    try {
+      const res = RiskMath.size({ entry: v(entry), stop: v(stop), riskAmount: v(eq) * v(risk) / 100, equity: v(eq), leverage: v(lev),
+        marginMode: mode.value, mmrRate: (v(mmr) ?? 0.5) / 100, feeRate: (v(fee) ?? 0) / 100, targets: v(tp) === null ? [] : [v(tp)],
+        maxRiskPct: dig(p, "risk.max_risk_per_trade_pct") ?? null, maxLeverage: dig(p, "leverage.max_leverage") ?? null });
+      const rr = res.targets[0];
+      out.append(h("div", { class: "tiles", style: "margin-top:12px" },
+        tile("Side", titleCase(res.side), `Stop ${fmtPct(res.stopDistancePct)} from entry`),
+        tile("Quantity", res.qty.toPrecision(6), "Base units"),
+        tile("Notional", fmtNum(res.notional), `${fmtX(res.effectiveLeverage)} effective leverage`),
+        tile("Loss at stop", fmtNum(res.lossAtStop), `${fmtPct(res.riskPct)} of equity, fees included`),
+        tile("Margin posted", res.marginRequired === null ? "—" : fmtNum(res.marginRequired), v(lev) ? `At ${v(lev)}x` : "No leverage set"),
+        tile("Liquidation", res.liquidation === null ? "—" : fmtNum(res.liquidation), res.liqToStop ? `${fmtX(res.liqToStop)} the stop distance` : null),
+        tile("Reward : risk", rr ? rr.rrGross.toFixed(2) : "—", rr ? `${rr.rrNet.toFixed(2)} after fees` : "Add a target")));
+      for (const [level, msg] of res.flags) out.append(h("div", { class: "flag" }, h("span", { class: "dot", style: `background:${STATUS[level][0]}` }), h("span", {}, h("strong", { text: STATUS[level][1] + ": " }), msg)));
+    } catch (err) { out.append(h("div", { class: "flag" }, h("span", { class: "dot", style: "background:var(--critical)" }), err.message)); }
+  };
+  [eq, risk, entry, stop, tp, lev, fee, mmr, mode].forEach(el => el.addEventListener("input", recalc));
+  recalc();
+  return h("div", {}, h("div", { class: "calc" }, lEq, lRisk, lEntry, lStop, lTp, lLev, h("label", {}, "Margin mode", mode), lFee, lMmr), out);
+}
+
+function renderBehaviour() {
+  const errs = KB.stats.errors, beh = KB.stats.behaviors;
+  return h("div", { class: "stack" },
+    card("Recurring errors", `Flagged as recurring at ${KB.config.recurring_error_min} occurrences. Treated as system-design problems, not character judgements.`,
+      table([{ label: "Mistake", render: r => tagLabel("mistakes", r.tag) }, { key: "count", label: "Count", num: true },
+             { key: "recent", label: "Recent", num: true }, { label: "Status", render: r => r.recurring ? badge("recurring") : "—" },
+             { label: "R cost", num: true, render: r => `${fmtR(r.total_r)} (n=${r.n_measured})` }, { label: "Mean R", num: true, render: r => fmtR(r.mean_r) },
+             { key: "last_seen", label: "Last seen" }, { label: "Trades", wrap: true, render: r => r.trades.join(", ") }], errs,
+            { empty: "No mistakes recorded yet." })),
+    card("Strong behaviours", "Mean R with and without each behaviour. This shows correlation, not cause.",
+      table([{ label: "Behaviour", render: r => tagLabel("behaviors", r.tag) }, { key: "n_with", label: "n with", num: true },
+             { label: "Mean R with", num: true, render: r => fmtR(r.mean_with) }, { key: "n_without", label: "n without", num: true },
+             { label: "Mean R without", num: true, render: r => fmtR(r.mean_without) }], beh, { empty: "No behaviours recorded yet." })));
+}
+
+function renderGaps() {
+  const issues = (KB.build && KB.build.validation) || [];
+  const questions = KB.strategies.flatMap(st => ((st.versions[String(st.meta.current_version)] || {}).open_questions || []).map(q => ({ st: st.slug, q })));
+  return h("div", { class: "stack" },
+    card("Open questions", "What the system still needs from the trader before these rules can be automated.",
+      questions.length ? list(questions.map(x => x.q)) : h("p", { class: "empty", text: "None open." })),
+    card("Unresolved profile parameters", "Never assumed. Each one is filled only when the trader states it.", list(KB.unresolved, "All resolved.")),
+    card("Validation", "Integrity checks from the last build.",
+      table([{ label: "Level", render: r => badge(r.level) }, { key: "where", label: "Where" }, { key: "msg", label: "Detail", wrap: true }], issues,
+            { empty: "No issues." })),
+    card("Records not yet usable in statistics", null,
+      table([{ key: "id", label: "Trade" }, { label: "Needs", wrap: true, render: r => r.needs.join(", ") }], KB.gaps.unmeasurable, { empty: "None: every closed trade has a measurable R." }),
+      h("p", { class: "note", style: "margin-top:10px", text: KB.gaps.unreviewed.length ? `Closed trades without process scores: ${KB.gaps.unreviewed.join(", ")}` : "Every closed trade has process scores." })));
+}
+
+/* ---------- trade detail ---------- */
+const dlg = document.getElementById("trade-dialog");
+function kv(pairs) {
+  return h("dl", { class: "kv" }, pairs.filter(Boolean).flatMap(([k, v]) => [h("dt", { text: k }), h("dd", {}, v === null || v === undefined || v === "" ? "—" : v instanceof Node ? v : String(v))]));
+}
+function openTrade(id) {
+  const t = byId[id]; if (!t) return;
+  const d = t.derived, e = d.exposure || {}, rv = t.review || {}, sc = rv.scores || {};
+  const exits = (dig(t, "fills.exits") || []).map(x => `${fmtPrice(x.price)}${isNum(x.qty) ? " × " + x.qty : isNum(x.fraction) ? " × " + (x.fraction * 100) + "%" : ""}${x.reason ? " — " + x.reason : ""}`);
+  const scoreRows = ["setup", "context", "execution", "risk", "management"].map(k =>
+    h("div", { class: "score-row" }, h("span", { text: titleCase(k) }), isNum(sc[k]) ? meter(sc[k] / 5) : unstated("Not scored"), h("span", { class: "num", text: isNum(sc[k]) ? `${sc[k]}/5` : "—" })));
+  const chartImgs = (dig(t, "evidence.charts") || []).filter(c => CHARTS[c]).map(c => {
+    const img = h("img", { class: "chart-img", src: CHARTS[c], alt: `Chart for ${t.id}`, loading: "lazy" });
+    img.addEventListener("click", () => { img.style.cursor = img.style.width ? "zoom-in" : "zoom-out"; img.style.width = img.style.width ? "" : "200%"; });
+    return h("div", { style: "overflow:auto" }, img);
+  });
+  const result = t.status === "closed"
+    ? `${fmtR(d.r)}${d.r_source ? " (" + d.r_source + ")" : ""}`
+    : isNum(d.counterfactual_r) ? `${fmtR(d.counterfactual_r)} (counterfactual)` : "—";
+  dlg.replaceChildren(
+    h("div", { class: "dlg-head" },
+      h("div", {}, h("h2", { id: "dlg-title", text: `${t.id} · ${t.asset || "—"} ${t.direction ? titleCase(t.direction) : ""}` }),
+        h("div", { style: "display:flex;gap:6px;flex-wrap:wrap;margin-top:6px" }, tradeBadge(t), d.label ? h("span", { class: "badge", text: d.label }) : null)),
+      h("button", { class: "btn", type: "button", text: "Close", onclick: () => dlg.close() })),
+    h("div", { class: "dlg-body stack" },
+      h("div", { class: "grid2" },
+        card("Trade", null, kv([["Opened", t.opened], ["Closed", t.closed], ["Held", isNum(d.holding_days) ? `${d.holding_days} days` : null],
+          ["Market", t.market], ["Session", t.session], ["Timeframes", `HTF ${dig(t, "timeframes.htf") || "—"} · execution ${dig(t, "timeframes.execution") || "—"}`],
+          ["Strategy", strategyLabel(t)], ["Entry model", dig(t, "plan.entry_model") ? titleCase(t.plan.entry_model) : null],
+          ["Setups", tags(t.setups, "setups")], ["Regime", tags(t.regime, "regimes")]])),
+        card("Plan and result", null, kv([["Entry", fmtPrice(dig(t, "plan.entry"))], ["Stop (initial)", fmtPrice(dig(t, "plan.stop"))],
+          ["Targets", (dig(t, "plan.targets") || []).map((x, i) => `${fmtPrice(x)}${isNum((d.planned_rr || [])[i]) ? " (" + d.planned_rr[i].toFixed(2) + "R)" : ""}`).join(", ")],
+          ["Invalidation", dig(t, "plan.invalidation")], ["Exits", exits.length ? list(exits) : null], ["Fees", fmtNum(dig(t, "fills.fees"))],
+          ["Result", result], ["PnL", fmtNum(d.pnl)]]))),
+      h("div", { class: "grid2" },
+        card("Risk decomposition", "Leverage changes margin and liquidation distance, not the loss at stop.", kv([
+          ["Stop distance", fmtPct(e.stop_pct)], ["Risk", isNum(dig(t, "risk.risk_pct")) ? t.risk.risk_pct + "% of equity" : null],
+          ["Notional", isNum(e.notional_pct) ? fmtPct(e.notional_pct, 1) + " of equity" : null], ["Effective leverage", fmtX(e.effective_leverage)],
+          ["Leverage setting", isNum(dig(t, "risk.leverage")) ? t.risk.leverage + "x" : null], ["Margin mode", dig(t, "risk.margin_mode") || unstated("Not recorded")],
+          ["Margin posted", isNum(e.margin_pct) ? fmtPct(e.margin_pct) + " of equity" : null],
+          ["Liquidation", isNum(e.liq_isolated) ? `${fmtNum(e.liq_isolated)} (isolated${e.liq_mode_assumed ? ", assumed" : ""}), ${fmtPct(e.liq_distance_pct)} away, ${fmtX(e.liq_to_stop)} the stop distance` : null]])),
+        card("Confluences and confirmations", null, h("h3", { text: "Confluences" }), list(dig(t, "plan.confluences")),
+          h("h3", { text: "Confirmations" }), list(dig(t, "plan.confirmations")))),
+      card("Decision journal", "Before is the thesis at the time of the decision. It is kept separate from what was learned afterwards.",
+        h("h3", { text: "Before" }), h("p", { class: "prose", text: dig(t, "journal.before") || "—" }),
+        h("h3", { text: "During" }), h("p", { class: "prose", text: dig(t, "journal.during") || "—" }),
+        h("h3", { text: "After" }), h("p", { class: "prose", text: dig(t, "journal.after") || "—" })),
+      card("Evidence", "Facts, readings of those facts, and untested ideas, kept apart.",
+        h("h3", { text: "Observed" }), list(dig(t, "evidence.observed")), h("h3", { text: "Interpreted" }), list(dig(t, "evidence.interpreted")),
+        h("h3", { text: "Hypotheses" }), list(dig(t, "evidence.hypotheses"))),
+      card("Review", d.process_mean ? `Process mean ${d.process_mean.toFixed(2)} / 5 → ${d.grade}` : "Process not yet scored.", ...scoreRows,
+        kv([["Setup validity", rv.setup_validity], ["Followed plan", rv.followed_plan === null || rv.followed_plan === undefined ? null : rv.followed_plan ? "Yes" : "No"],
+          ["Loss type", rv.loss_type ? `${rv.loss_type} · ${tagLabel("loss_types", rv.loss_type)}` : null],
+          ["Mistakes", tags(rv.mistakes, "mistakes")], ["Behaviours", tags(rv.behaviors, "behaviors")], ["Outside control", list(rv.outside_control)],
+          ["Lesson", rv.lesson], ["Actionable change", rv.actionable_change], ["Strategy change", rv.strategy_change], ["Evidence strength", rv.evidence_strength]])),
+      chartImgs.length ? card("Chart", "Click to zoom.", ...chartImgs) : null));
+  dlg.showModal();
+  dlg.scrollTop = 0;
+}
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+
+/* ---------- shell ---------- */
+const PANELS = [["overview", "Overview", renderOverview], ["journal", "Journal", renderJournal], ["performance", "Performance", renderPerformance],
+                ["strategy", "Strategy", renderStrategy], ["risk", "Risk", renderRisk], ["behaviour", "Behaviour", renderBehaviour], ["gaps", "Data gaps", renderGaps]];
+const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } } };
+const tabs = document.getElementById("tabs"), main = document.getElementById("main"), rendered = {};
+function select(id) {
+  if (!PANELS.some(p => p[0] === id)) id = "overview";
+  for (const [pid, , fn] of PANELS) {
+    const btn = document.getElementById("tab-" + pid), panel = document.getElementById("panel-" + pid);
+    const on = pid === id;
+    btn.setAttribute("aria-selected", on); btn.tabIndex = on ? 0 : -1; panel.classList.toggle("active", on);
+    if (on && !rendered[pid]) { panel.append(fn()); rendered[pid] = true; }
+  }
+  store.set("tj-tab", id);
+  if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
+}
+for (const [id, label] of PANELS) {
+  tabs.append(h("button", { id: "tab-" + id, role: "tab", type: "button", "aria-controls": "panel-" + id, text: label, onclick: () => select(id) }));
+  main.append(h("section", { id: "panel-" + id, class: "panel", role: "tabpanel", "aria-labelledby": "tab-" + id }));
+}
+tabs.addEventListener("keydown", e => {
+  const ids = PANELS.map(p => p[0]), cur = ids.indexOf(document.activeElement.id.replace("tab-", ""));
+  if (cur < 0 || !["ArrowRight", "ArrowLeft"].includes(e.key)) return;
+  const next = ids[(cur + (e.key === "ArrowRight" ? 1 : ids.length - 1)) % ids.length];
+  select(next); document.getElementById("tab-" + next).focus();
+});
+window.addEventListener("hashchange", () => select(location.hash.slice(1)));
+
+const themeBtn = document.getElementById("theme-btn");
+function applyTheme(t) {
+  if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  const dark = t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  themeBtn.textContent = dark ? "Light mode" : "Dark mode";
+}
+themeBtn.addEventListener("click", () => {
+  const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = dark ? "light" : "dark"; store.set("tj-theme", next); applyTheme(next);
+});
+applyTheme(store.get("tj-theme"));
+
+const strat = KB.strategies[0];
+document.getElementById("brand-sub").textContent = [
+  strat ? `${strat.meta.name || strat.slug} · v${strat.meta.current_version} · ${titleCase(strat.meta.status)}` : "No strategy recorded",
+  `${KB.phase.name} ${KB.phase.measured}/${KB.phase.target}`].join("  ·  ");
+document.getElementById("footer").textContent =
+  `Built ${KB.build.generated_at} · fingerprint ${KB.fingerprint} · schema v${KB.schema_version} · source of truth: journal/trades/*.yaml · rebuild with ./tj build · machine-readable copy: exports/kb.json`;
+select(location.hash.slice(1) || store.get("tj-tab") || "overview");
+</script>
+</body>
+</html>

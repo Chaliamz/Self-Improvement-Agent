@@ -188,6 +188,17 @@ def cmd_report(kb: KB, args) -> int:
     return 0
 
 
+def cmd_build(kb: KB, args) -> int:
+    from .export import build
+    result = build(kb)
+    print(f"built terminal.html ({result['bytes'] / 1024:,.0f} KiB) and exports/kb.json · "
+          f"{result['trades']} trade record(s) · fingerprint {result['fingerprint']}")
+    if result["errors"]:
+        print(f"warning: built with {result['errors']} validation error(s); run ./tj validate", file=sys.stderr)
+        return 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="tj", description="Trading journal and knowledge base.")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -234,6 +245,7 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--since", type=_date)
 
     sub.add_parser("errors", help="recurring-error and behaviour databases")
+    sub.add_parser("build", help="rebuild terminal.html and exports/kb.json from the knowledge base")
 
     c = sub.add_parser("compare", help="A/B comparison with a bootstrap CI on the expectancy difference")
     c.add_argument("field", choices=sorted(analysis.GROUPERS))
@@ -246,7 +258,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 COMMANDS = {"status": cmd_status, "validate": cmd_validate, "new": cmd_new, "show": cmd_show,
             "size": cmd_size, "stats": cmd_stats, "errors": cmd_errors, "compare": cmd_compare,
-            "report": cmd_report}
+            "report": cmd_report, "build": cmd_build}
 
 
 def main(argv: list[str] | None = None) -> int:

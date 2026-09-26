@@ -156,7 +156,9 @@ class ValidationTest(KBTestCase):
         subprocess.run(git + ["commit", "-q", "-m", "init"], check=True)
         self.assertEqual(self.issues("ERROR"), [])
         v1 = dest / "v1.0.yaml"
-        v1.write_text(v1.read_text().replace("entry_model: null", "entry_model: rewritten"))
+        original = v1.read_text()
+        v1.write_text(original.replace("stop_model: null", "stop_model: rewritten"))
+        self.assertNotEqual(v1.read_text(), original, "test edit must modify the version file")
         self.assertTrue(any("immutable" in i.msg for i in self.issues("ERROR")))
         edited = validate(load_kb(), allow_version_edits=True)
         self.assertFalse(any(i.level == "ERROR" for i in edited))

@@ -28,6 +28,7 @@ plan:
   stop: null                  # INITIAL stop = invalidation. Never overwrite when the stop moves.
   targets: []
   invalidation: null          # in words: what proves the thesis wrong
+  entry_model: null           # key from the strategy version's entry_models (e.g. extreme_demand, reclaim)
   confluences: []             # the trader's confluences, in their words
   confirmations: []           # the trader's confirmations, in their words
 

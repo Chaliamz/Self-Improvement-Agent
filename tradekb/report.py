@@ -186,14 +186,14 @@ def full_report(kb: KB, rs: list[Row], scope: str) -> str:
     out += ["", "R distribution:", ""] + [f"- {label}: {count}" for label, count in
                                            histogram(rs_values, cfg["breakeven_band_r"])]
 
-    sections = [("2. By setup", "setup"), ("3. By market regime", "regime"), ("4. By strategy version", "version"),
-                ("5. By session", "session"), ("6. By asset", "asset"), ("7. By direction", "direction"),
-                ("8. By execution timeframe", "timeframe"), ("9. By leverage setting", "leverage"),
-                ("10. By risk per trade", "risk")]
+    sections = [("2. By setup", "setup"), ("3. By entry model", "entry_model"), ("4. By market regime", "regime"),
+                ("5. By strategy version", "version"), ("6. By session", "session"), ("7. By asset", "asset"),
+                ("8. By direction", "direction"), ("9. By execution timeframe", "timeframe"),
+                ("10. By leverage setting", "leverage"), ("11. By risk per trade", "risk")]
     for title, key in sections:
         out += ["", f"## {title}", "", grouped_table(kb, rs, key)]
 
-    out += ["", "## 11. Process vs outcome", ""]
+    out += ["", "## 12. Process vs outcome", ""]
     matrix = analysis.process_outcome_matrix(rs)
     out += ["| Process \\ Outcome | win | loss | breakeven |", "|---|---:|---:|---:|"]
     for grade in ("good", "mixed", "poor", "unscored"):
@@ -203,7 +203,7 @@ def full_report(kb: KB, rs: list[Row], scope: str) -> str:
         out.append(f"\n{lucky} trade(s) are {OUTCOME_WORD['win']} / {PROCESS_WORD['poor']}: "
                    f"wins that should not reinforce the behaviour that produced them.")
 
-    out += ["", "## 12. Loss classification (A–E)", ""]
+    out += ["", "## 13. Loss classification (A–E)", ""]
     breakdown = analysis.loss_type_breakdown(rs)
     if breakdown:
         labels = kb.taxonomies["loss_types"].tags
@@ -214,18 +214,18 @@ def full_report(kb: KB, rs: list[Row], scope: str) -> str:
     else:
         out.append("_No losses in scope._")
 
-    out += ["", "## 13. Errors and behaviours", "", errors_section(kb)]
+    out += ["", "## 14. Errors and behaviours", "", errors_section(kb)]
 
     clean = [row for row in rs if not dig(row.t, "review.mistakes")]
     dirty = [row for row in rs if dig(row.t, "review.mistakes")]
-    out += ["", "## 14. Trades without vs with tagged mistakes", "",
+    out += ["", "## 15. Trades without vs with tagged mistakes", "",
             summary_table("subset", [("no mistakes", analysis.summarize_rows(clean, kb)),
                                      ("≥1 mistake", analysis.summarize_rows(dirty, kb))]),
             "", "_The gap estimates the cost of execution errors, confounded by whatever else differs between "
                 "the subsets. Untagged is not the same as mistake-free if reviews are incomplete._"]
 
     cf = [row for row in analysis.counterfactuals(kb) if row.d.counterfactual_r is not None]
-    out += ["", "## 15. COUNTERFACTUAL — missed / not taken (hypothetical, excluded above)", ""]
+    out += ["", "## 16. COUNTERFACTUAL — missed / not taken (hypothetical, excluded above)", ""]
     if cf:
         vals = [row.d.counterfactual_r for row in cf]
         out.append(f"n={len(cf)} · sum {fr(sum(vals))} · mean {fr(fmean(vals))} · "
@@ -233,7 +233,7 @@ def full_report(kb: KB, rs: list[Row], scope: str) -> str:
     else:
         out.append("_None recorded._")
 
-    out += ["", "## 16. Data gaps", "", _gaps(kb)]
+    out += ["", "## 17. Data gaps", "", _gaps(kb)]
     return "\n".join(out)
 
 

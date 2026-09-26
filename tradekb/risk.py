@@ -209,3 +209,35 @@ def size_position(inp: SizingInput) -> SizingResult:
     return SizingResult(side, qty, qty_raw, notional, stop_fill, stop_distance_pct, per_unit_loss,
                         fee_per_unit, loss_at_stop, risk_pct, effective_leverage, margin_required,
                         liq, liq_ratio, targets, flags)
+
+
+def exposure(entry: float, stop: float, risk_pct: float | None, leverage: float | None = None,
+             margin_mode: str | None = None, mmr_rate: float = 0.005) -> dict:
+    """Equity-free exposure decomposition for a trade that risks a fixed % of equity.
+
+    Everything is a percentage of equity, so it works without knowing the account size:
+      notional % = risk % / stop % x 100      effective leverage = notional % / 100
+      margin %   = notional % / leverage       (fees ignored: unknown for recorded trades)
+    Liquidation is computed for isolated margin only (cross needs equity and other positions);
+    when margin_mode is unknown the isolated figure is returned and flagged as an assumption.
+    """
+    side = infer_side(entry, stop)
+    stop_pct = abs(entry - stop) / entry * 100
+    out: dict = {"side": side, "stop_pct": stop_pct}
+    notional_pct = None
+    if risk_pct:
+        notional_pct = risk_pct / stop_pct * 100
+        out["notional_pct"] = notional_pct
+        out["effective_leverage"] = notional_pct / 100
+    if leverage:
+        if notional_pct is not None:
+            out["margin_pct"] = notional_pct / leverage
+        if margin_mode in (None, "isolated"):
+            liq = liquidation_price(entry, side, 1.0, leverage=leverage, margin_mode="isolated", mmr_rate=mmr_rate)
+            out["liq_mode_assumed"] = margin_mode is None
+            out["liq_isolated"] = liq
+            if liq is not None:
+                out["liq_distance_pct"] = abs(entry - liq) / entry * 100
+                out["liq_to_stop"] = abs(entry - liq) / abs(entry - stop)
+                out["liq_before_stop"] = liq >= stop if side == "long" else liq <= stop
+    return out

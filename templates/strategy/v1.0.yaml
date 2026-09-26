@@ -12,11 +12,13 @@ timeframes:
   structure: null
   execution: null
 
+market_structure: []          # how swings / breaks are defined (e.g. close-based rules)
 market_conditions: []         # when it appears to work
 required_conditions: []       # must all be present for a valid setup
 confirmation: []              # what confirms it
 confluences: []               # supporting factors, in the trader's words
-entry_model: null
+zones: {}                     # named zone definitions
+entry_models: {}              # named entry models; trades reference one in plan.entry_model
 stop_model: null              # where invalidation sits
 target_model: null
 risk_model: null              # risk per trade; refer to profile if not strategy-specific
@@ -33,3 +35,4 @@ management:
 
 do_not_trade_when: []         # failure conditions
 common_mistakes: []           # canonical tags from taxonomy/mistakes.yaml
+open_questions: []            # what must be answered before the rules are mechanical

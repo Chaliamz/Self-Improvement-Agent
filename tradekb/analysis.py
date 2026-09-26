@@ -95,6 +95,7 @@ def _many(values) -> list[str]:
 
 GROUPERS: dict[str, Callable[[Row], list[str]]] = {
     "setup": lambda r: _many(r.t.get("setups")),
+    "entry_model": lambda r: _one(dig(r.t, "plan.entry_model")),
     "regime": lambda r: _many(r.t.get("regime")),
     "strategy": lambda r: _one(dig(r.t, "strategy.id")),
     "version": lambda r: _one(f"{dig(r.t, 'strategy.id')}@v{dig(r.t, 'strategy.version')}"
