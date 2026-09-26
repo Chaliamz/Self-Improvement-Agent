@@ -200,3 +200,16 @@ def derive(t: dict, cfg: dict) -> Derived:
     missing = missing_for_r(t) if status == REALIZED and r is None else []
     return Derived(r, r_src, risk, risk_src, pnl, out, grade, mean,
                    outcome_process_label(grade, out), None, missing)
+
+
+def planned_rr(t: dict) -> list[float | None]:
+    """Gross reward:risk per planned target, from the initial stop."""
+    entry, stop, sign = entry_price(t), num(dig(t, "plan.stop")), side_sign(t)
+    out = []
+    for tp in dig(t, "plan.targets", []) or []:
+        tp = num(tp)
+        if None in (entry, stop, tp, sign) or entry == stop:
+            out.append(None)
+        else:
+            out.append(sign * (tp - entry) / abs(entry - stop))
+    return out

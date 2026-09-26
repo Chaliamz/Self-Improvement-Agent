@@ -97,6 +97,15 @@ def status(kb: KB, issues) -> str:
     active = [eid for eid, e in kb.experiments.items() if e.get("status") in ("planned", "running")]
     lines.append(f"Active experiments: {', '.join(active) if active else 'none'}")
 
+    from .readiness import evaluate
+    ready = evaluate(kb)
+    if ready["stages"]:
+        active = next((st for st in ready["stages"] if st["status"] == "active"), None)
+        if active:
+            met = sum(c["met"] for c in active["criteria"])
+            lines.append(f"Automation readiness: {active['name']} ({met}/{len(active['criteria'])} criteria met)")
+        else:
+            lines.append("Automation readiness: all stages complete")
     recurring = [e for e in analysis.error_db(kb) if e.recurring]
     lines.append("Recurring errors: " + (", ".join(
         f"{e.tag} x{e.count} (last {e.last_seen}, {e.recent} in recent window)" for e in recurring)

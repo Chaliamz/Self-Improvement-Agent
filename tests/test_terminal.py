@@ -32,10 +32,15 @@ CASES = [
     dict(entry=100, stop=97, risk_amount=100, equity=10_000, leverage=50),
     dict(entry=100, stop=99, risk_amount=100, fee_rate=0.0005, slippage_pct=0.05, qty_step=0.1),
     dict(entry=50, stop=51, risk_amount=20, equity=1_000, margin_mode="cross", mmr_rate=0.01),
+    dict(entry=90.41, stop=87.59, risk_amount=100, equity=10_000, leverage=20, max_margin_loss_pct=50, min_rr=2.5,
+         targets=(103.30,)),
+    dict(entry=90.41, stop=87.59, risk_amount=100, equity=10_000, leverage=10, max_margin_loss_pct=50, min_rr=5,
+         fee_rate=0.0006, targets=(103.30,)),
 ]
 KEYS = {"qty": "qty", "notional": "notional", "loss_at_stop": "lossAtStop", "risk_pct": "riskPct",
         "effective_leverage": "effectiveLeverage", "margin_required": "marginRequired",
-        "liquidation": "liquidation", "liq_to_stop_ratio": "liqToStop", "per_unit_loss": "perUnitLoss"}
+        "liquidation": "liquidation", "liq_to_stop_ratio": "liqToStop", "per_unit_loss": "perUnitLoss",
+        "margin_loss_pct": "marginLossPct", "max_leverage_for_rule": "maxLeverageForRule"}
 
 
 @unittest.skipUnless(NODE, "node not installed")
@@ -45,7 +50,8 @@ class JavaScriptParityTest(unittest.TestCase):
                      "leverage": c.get("leverage"), "marginMode": c.get("margin_mode", "isolated"),
                      "mmrRate": c.get("mmr_rate", 0.005), "feeRate": c.get("fee_rate", 0.0),
                      "slippagePct": c.get("slippage_pct", 0.0), "qtyStep": c.get("qty_step"),
-                     "targets": list(c.get("targets", ()))} for c in CASES]
+                     "targets": list(c.get("targets", ())), "maxMarginLossPct": c.get("max_margin_loss_pct"),
+                     "minRr": c.get("min_rr")} for c in CASES]
         script = risk_math_js() + f"\nconsole.log(JSON.stringify({json.dumps(js_cases)}.map(c => RiskMath.size(c))));"
         out = subprocess.run([NODE, "-e", script], capture_output=True, text=True, timeout=30)
         self.assertEqual(out.returncode, 0, out.stderr)
@@ -93,6 +99,20 @@ class ExposureTest(unittest.TestCase):
         self.assertTrue(e["liq_mode_assumed"])
         self.assertFalse(e["liq_before_stop"])
 
+    def test_margin_loss_rule(self):
+        e = exposure(90.41, 87.59, risk_pct=1.0, leverage=20, margin_mode="isolated", max_margin_loss_pct=50)
+        self.assertAlmostEqual(e["margin_loss_pct"], 2.82 / 90.41 * 100 * 20)
+        self.assertTrue(e["margin_loss_breach"])
+        self.assertAlmostEqual(e["max_leverage_for_rule"], 50 / (2.82 / 90.41 * 100))
+        self.assertFalse(exposure(90.41, 87.59, 1.0, leverage=10, max_margin_loss_pct=50)["margin_loss_breach"])
+
+    def test_sizing_flags_margin_rule_and_min_rr(self):
+        res = size_position(SizingInput(entry=90.41, stop=87.59, risk_amount=100, leverage=20,
+                                        max_margin_loss_pct=50, min_rr=5, targets=(103.30,)))
+        messages = " ".join(m for _, m in res.flags)
+        self.assertIn("above your 50% limit", messages)
+        self.assertIn("below your 5R minimum", messages)
+
     def test_cross_mode_has_no_isolated_liquidation(self):
         self.assertNotIn("liq_isolated", exposure(100, 98, 1.0, leverage=10, margin_mode="cross"))
 
@@ -124,6 +144,48 @@ class BuildTest(KBTestCase):
         second = json.loads((self.tmp / "exports" / "kb.json").read_text())
         first.pop("build"); second.pop("build")
         self.assertEqual(first, second)
+
+
+class ReadinessAndRulesTest(KBTestCase):
+    def test_required_trades_formula(self):
+        from tradekb.stats import required_trades
+        r = required_trades(0.35, 3.5)
+        self.assertAlmostEqual(r["expectancy"], 0.575)
+        self.assertEqual(r["n"], 110)
+        self.assertIsNone(required_trades(0.25, 3.0)["n"])  # negative edge can never be proven
+
+    def test_readiness_gates_are_ordered(self):
+        import yaml as _yaml
+        (self.tmp / "playbook" / "automation.yaml").write_text(_yaml.safe_dump({"stages": [
+            {"id": "a", "name": "A", "criteria": [{"label": "trades", "metric": "measured_trades", "min": 2}]},
+            {"id": "b", "name": "B", "criteria": [{"label": "manual", "manual": "done", "evidence": "report.md"}]}]}))
+        from tradekb.readiness import evaluate
+        self.write_trade("T-0001", result={"r": 1.0})
+        stages = evaluate(load_kb())["stages"]
+        self.assertEqual([s["status"] for s in stages], ["active", "locked"])
+        self.write_trade("T-0002", result={"r": -1.0})
+        stages = evaluate(load_kb())["stages"]
+        self.assertEqual([s["status"] for s in stages], ["done", "done"])
+
+    def test_manual_done_requires_evidence_and_metric_must_exist(self):
+        import yaml as _yaml
+        (self.tmp / "playbook" / "automation.yaml").write_text(_yaml.safe_dump({"stages": [
+            {"id": "a", "criteria": [{"label": "x", "manual": "done"}, {"label": "y", "metric": "vibes", "min": 1}]}]}))
+        msgs = [i.msg for i in self.issues("ERROR")]
+        self.assertTrue(any("must cite its evidence" in m for m in msgs))
+        self.assertTrue(any("unknown metric 'vibes'" in m for m in msgs))
+
+    def test_profile_rules_flag_trades(self):
+        import yaml as _yaml
+        prof = _yaml.safe_load((self.tmp / "profile" / "trader.yaml").read_text())
+        prof["leverage"]["max_margin_loss_at_stop_pct"] = 50
+        prof["risk"]["min_rr"] = 2.5
+        (self.tmp / "profile" / "trader.yaml").write_text(_yaml.safe_dump(prof))
+        self.write_trade("T-0001", result={"r": 1.0}, risk={"risk_amount": 100, "leverage": 25},
+                         plan={"entry": 100, "stop": 97, "targets": [104]})
+        warns = [i.msg for i in self.issues("WARN")]
+        self.assertTrue(any("above your 50% limit" in m for m in warns))
+        self.assertTrue(any("below your 2.5R minimum" in m for m in warns))
 
 
 class SchemaRulesTest(KBTestCase):

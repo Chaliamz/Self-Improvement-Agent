@@ -19,7 +19,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from . import __version__, analysis, model
+from . import __version__, analysis, model, readiness
 from .model import num
 from .risk import exposure
 from .stats import histogram
@@ -29,7 +29,7 @@ SCHEMA_VERSION = 1
 OUTPUTS = ("exports/kb.json", "terminal.html")
 TEMPLATE = "templates/terminal.html"
 INPUT_GLOBS = ("config.yaml", "profile/*.yaml", "taxonomy/*.yaml", "journal/trades/*.yaml", "journal/charts/*",
-               "playbook/strategies/**/*.yaml", "playbook/experiments/*.yaml", "tradekb/*.py", TEMPLATE)
+               "playbook/*.yaml", "playbook/strategies/**/*.yaml", "playbook/experiments/*.yaml", "tradekb/*.py", TEMPLATE)
 BREAKDOWNS = ("setup", "entry_model", "version", "direction", "asset", "regime", "session", "timeframe",
               "leverage", "risk", "month")
 FINGERPRINT_RE = re.compile(r'"fingerprint":\s*"([0-9a-f]+)"|<meta name="kb-fingerprint" content="([0-9a-f]+)"')
@@ -68,18 +68,6 @@ def jsonable(value: Any) -> Any:
     return value
 
 
-def _planned_rr(t: dict) -> list[float | None]:
-    entry, stop, sign = model.entry_price(t), num(dig(t, "plan.stop")), model.side_sign(t)
-    out = []
-    for tp in dig(t, "plan.targets", []) or []:
-        tp = num(tp)
-        if None in (entry, stop, tp, sign) or entry == stop:
-            out.append(None)
-        else:
-            out.append(sign * (tp - entry) / abs(entry - stop))
-    return out
-
-
 def _trade(row: analysis.Row, kb: KB) -> dict:
     t = row.t
     entry, stop = model.entry_price(t), num(dig(t, "plan.stop"))
@@ -87,10 +75,10 @@ def _trade(row: analysis.Row, kb: KB) -> dict:
     if entry and stop and entry != stop:
         mmr = num(dig(kb.profile, "leverage.maintenance_margin_rate")) or kb.config["risk_checks"]["default_mmr_rate"]
         exp = exposure(entry, stop, num(dig(t, "risk.risk_pct")), num(dig(t, "risk.leverage")),
-                       dig(t, "risk.margin_mode"), mmr)
+                       dig(t, "risk.margin_mode"), mmr, num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct")))
     held = analysis.holding_days([row])
     derived = jsonable(row.d)
-    derived.update({"exposure": exp, "planned_rr": _planned_rr(t), "holding_days": held[0] if held else None,
+    derived.update({"exposure": exp, "planned_rr": model.planned_rr(t), "holding_days": held[0] if held else None,
                     "sort_date": row.when.isoformat() if row.when else None})
     return {**jsonable(t), "derived": derived}
 
@@ -159,6 +147,7 @@ def build_payload(kb: KB) -> dict:
             "counterfactual": [{"id": row.trade.id, "hypothetical_r": row.d.counterfactual_r}
                                for row in analysis.counterfactuals(kb)],
         },
+        "readiness": readiness.evaluate(kb),
         "gaps": {
             "unmeasurable": [{"id": row.trade.id, "needs": row.d.missing} for row in analysis.unmeasurable(kb)],
             "unreviewed": [row.trade.id for row in analysis.rows(kb, {"closed"}) if row.d.grade is None],

@@ -177,6 +177,18 @@ def _check_risk(t: dict, kb: KB, where: str, add: _Sink) -> None:
                 add(WARN, where, f"RISK: approx. liquidation {liq:,.6g} ({mode}, mmr {mmr}) is reached before "
                                  f"the stop {stop}: the stop could not protect this position")
 
+    max_margin_loss = num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct"))
+    if leverage and entry and stop and entry != stop and max_margin_loss is not None:
+        margin_loss = abs(entry - stop) / entry * 100 * leverage
+        if margin_loss > max_margin_loss + 1e-9:
+            add(WARN, where, f"RISK: stop distance x leverage = {margin_loss:.1f}% of the posted margin, above your "
+                             f"{max_margin_loss:g}% limit (max {max_margin_loss / (abs(entry - stop) / entry * 100):.1f}x "
+                             f"for this stop)")
+    min_rr = num(dig(kb.profile, "risk.min_rr"))
+    rrs = [x for x in model.planned_rr(t) if x is not None]
+    if min_rr is not None and rrs and max(rrs) < min_rr - 1e-9 and t.get("status") in ("planned", "open", "closed"):
+        add(WARN, where, f"planned R:R {max(rrs):.2f} is below your {min_rr:g}R minimum")
+
     exits = model.resolved_exits(t)
     if size and exits and all(q is not None for _, q in exits) and t.get("status") == REALIZED:
         closed_qty = sum(q for _, q in exits)
@@ -400,6 +412,27 @@ def _check_experiments(kb: KB, add: _Sink) -> None:
                                  + ", ".join(f"{v}={n}" for v, n in short.items()))
 
 
+def _check_automation(kb: KB, add: _Sink) -> None:
+    from .readiness import MANUAL_STATES, METRICS
+    doc, where = kb.automation, "playbook/automation.yaml"
+    if not doc:
+        return
+    for i, st in enumerate(doc.get("stages") or []):
+        for j, c in enumerate((st or {}).get("criteria") or []):
+            cw = f"{where}: stages[{i}].criteria[{j}]"
+            if "metric" in c:
+                if c["metric"] not in METRICS:
+                    add(ERROR, cw, f"unknown metric '{c['metric']}' (have: {', '.join(METRICS)})")
+                if c.get("min") is None and c.get("max") is None:
+                    add(ERROR, cw, "a computed criterion needs min or max")
+            else:
+                state = c.get("manual", "pending")
+                if state not in MANUAL_STATES:
+                    add(ERROR, cw, f"manual must be one of {', '.join(MANUAL_STATES)}")
+                elif state == "done" and not c.get("evidence"):
+                    add(ERROR, cw, "a manual criterion marked done must cite its evidence")
+
+
 def version_edits(kb: KB) -> list[str] | None:
     """Committed strategy version files modified/deleted in the working tree. None if git is unavailable."""
     try:
@@ -443,6 +476,7 @@ def validate(kb: KB, allow_version_edits: bool = False, check_build: bool = True
 
     _check_strategies(kb, add)
     _check_experiments(kb, add)
+    _check_automation(kb, add)
 
     edits = version_edits(kb)
     for edit in edits or []:

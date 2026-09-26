@@ -155,6 +155,7 @@ class KB:
     strategies: dict[str, Strategy]
     experiments: dict[str, dict]
     load_errors: list[str] = field(default_factory=list)
+    automation: dict = field(default_factory=dict)
 
     def trade(self, trade_id: str) -> Trade | None:
         return next((t for t in self.trades if t.id == trade_id), None)
@@ -261,6 +262,16 @@ def load_kb(r: Path | None = None) -> KB:
         except KBError as exc:
             errors.append(str(exc))
             taxonomies[name] = Taxonomy(name, {}, {}, {})
+    automation: dict = {}
+    if (r / "playbook" / "automation.yaml").exists():
+        try:
+            loaded = load_yaml(r / "playbook" / "automation.yaml")
+            if isinstance(loaded, dict):
+                automation = loaded
+            else:
+                errors.append("playbook/automation.yaml: expected a mapping")
+        except KBError as exc:
+            errors.append(str(exc))
     return KB(
         root=r,
         config=config,
@@ -270,6 +281,7 @@ def load_kb(r: Path | None = None) -> KB:
         strategies=_load_strategies(r, errors),
         experiments=_load_experiments(r, errors),
         load_errors=errors,
+        automation=automation,
     )
 
 

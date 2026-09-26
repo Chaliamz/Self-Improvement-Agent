@@ -10,9 +10,10 @@ cannot account for regime change, selection bias, or look-ahead in the records.
 """
 from __future__ import annotations
 
+import math
 import random
 from dataclasses import dataclass
-from statistics import fmean, median
+from statistics import NormalDist, fmean, median
 
 WIN, LOSS, BE = "win", "loss", "breakeven"
 
@@ -172,3 +173,19 @@ def histogram(rs: list[float], band: float) -> list[tuple[str, int]]:
         (">= +3R", lambda r: r >= 3),
     ]
     return [(label, sum(1 for r in rs if test(r))) for label, test in bins]
+
+
+def required_trades(win_rate: float, avg_win: float, avg_loss: float = -1.0,
+                    alpha: float = 0.05, power: float = 0.8) -> dict:
+    """Trades needed for the 95% CI of expectancy to exclude zero with `power` probability.
+
+    Two-outcome model: every win pays avg_win R, every loss avg_loss R. Real results vary in
+    size, which adds variance, so treat the answer as a floor, not a target.
+    n = ((z_{1-alpha/2} + z_power) * sd / mean)^2
+    """
+    mean = win_rate * avg_win + (1 - win_rate) * avg_loss
+    sd = math.sqrt(win_rate * avg_win ** 2 + (1 - win_rate) * avg_loss ** 2 - mean ** 2)
+    if mean <= 0:
+        return {"expectancy": mean, "sd": sd, "n": None}
+    z = NormalDist().inv_cdf(1 - alpha / 2) + NormalDist().inv_cdf(power)
+    return {"expectancy": mean, "sd": sd, "n": math.ceil((z * sd / mean) ** 2)}

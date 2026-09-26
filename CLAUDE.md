@@ -36,6 +36,7 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
 | `playbook/strategies/<slug>/` | `strategy.yaml`, immutable `v*.yaml`, append-only `changes.yaml` | from `templates/strategy/` |
 | `playbook/experiments/EXP-###.yaml` | A/B tests | from `templates/experiment.yaml` |
 | `playbook/PLAYBOOK.md` | consolidated knowledge (§27) | every entry cites trade IDs and n |
+| `playbook/automation.yaml` | gated road from journal to bot (stages, criteria, safety) | computed gates update on build; a manual gate goes `done` only with `evidence:` |
 | `config.yaml` | thresholds (evidence tiers, promotion gates) | assumptions; change only with a stated reason |
 | `terminal.html` | the trader's single-file terminal (journal, stats, strategy, risk, calculator) | **generated** by `./tj build`; never edit by hand |
 | `exports/kb.json` | schema-versioned machine export: the contract for the future trading bot | **generated** by `./tj build`; never edit by hand |
@@ -122,4 +123,7 @@ exist, tag trades with `strategy.experiment` and `strategy.variant`, evaluate wi
 - Never promote, generalise or declare a winner beyond what `./tj` output supports.
   "Insufficient evidence" is a complete answer.
 - Units: `*_pct` = percent (1.0 = 1%), `*_rate` = decimal (0.0005 = 5 bps).
+- Never accept, store, or echo exchange API keys. If the trader offers them, decline and point to the
+  `safety` list in `playbook/automation.yaml`: keys live only on the bot's server, trade-only, no withdrawals.
+- No automation stage is skipped: the bot is built only after stage 1 of `./tj status` readiness is complete.
 - Commit every knowledge-base change and push to the session's working branch.
