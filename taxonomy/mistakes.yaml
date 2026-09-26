@@ -1,0 +1,26 @@
+# Execution / behavioural error tags (system prompt §7 type C, §15).
+# Tag observable behaviour, not personality (§38). Recurrence is computed by
+# `./tj errors`; never keep counts by hand.
+
+tags:
+  fomo:                        {label: FOMO entry}
+  revenge_trade:               {label: Revenge trade}
+  overtrading:                 {label: Overtrading}
+  boredom_entry:               {label: Entered from boredom}
+  emotional_reentry:           {label: Re-entered emotionally, aliases: [reentered_emotionally]}
+  entered_before_confirmation: {label: Entered before confirmation, aliases: [no_confirmation]}
+  late_entry:                  {label: Late entry}
+  poor_entry_location:         {label: Poor entry location, aliases: [poor_entry]}
+  chasing:                     {label: Chasing (incl. chasing a breakout), aliases: [chasing_breakout]}
+  ignored_htf:                 {label: Ignored higher timeframe}
+  low_quality_setup:           {label: Traded a low-quality setup}
+  outside_strategy:            {label: Traded outside the strategy}
+  oversized_position:          {label: Oversized position, aliases: [oversizing]}
+  excessive_leverage:          {label: Excessive leverage}
+  moved_stop:                  {label: Moved stop against the plan}
+  widened_stop:                {label: Widened stop}
+  removed_stop:                {label: Removed stop}
+  ignored_invalidation:        {label: Ignored invalidation}
+  held_loser_too_long:         {label: Held loser too long}
+  premature_exit:              {label: Exited before the plan's exit criteria}
+  cut_winner_early:            {label: Cut winner / took profit too early, aliases: [took_profit_early]}

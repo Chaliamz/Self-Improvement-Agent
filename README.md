@@ -1,0 +1,75 @@
+# Self-Improving Trading Agent
+
+A trading journal and knowledge base that turns every trade, chart, mistake and rule
+change into durable, queryable evidence, operated by Claude Code under the trader's
+master directive ([`docs/SYSTEM_PROMPT.md`](docs/SYSTEM_PROMPT.md)).
+
+An LLM keeps nothing between conversations. This repository is the memory: trades are
+YAML records, strategies are versioned files, and the error/behaviour databases and all
+statistics are **derived** from the records by the `tj` tool, so they cannot drift.
+
+## How it works
+
+```
+ you: chart + reasoning ─▶ Claude (judgement: classify, critique, score, loss type)
+                                  │
+                                  ▼
+                    journal/trades/T-####.yaml   ◀─ single source of truth
+                                  │
+                                  ▼
+                    ./tj (arithmetic: R, sizing, liquidation, expectancy, CIs,
+                          recurrence, A/B verdicts, integrity + anti-overfitting gates)
+                                  │
+                                  ▼
+                 TRADE REVIEW (§44) · SYSTEM REVIEW (§45) · playbook updates
+```
+
+[`CLAUDE.md`](CLAUDE.md) holds the operating protocol. A SessionStart hook injects
+`./tj status` into every session so the agent starts from current state.
+
+## Quick start
+
+Requires Python ≥ 3.10 and PyYAML. No install step:
+
+```bash
+./tj status                       # briefing: phase, unresolved parameters, recurring errors
+./tj new --asset BTCUSDT --direction short --status planned
+./tj size --entry 64200 --stop 64850 --risk-pct 1 --equity 25000 \
+          --leverage 20 --margin-mode isolated --fee-rate 0.0005 --target 62900
+./tj show T-0001                  # R, outcome, OUTCOME × PROCESS label, validation
+./tj validate                     # must be 0 errors before committing
+./tj stats --by setup --where regime=range
+./tj errors                       # recurring-error and behaviour databases
+./tj compare variant A B --where experiment=EXP-001
+./tj report                       # full quantitative input for the periodic review
+python3 -m unittest discover -s tests -t .
+```
+
+## Design choices
+
+| Decision | Reason |
+|---|---|
+| Arithmetic lives in tested code, not in the model's head | Sizing, liquidation and expectancy errors are silent and expensive |
+| Derived error/behaviour databases | Counts cannot drift from the journal; tag typos fail validation instead of splitting a recurring error into two rare ones |
+| Stated 1R is the R denominator | An oversized stop-out shows as worse than −1R, making sizing errors visible |
+| Pre-trade thesis committed before the outcome | The git timestamp proves `journal.before` was not written with hindsight |
+| Counterfactuals in `hypothetical_r` only | Missed-trade "what ifs" can never contaminate realized statistics |
+| Seeded bootstrap CIs on every expectancy | Sample-size discipline enforced numerically; same data → same report |
+| Promotion gates in the validator | A strategy or rule cannot be marked established without the configured evidence count |
+| Immutable committed version files | Old strategy versions stay intact, so A/B comparisons across versions remain valid |
+
+## Units
+
+`*_pct` fields are **percent** (1.0 = 1%). `*_rate` fields are **decimal** (0.0005 = 5 bps).
+Prices and money are in quote currency; size is in base units.
+
+## Limitations
+
+- Linear (quote-margined) contracts and spot only. Inverse/coin-margined PnL is non-linear
+  and the formulas would be wrong.
+- Liquidation prices are single-tier approximations (no fees, funding or tiered maintenance
+  margin). The exchange's figure is authoritative; the tool exists to catch a stop placed
+  beyond liquidation.
+- Bootstrap intervals measure sampling noise only. They do not correct for regime change,
+  selective journaling, or inconsistent tagging.
+- Thresholds in `config.yaml` are defaults, not facts about your trading.

@@ -1,0 +1,211 @@
+"""Position sizing and exposure decomposition for LINEAR (quote-margined) contracts and spot.
+
+Units
+  prices, money ........ quote currency
+  quantity ............. base units
+  *_pct arguments ...... PERCENT      (1.0 = 1%)
+  *_rate arguments ..... DECIMAL      (0.0005 = 5 bps)
+
+Inverse (coin-margined) contracts are NOT supported: their PnL is non-linear in
+price and every formula below would be wrong for them.
+
+Liquidation prices are single-tier approximations that ignore fees, funding and
+tiered maintenance margin. The exchange's displayed liquidation price is
+authoritative; these exist to catch the structural error of a stop sitting
+beyond liquidation.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from decimal import ROUND_FLOOR, Decimal
+
+CRITICAL, WARN, NOTE = "CRITICAL", "WARN", "NOTE"
+
+
+@dataclass(frozen=True)
+class SizingInput:
+    entry: float
+    stop: float
+    risk_amount: float
+    side: str | None = None
+    equity: float | None = None
+    leverage: float | None = None
+    margin_mode: str = "isolated"
+    mmr_rate: float = 0.005
+    fee_rate: float = 0.0
+    slippage_pct: float = 0.0
+    qty_step: float | None = None
+    targets: tuple[float, ...] = ()
+    max_risk_pct: float | None = None
+    max_leverage: float | None = None
+    fee_share_warn: float = 0.20
+    liq_buffer_warn: float = 1.5
+
+
+@dataclass
+class TargetRR:
+    price: float
+    rr_gross: float
+    rr_net: float
+
+
+@dataclass
+class SizingResult:
+    side: str
+    qty: float
+    qty_unrounded: float
+    notional: float
+    stop_fill: float
+    stop_distance_pct: float
+    per_unit_loss: float
+    fee_per_unit: float
+    loss_at_stop: float
+    risk_pct: float | None
+    effective_leverage: float | None
+    margin_required: float | None
+    liquidation: float | None
+    liq_to_stop_ratio: float | None
+    targets: list[TargetRR]
+    flags: list[tuple[str, str]] = field(default_factory=list)
+
+
+def infer_side(entry: float, stop: float) -> str:
+    if stop < entry:
+        return "long"
+    if stop > entry:
+        return "short"
+    raise ValueError("entry equals stop: stop distance is zero, position size is undefined")
+
+
+def floor_to_step(qty: float, step: float) -> float:
+    """Round DOWN to the exchange step. Down, never nearest: rounding up would exceed the risk budget."""
+    steps = (Decimal(repr(qty)) / Decimal(repr(step))).to_integral_value(rounding=ROUND_FLOOR)
+    return float(steps * Decimal(repr(step)))
+
+
+def liquidation_price(entry: float, side: str, qty: float, *, leverage: float | None,
+                      margin_mode: str, mmr_rate: float, equity: float | None = None) -> float | None:
+    """Approximate liquidation price, or None if not computable / not reachable.
+
+    isolated: margin = qty*entry/L;  liquidate when margin + PnL = mmr * qty * price
+    cross:    whole equity backs this single position (assumes no other positions)
+    """
+    if margin_mode == "isolated":
+        if not leverage:
+            return None
+        if side == "long":
+            price = entry * (1 - 1 / leverage) / (1 - mmr_rate)
+        else:
+            price = entry * (1 + 1 / leverage) / (1 + mmr_rate)
+    elif margin_mode == "cross":
+        if not equity or qty <= 0:
+            return None
+        if side == "long":
+            price = (entry - equity / qty) / (1 - mmr_rate)
+        else:
+            price = (entry + equity / qty) / (1 + mmr_rate)
+    else:
+        raise ValueError("margin_mode must be isolated or cross")
+    return price if price > 0 else None
+
+
+def _require_positive(name: str, value: float | None, optional: bool = False) -> None:
+    if value is None and optional:
+        return
+    if value is None or value <= 0:
+        raise ValueError(f"{name} must be > 0 (got {value})")
+
+
+def size_position(inp: SizingInput) -> SizingResult:
+    _require_positive("entry", inp.entry)
+    _require_positive("stop", inp.stop)
+    _require_positive("risk_amount", inp.risk_amount)
+    _require_positive("equity", inp.equity, optional=True)
+    _require_positive("leverage", inp.leverage, optional=True)
+    _require_positive("qty_step", inp.qty_step, optional=True)
+    if not 0 <= inp.mmr_rate < 1:
+        raise ValueError("mmr_rate is a decimal in [0, 1), e.g. 0.005 for 0.5%")
+    if inp.fee_rate < 0 or inp.slippage_pct < 0:
+        raise ValueError("fee_rate and slippage_pct cannot be negative")
+    if inp.margin_mode not in ("isolated", "cross"):
+        raise ValueError("margin_mode must be isolated or cross")
+
+    side = infer_side(inp.entry, inp.stop)
+    if inp.side and inp.side != side:
+        where = "below" if inp.side == "long" else "above"
+        raise ValueError(f"stop {inp.stop} is on the wrong side of entry {inp.entry}: "
+                         f"a {inp.side} stop must be {where} entry")
+
+    flags: list[tuple[str, str]] = []
+    if inp.fee_rate > 0.01:
+        flags.append((WARN, f"fee_rate {inp.fee_rate} is above 1% per side: fee_rate is a DECIMAL "
+                            f"(0.0005 = 5 bps), not a percent"))
+
+    slip = inp.slippage_pct / 100.0
+    stop_fill = inp.stop * (1 - slip) if side == "long" else inp.stop * (1 + slip)
+    fee_per_unit = inp.fee_rate * (inp.entry + stop_fill)
+    per_unit_loss = abs(inp.entry - stop_fill) + fee_per_unit
+
+    qty_raw = inp.risk_amount / per_unit_loss
+    qty = floor_to_step(qty_raw, inp.qty_step) if inp.qty_step else qty_raw
+    if qty <= 0:
+        flags.append((CRITICAL, f"risk budget {inp.risk_amount:,.2f} is smaller than one quantity step "
+                                f"({inp.qty_step}) at this stop distance: the trade cannot be sized within risk"))
+
+    loss_at_stop = qty * per_unit_loss
+    notional = qty * inp.entry
+    stop_distance_pct = abs(inp.entry - inp.stop) / inp.entry * 100
+
+    fee_share = fee_per_unit / per_unit_loss
+    if fee_share > inp.fee_share_warn:
+        flags.append((WARN, f"fees are {fee_share:.0%} of the loss at stop: the stop is tight relative to "
+                            f"round-trip cost, so net R:R is materially below gross"))
+
+    risk_pct = effective_leverage = None
+    if inp.equity:
+        risk_pct = loss_at_stop / inp.equity * 100
+        effective_leverage = notional / inp.equity
+        if inp.max_risk_pct is not None and risk_pct > inp.max_risk_pct + 1e-9:
+            flags.append((CRITICAL, f"loss at stop is {risk_pct:.2f}% of equity, above your max "
+                                    f"{inp.max_risk_pct}% per trade"))
+
+    margin_required = None
+    if inp.leverage:
+        margin_required = notional / inp.leverage
+        if inp.equity and margin_required > inp.equity:
+            flags.append((CRITICAL, f"margin required {margin_required:,.2f} exceeds equity "
+                                    f"{inp.equity:,.2f}: the order would be rejected or is larger than intended"))
+        if inp.max_leverage is not None and inp.leverage > inp.max_leverage:
+            flags.append((WARN, f"leverage setting {inp.leverage:g}x is above your max {inp.max_leverage:g}x"))
+        if inp.margin_mode == "isolated" and inp.mmr_rate >= 1 / inp.leverage:
+            flags.append((CRITICAL, f"{inp.leverage:g}x isolated with maintenance rate {inp.mmr_rate} "
+                                    f"liquidates at or before entry"))
+
+    liq = None
+    liq_ratio = None
+    if qty > 0 and (inp.leverage or inp.margin_mode == "cross"):
+        liq = liquidation_price(inp.entry, side, qty, leverage=inp.leverage, margin_mode=inp.margin_mode,
+                                mmr_rate=inp.mmr_rate, equity=inp.equity)
+    if liq is not None:
+        stop_dist = abs(inp.entry - stop_fill)
+        liq_ratio = abs(inp.entry - liq) / stop_dist
+        beyond_stop = liq >= stop_fill if side == "long" else liq <= stop_fill
+        if beyond_stop:
+            flags.append((CRITICAL, f"liquidation (~{liq:,.6g}) is reached BEFORE the stop ({stop_fill:,.6g}): "
+                                    f"the stop cannot protect this position. Lower leverage or add margin."))
+        elif liq_ratio < inp.liq_buffer_warn:
+            flags.append((WARN, f"liquidation is only {liq_ratio:.2f}x the stop distance from entry: "
+                                f"a wick, gap or fee drag can liquidate before the stop fills"))
+
+    targets = []
+    for tp in inp.targets:
+        _require_positive("target", tp)
+        if (side == "long" and tp <= inp.entry) or (side == "short" and tp >= inp.entry):
+            raise ValueError(f"target {tp} is not on the profit side of entry {inp.entry} for a {side}")
+        gross = abs(tp - inp.entry) / abs(inp.entry - inp.stop)
+        net = (abs(tp - inp.entry) - inp.fee_rate * (inp.entry + tp)) / per_unit_loss
+        targets.append(TargetRR(tp, gross, net))
+
+    return SizingResult(side, qty, qty_raw, notional, stop_fill, stop_distance_pct, per_unit_loss,
+                        fee_per_unit, loss_at_stop, risk_pct, effective_leverage, margin_required,
+                        liq, liq_ratio, targets, flags)

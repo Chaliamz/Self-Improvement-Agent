@@ -1,0 +1,24 @@
+# Market regime tags (system prompt §23). Tags in an `exclusive` group cannot
+# be combined on one trade (a trade cannot be both strong_trend and range).
+
+groups:
+  trend:      {exclusive: true,  label: Trend state}
+  volatility: {exclusive: true,  label: Volatility}
+  phase:      {exclusive: true,  label: Expansion / compression}
+  bias:       {exclusive: true,  label: Directional environment}
+  catalyst:   {exclusive: false, label: Event / timing context}
+
+tags:
+  strong_trend:     {label: Strong trend, group: trend}
+  weak_trend:       {label: Weak trend, group: trend}
+  range:            {label: Range, group: trend}
+  high_volatility:  {label: High volatility, group: volatility}
+  low_volatility:   {label: Low volatility, group: volatility}
+  expansion:        {label: Expansion, group: phase}
+  compression:      {label: Compression, group: phase}
+  bullish:          {label: Bullish environment, group: bias}
+  bearish:          {label: Bearish environment, group: bias}
+  neutral:          {label: Neutral environment, group: bias}
+  news_driven:      {label: News-driven, group: catalyst}
+  post_news:        {label: Post-news, group: catalyst}
+  session_specific: {label: Session-specific behaviour, group: catalyst}

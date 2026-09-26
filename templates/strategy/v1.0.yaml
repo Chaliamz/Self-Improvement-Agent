@@ -1,0 +1,30 @@
+# Strategy version file (§5, §21). IMMUTABLE once committed: the validator
+# fails on edits to committed version files. To change a rule, create the next
+# version file and record why in changes.yaml. Never erase the original.
+#
+# Record only rules the trader has stated. Unstated = null, not a guess.
+
+version: "1.0"
+date: null
+source: null                  # where the rules came from (message date / trade id)
+
+market_conditions: []         # when it appears to work
+required_conditions: []       # must all be present for a valid setup
+confirmation: []              # what confirms it
+entry_model: null
+stop_model: null              # where invalidation sits
+target_model: null
+risk_model: null              # risk per trade; refer to profile if not strategy-specific
+leverage_model: null          # leverage is exposure management, not risk
+
+management:
+  breakeven: null
+  partials: null
+  trailing: null
+  reentry: null
+  max_hold: null
+  early_exit: null
+  invalidation: null
+
+do_not_trade_when: []         # failure conditions
+common_mistakes: []           # canonical tags from taxonomy/mistakes.yaml

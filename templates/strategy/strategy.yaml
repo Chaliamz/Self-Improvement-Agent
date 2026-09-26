@@ -1,0 +1,10 @@
+# Copy templates/strategy/ to playbook/strategies/<slug>/ and fill in.
+# A new strategy always starts UNVALIDATED (§40). The validator refuses
+# `developing` / `established` without the evidence counts in config.yaml.
+
+id: __SLUG__                  # must equal the directory name
+name: null                    # the trader's own name for it
+status: unvalidated           # unvalidated | developing | established | retired
+current_version: "1.0"
+created: null
+summary: null

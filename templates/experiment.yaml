@@ -1,0 +1,17 @@
+# Experiment (§22, §46). Copy to playbook/experiments/EXP-###.yaml.
+# Tag each participating trade with strategy.experiment and strategy.variant,
+# then evaluate with:  ./tj compare variant A B --where experiment=EXP-###
+
+id: EXP-000
+title: null
+status: planned               # planned | running | concluded | abandoned
+hypothesis: null
+strategy: null                # strategy slug, if the experiment belongs to one
+variants:
+  A: null                     # e.g. "entry immediately after liquidity sweep"
+  B: null                     # e.g. "entry only after structure confirmation"
+metrics: [n, win_rate, expectancy, ci, max_drawdown, avg_win, avg_loss, max_loss_streak, missed_opportunities]
+min_n_per_variant: 30         # decide BEFORE looking at results; do not move it afterwards
+started: null
+concluded: null
+conclusion: null

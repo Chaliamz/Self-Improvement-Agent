@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Zero-install entry point: ./tj <command>. Requires python3 >= 3.10 and PyYAML.
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PYTHONPATH="$here${PYTHONPATH:+:$PYTHONPATH}" exec python3 -m tradekb "$@"

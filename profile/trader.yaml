@@ -1,0 +1,38 @@
+# Trader profile: the parameters the agent must LEARN from the trader.
+#
+# null = UNRESOLVED. `./tj status` lists every null here on every session.
+# Fill a value only when the trader states it; record where it came from in
+# `sources`. Never infer a risk limit from a single trade.
+#
+# Units: *_pct fields are PERCENT (1.0 = 1%). *_rate fields are DECIMAL (0.0005 = 5 bps).
+
+account:
+  base_currency: null
+  equity: null
+  equity_as_of: null
+
+risk:
+  risk_per_trade_pct: null            # normal risk per trade
+  max_risk_per_trade_pct: null        # hard ceiling; validator and `tj size` flag breaches
+  max_daily_loss_r: null
+  max_open_risk_pct: null             # aggregate risk across open positions
+  max_consecutive_losses_before_pause: null
+
+leverage:
+  max_leverage: null
+  margin_mode: null                   # isolated | cross
+  maintenance_margin_rate: null       # decimal; exchange/tier specific
+
+fees:
+  maker_rate: null
+  taker_rate: null
+
+instruments: null                     # list of markets/assets traded
+sessions: null                        # the trader's own session names
+timeframes: null                      # HTF context / execution timeframes used
+
+# The trader's own terms, in their words. These win over generic taxonomy labels.
+terminology: {}
+
+# Where each resolved value came from: {path: "stated 2026-09-26 in T-0003 review"}
+sources: {}

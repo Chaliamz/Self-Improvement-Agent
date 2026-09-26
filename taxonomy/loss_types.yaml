@@ -1,0 +1,23 @@
+# Loss classification (system prompt §7). Every closed loss gets exactly one.
+
+tags:
+  A:
+    label: Good loss
+    meaning: Valid setup, controlled risk, plan followed; the trade simply failed.
+    lesson: Keep the process. Do not change the strategy because of one normal loss.
+  B:
+    label: Strategy failure
+    meaning: Setup looked valid but the strategy may underperform in these conditions.
+    lesson: Investigate the conditions under which the strategy fails.
+  C:
+    label: Execution error
+    meaning: Strategy valid, execution deviated from the plan.
+    lesson: Fix execution rather than the strategy.
+  D:
+    label: Invalid setup
+    meaning: The trade should never have been taken.
+    lesson: Strengthen filtering criteria.
+  E:
+    label: Information deficiency
+    meaning: Reasonable decision on available information; later information invalidated the thesis.
+    lesson: Only add a rule if the missing information was knowable and recurs. Do not overfit one loss.

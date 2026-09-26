@@ -1,0 +1,19 @@
+# Append-only log of rule-change proposals for this strategy (§20, §41).
+# Never delete or rewrite an entry: update its status and add a new entry.
+# Status ladder: observation -> hypothesis -> testing -> provisional -> established (or rejected).
+# The validator rejects `provisional` / `established` without enough evidence trades.
+
+changes: []
+#  - id: CHG-001
+#    date: 2026-01-01
+#    current_rule: "Enter after liquidity sweep."
+#    observation: "Premature entries before structure confirmed."
+#    sample_size: "4 of 11 losses"
+#    evidence: [T-0003, T-0007, T-0009, T-0011]
+#    hypothesis: "Waiting for a structure shift filters sweeps that continue."
+#    proposed_change: "Enter only after sweep + structure confirmation."
+#    expected_effect: "Fewer type-B losses; lower trade frequency."
+#    overfitting_risk: "May discard valid fast reversals; 4 examples is a small sample."
+#    status: testing
+#    experiment: EXP-001
+#    resulting_version: null

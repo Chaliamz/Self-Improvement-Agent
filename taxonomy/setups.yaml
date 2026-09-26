@@ -1,0 +1,22 @@
+# Canonical setup tags (system prompt §4).
+#
+# The trader's terminology wins. When they introduce a term, add it here as a
+# NEW tag in their words (with introduced_in: T-xxxx and their definition)
+# rather than forcing it into a generic label. Use `aliases` only for true
+# synonyms; records must use the canonical tag (the validator enforces this).
+
+tags:
+  breakout:               {label: Breakout}
+  breakout_retest:        {label: Breakout retest}
+  liquidity_sweep:        {label: Liquidity sweep}
+  liquidity_grab:         {label: Liquidity grab}
+  mean_reversion:         {label: Mean reversion}
+  trend_continuation:     {label: Trend continuation}
+  trend_reversal:         {label: Trend reversal}
+  pullback:               {label: Pullback}
+  momentum_continuation:  {label: Momentum continuation}
+  range_trade:            {label: Range trade}
+  sr_reaction:            {label: Support/resistance reaction}
+  failed_breakout:        {label: Failed breakout}
+  market_structure_shift: {label: Market structure shift}
+  other:                  {label: Other (describe in journal; promote to its own tag once it recurs)}

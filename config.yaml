@@ -1,0 +1,54 @@
+# Analysis thresholds.
+#
+# Every value here is a DEFAULT ASSUMPTION, not a fact about the trader or the
+# market. Change them deliberately and commit the change with a reason: they
+# apply retroactively to every report, so silently tightening a threshold can
+# make old evidence look stronger or weaker than it was.
+
+# |R| at or below this is a breakeven, not a win or loss.
+breakeven_band_r: 0.10
+
+# Confidence levels (system prompt §24) mapped to sample size.
+evidence_tiers:
+  moderate_min_n: 20          # below this: LOW confidence
+  higher_min_n: 50            # at/above this AND enough distinct conditions: HIGHER
+  higher_min_conditions: 2    # distinct regime tags from `condition_group` required for HIGHER
+  condition_group: trend      # regime group that defines "different market conditions"
+
+# Profit factor and payoff ratio are suppressed below this n (they swing wildly on tiny samples).
+min_n_for_ratios: 10
+# No confidence interval is printed below this n.
+min_n_for_ci: 5
+
+# Percentile bootstrap. Fixed seed => identical data always gives identical numbers.
+bootstrap:
+  resamples: 10000
+  seed: 7
+  confidence: 0.95
+
+# A mistake tag seen at least this many times is flagged as RECURRING (§15).
+recurring_error_min: 3
+# "Recent" = the last N recorded (non-planned) trades.
+recent_window: 20
+
+# Process grade from the mean of the five 1-5 dimension scores (§42).
+process:
+  good_min: 3.5
+  poor_max: 2.5
+  min_scored_dimensions: 3
+
+risk_checks:
+  stated_vs_computed_tolerance: 0.10   # warn if stated 1R and size x stop distance differ by more
+  fee_share_warn: 0.20                 # warn if fees exceed this share of the loss at stop
+  liq_buffer_warn: 1.5                 # warn if liquidation distance < this multiple of stop distance
+  default_mmr_rate: 0.005              # used only when profile leverage.maintenance_margin_rate is null
+
+# Anti-overfitting gates (§8, §20, §40). The validator REJECTS a promotion
+# that lacks this many evidence trades.
+promotion:
+  change_min_evidence:
+    provisional: 10
+    established: 30
+  strategy_min_trades:
+    developing: 10
+    established: 30

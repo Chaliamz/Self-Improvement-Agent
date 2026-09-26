@@ -1,0 +1,14 @@
+# Positive behaviour tags (system prompt §16). The goal is to reinforce these,
+# not only to remove mistakes.
+
+tags:
+  waited_for_confirmation:   {label: Waited for confirmation}
+  respected_invalidation:    {label: Respected invalidation}
+  correct_sizing:            {label: Sized correctly from predefined risk}
+  followed_setup:            {label: Followed the setup rules}
+  avoided_low_quality:       {label: Avoided low-quality conditions}
+  took_planned_profits:      {label: Took planned profits}
+  let_winner_run:            {label: Let the winner develop}
+  waited_for_liquidity:      {label: Waited for liquidity}
+  followed_htf:              {label: Followed higher-timeframe structure}
+  avoided_emotional_reentry: {label: Avoided emotional re-entry}

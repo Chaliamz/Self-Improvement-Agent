@@ -1,0 +1,78 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: __ID__
+status: __STATUS__            # planned | open | closed | missed | not_taken
+opened: __OPENED__            # entry date, or the date the idea was considered
+closed: null
+asset: __ASSET__
+market: __MARKET__            # e.g. crypto perp, spot, equity, future
+direction: __DIRECTION__      # long | short
+session: null                 # the trader's own session name
+timeframes:
+  htf: null                   # higher-timeframe context
+  execution: null             # entry timeframe
+
+setups: []                    # canonical tags from taxonomy/setups.yaml
+regime: []                    # canonical tags from taxonomy/regimes.yaml
+
+strategy:
+  id: null                    # directory name under playbook/strategies/
+  version: null               # e.g. "1.0" (quoted)
+  experiment: null            # EXP-001 if this trade is part of an experiment
+  variant: null               # the experiment arm: A | B | ...
+
+plan:
+  entry: null
+  stop: null                  # INITIAL stop = invalidation. Never overwrite when the stop moves.
+  targets: []
+  invalidation: null          # in words: what proves the thesis wrong
+
+risk:
+  account_equity: null
+  risk_amount: null           # money lost if the initial stop is hit = 1R
+  risk_pct: null              # percent of equity
+  leverage: null              # the leverage SETTING (not the risk)
+  margin_mode: null           # isolated | cross
+  size: null                  # quantity, base units
+  notional: null
+
+fills:
+  entry_avg: null             # actual average entry; null => plan.entry
+  exits: []                   # - {price: 0, qty: 0, reason: "tp1"}   (or fraction: 0.5 instead of qty)
+  fees: null                  # total fees paid
+
+result:
+  pnl: null                   # realized NET PnL
+  r: null                     # only if the trader states R directly; otherwise derived
+  hypothetical_r: null        # missed / not_taken ONLY — COUNTERFACTUAL, never mixed into stats
+
+journal:                      # decision journal (§37). Write `before` BEFORE the outcome is known.
+  before: ""                  # thesis, confirmation required, invalidation, plan
+  during: ""                  # what changed while open, and what was done about it
+  after: ""                   # what was learned once closed
+
+evidence:
+  observed: []                # FACTS: visible on the chart or explicitly provided
+  interpreted: []             # INFERENCES: reasonable readings of the facts
+  hypotheses: []              # IDEAS that need more trades to test
+  charts: []                  # repo paths, e.g. journal/charts/__ID__-htf.png
+
+review:
+  scores:                     # 1-5 per dimension (§42); null = not assessable
+    setup: null
+    context: null
+    execution: null
+    risk: null
+    management: null
+  setup_validity: null        # valid | invalid | uncertain
+  followed_plan: null         # true | false
+  loss_type: null             # A-E, losses only (taxonomy/loss_types.yaml)
+  mistakes: []                # canonical tags from taxonomy/mistakes.yaml
+  behaviors: []               # canonical tags from taxonomy/behaviors.yaml
+  outside_control: []
+  lesson: null
+  actionable_change: null
+  strategy_change: null       # yes | no | insufficient_evidence
+  evidence_strength: null     # low | moderate | high
