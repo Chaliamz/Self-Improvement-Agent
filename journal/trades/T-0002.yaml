@@ -19,7 +19,7 @@ regime: [bullish]
 
 strategy:
   id: supply-demand-structure
-  version: "1.0"
+  version: "1.1"            # retagged from 1.0 by CHG-001 (clarification)
   experiment: null
   variant: null
 
@@ -28,13 +28,14 @@ plan:
   stop: null                  # not stated
   targets: []                 # not stated for this plan (the executed trade T-0001 used 103.30)
   invalidation: null
+  entry_model: extreme_demand
   confluences: ["Liquidity sweep", "Inducement"]
   confirmations: ["Bullish Reversal (4H)", "Extreme demand level (red box)"]
 
 risk:
   account_equity: null
   risk_amount: null
-  risk_pct: null
+  risk_pct: 1.0                # trader: "always 1%"
   leverage: null
   margin_mode: null
   size: null

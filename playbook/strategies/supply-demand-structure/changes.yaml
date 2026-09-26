@@ -3,7 +3,24 @@
 # Status ladder: observation -> hypothesis -> testing -> provisional -> established (or rejected).
 # The validator rejects `provisional` / `established` without enough evidence trades.
 
-changes: []
+changes:
+  - id: CHG-001
+    kind: clarification
+    date: 2026-09-26
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-26: "Entry to SL range (invalidation) was 3,14% so I used 10x leverage.
+      Risk management always goes to 1%. *IMPORTANT* Creating a Lower low must close BELOW the
+      previous wick/low and vise versa. 1) invalidated setup - possible deviation/fakeout
+      2) 1% risk per trade 3) I barely use break even and partials, I hold until TP hits. Hunting
+      good RR setups is important 4) red box 5) 4h"
+    fields: [timeframes.execution, market_structure, zones.extreme_demand, entry_models, stop_model,
+             target_model, risk_model, leverage_model, management, open_questions]
+    note: >-
+      These rules were in force when T-0001 was taken; v1.0 recorded them incompletely. T-0001 and
+      T-0002 are retagged to 1.1 so per-version statistics are not split by a documentation change.
+    resulting_version: "1.1"
 #  - id: CHG-001
 #    date: 2026-01-01
 #    current_rule: "Enter after liquidity sweep."

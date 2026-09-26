@@ -12,8 +12,8 @@ account:
   equity_as_of: null
 
 risk:
-  risk_per_trade_pct: null            # normal risk per trade
-  max_risk_per_trade_pct: null        # hard ceiling; validator and `tj size` flag breaches
+  risk_per_trade_pct: 1.0             # normal risk per trade
+  max_risk_per_trade_pct: 1.0         # hard ceiling; validator and `tj size` flag breaches
   max_daily_loss_r: null
   max_open_risk_pct: null             # aggregate risk across open positions
   max_consecutive_losses_before_pause: null
@@ -32,13 +32,14 @@ instruments:                          # list of markets/assets traded
 sessions: null                        # the trader's own session names
 timeframes:                           # HTF context / execution timeframes used
   structure: "4h"
-  execution: null
+  execution: "4h"
 
 # The trader's own terms, in their words. These win over generic taxonomy labels.
 terminology:
   CHoCH: "Change of character. Bullish CHoCH requires a candle CLOSE above the last lower high."
   inducement: "Equal lows = liquidity resting below."
-  extreme demand level: "Primary long entry zone (red box in T-0001). Full definition pending."
+  extreme demand level: "The red box: primary long entry zone. Construction rule pending (strategy v1.1 open question 3)."
+  lower low: "A candle must CLOSE below the previous low (its wick). Vice versa for a higher high."
   reclaim: "Price back above a swept level, holding it as support; secondary entry."
   confluences: "Liquidity sweep; strong bullish momentum + volume; inducement; potential resistance level."
   confirmations: "Bullish Reversal (4H); extreme demand level."
@@ -48,3 +49,6 @@ sources:
   instruments: "T-0001 chart (BloFin AAVE/USDT perp), 2026-09-26"
   timeframes.structure: "Trader: 'chart time frame is 4H', 2026-09-26"
   terminology: "Trader's T-0001 message, 2026-09-26"
+  risk.risk_per_trade_pct: "Trader: 'Risk management always goes to 1%', 2026-09-26"
+  risk.max_risk_per_trade_pct: "Inferred from 'always 1%': fixed risk means 1% is also the ceiling. Confirm."
+  timeframes.execution: "Trader: '5) 4h', 2026-09-26"

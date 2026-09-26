@@ -1,0 +1,1364 @@
+{
+  "fingerprint": "f2746cc77df638d8",
+  "schema_version": 1,
+  "tool_version": "1.0.0",
+  "phase": {
+    "name": "INITIALIZATION",
+    "measured": 1,
+    "target": 20
+  },
+  "profile": {
+    "account": {
+      "base_currency": null,
+      "equity": null,
+      "equity_as_of": null
+    },
+    "risk": {
+      "risk_per_trade_pct": 1.0,
+      "max_risk_per_trade_pct": 1.0,
+      "max_daily_loss_r": null,
+      "max_open_risk_pct": null,
+      "max_consecutive_losses_before_pause": null
+    },
+    "leverage": {
+      "max_leverage": null,
+      "margin_mode": null,
+      "maintenance_margin_rate": null
+    },
+    "fees": {
+      "maker_rate": null,
+      "taker_rate": null
+    },
+    "instruments": [
+      "AAVEUSDT perpetual (BloFin)"
+    ],
+    "sessions": null,
+    "timeframes": {
+      "structure": "4h",
+      "execution": "4h"
+    },
+    "terminology": {
+      "CHoCH": "Change of character. Bullish CHoCH requires a candle CLOSE above the last lower high.",
+      "inducement": "Equal lows = liquidity resting below.",
+      "extreme demand level": "The red box: primary long entry zone. Construction rule pending (strategy v1.1 open question 3).",
+      "lower low": "A candle must CLOSE below the previous low (its wick). Vice versa for a higher high.",
+      "reclaim": "Price back above a swept level, holding it as support; secondary entry.",
+      "confluences": "Liquidity sweep; strong bullish momentum + volume; inducement; potential resistance level.",
+      "confirmations": "Bullish Reversal (4H); extreme demand level."
+    },
+    "sources": {
+      "instruments": "T-0001 chart (BloFin AAVE/USDT perp), 2026-09-26",
+      "timeframes.structure": "Trader: 'chart time frame is 4H', 2026-09-26",
+      "terminology": "Trader's T-0001 message, 2026-09-26",
+      "risk.risk_per_trade_pct": "Trader: 'Risk management always goes to 1%', 2026-09-26",
+      "risk.max_risk_per_trade_pct": "Inferred from 'always 1%': fixed risk means 1% is also the ceiling. Confirm.",
+      "timeframes.execution": "Trader: '5) 4h', 2026-09-26"
+    }
+  },
+  "unresolved": [
+    "account.base_currency",
+    "account.equity",
+    "account.equity_as_of",
+    "risk.max_daily_loss_r",
+    "risk.max_open_risk_pct",
+    "risk.max_consecutive_losses_before_pause",
+    "leverage.max_leverage",
+    "leverage.margin_mode",
+    "leverage.maintenance_margin_rate",
+    "fees.maker_rate",
+    "fees.taker_rate",
+    "sessions"
+  ],
+  "config": {
+    "breakeven_band_r": 0.1,
+    "evidence_tiers": {
+      "moderate_min_n": 20,
+      "higher_min_n": 50,
+      "higher_min_conditions": 2,
+      "condition_group": "trend"
+    },
+    "min_n_for_ratios": 10,
+    "min_n_for_ci": 5,
+    "recurring_error_min": 3,
+    "promotion": {
+      "change_min_evidence": {
+        "provisional": 10,
+        "established": 30
+      },
+      "strategy_min_trades": {
+        "developing": 10,
+        "established": 30
+      }
+    }
+  },
+  "taxonomy": {
+    "setups": {
+      "breakout": {
+        "label": "Breakout"
+      },
+      "breakout_retest": {
+        "label": "Breakout retest"
+      },
+      "liquidity_sweep": {
+        "label": "Liquidity sweep"
+      },
+      "liquidity_grab": {
+        "label": "Liquidity grab"
+      },
+      "mean_reversion": {
+        "label": "Mean reversion"
+      },
+      "trend_continuation": {
+        "label": "Trend continuation"
+      },
+      "trend_reversal": {
+        "label": "Trend reversal"
+      },
+      "pullback": {
+        "label": "Pullback"
+      },
+      "momentum_continuation": {
+        "label": "Momentum continuation"
+      },
+      "range_trade": {
+        "label": "Range trade"
+      },
+      "sr_reaction": {
+        "label": "Support/resistance reaction"
+      },
+      "failed_breakout": {
+        "label": "Failed breakout"
+      },
+      "market_structure_shift": {
+        "label": "Market structure shift"
+      },
+      "other": {
+        "label": "Other (describe in journal; promote to its own tag once it recurs)"
+      },
+      "choch": {
+        "label": "CHoCH (change of character)",
+        "definition": "Bullish CHoCH requires a candle CLOSE above the last lower high; a wick through does not count.",
+        "introduced_in": "T-0001"
+      },
+      "inducement": {
+        "label": "Inducement",
+        "definition": "Equal lows = liquidity resting below.",
+        "introduced_in": "T-0001"
+      },
+      "extreme_demand": {
+        "label": "Extreme demand level",
+        "definition": "Trader's primary long entry zone. In T-0001, the red box at the lower low from which the CHoCH leg started. Exact definition not yet stated.",
+        "introduced_in": "T-0001"
+      },
+      "reclaim": {
+        "label": "Reclaim (support reclaim)",
+        "definition": "Price closes back above a level it swept (in T-0001 the former inducement / equal lows) and holds it as support. Used as a secondary entry.",
+        "introduced_in": "T-0001"
+      }
+    },
+    "regimes": {
+      "strong_trend": {
+        "label": "Strong trend",
+        "group": "trend"
+      },
+      "weak_trend": {
+        "label": "Weak trend",
+        "group": "trend"
+      },
+      "range": {
+        "label": "Range",
+        "group": "trend"
+      },
+      "high_volatility": {
+        "label": "High volatility",
+        "group": "volatility"
+      },
+      "low_volatility": {
+        "label": "Low volatility",
+        "group": "volatility"
+      },
+      "expansion": {
+        "label": "Expansion",
+        "group": "phase"
+      },
+      "compression": {
+        "label": "Compression",
+        "group": "phase"
+      },
+      "bullish": {
+        "label": "Bullish environment",
+        "group": "bias"
+      },
+      "bearish": {
+        "label": "Bearish environment",
+        "group": "bias"
+      },
+      "neutral": {
+        "label": "Neutral environment",
+        "group": "bias"
+      },
+      "news_driven": {
+        "label": "News-driven",
+        "group": "catalyst"
+      },
+      "post_news": {
+        "label": "Post-news",
+        "group": "catalyst"
+      },
+      "session_specific": {
+        "label": "Session-specific behaviour",
+        "group": "catalyst"
+      }
+    },
+    "mistakes": {
+      "fomo": {
+        "label": "FOMO entry"
+      },
+      "revenge_trade": {
+        "label": "Revenge trade"
+      },
+      "overtrading": {
+        "label": "Overtrading"
+      },
+      "boredom_entry": {
+        "label": "Entered from boredom"
+      },
+      "emotional_reentry": {
+        "label": "Re-entered emotionally",
+        "aliases": [
+          "reentered_emotionally"
+        ]
+      },
+      "entered_before_confirmation": {
+        "label": "Entered before confirmation",
+        "aliases": [
+          "no_confirmation"
+        ]
+      },
+      "late_entry": {
+        "label": "Late entry"
+      },
+      "poor_entry_location": {
+        "label": "Poor entry location",
+        "aliases": [
+          "poor_entry"
+        ]
+      },
+      "chasing": {
+        "label": "Chasing (incl. chasing a breakout)",
+        "aliases": [
+          "chasing_breakout"
+        ]
+      },
+      "ignored_htf": {
+        "label": "Ignored higher timeframe"
+      },
+      "low_quality_setup": {
+        "label": "Traded a low-quality setup"
+      },
+      "outside_strategy": {
+        "label": "Traded outside the strategy"
+      },
+      "oversized_position": {
+        "label": "Oversized position",
+        "aliases": [
+          "oversizing"
+        ]
+      },
+      "excessive_leverage": {
+        "label": "Excessive leverage"
+      },
+      "moved_stop": {
+        "label": "Moved stop against the plan"
+      },
+      "widened_stop": {
+        "label": "Widened stop"
+      },
+      "removed_stop": {
+        "label": "Removed stop"
+      },
+      "ignored_invalidation": {
+        "label": "Ignored invalidation"
+      },
+      "held_loser_too_long": {
+        "label": "Held loser too long"
+      },
+      "premature_exit": {
+        "label": "Exited before the plan's exit criteria"
+      },
+      "cut_winner_early": {
+        "label": "Cut winner / took profit too early",
+        "aliases": [
+          "took_profit_early"
+        ]
+      }
+    },
+    "behaviors": {
+      "waited_for_confirmation": {
+        "label": "Waited for confirmation"
+      },
+      "respected_invalidation": {
+        "label": "Respected invalidation"
+      },
+      "correct_sizing": {
+        "label": "Sized correctly from predefined risk"
+      },
+      "followed_setup": {
+        "label": "Followed the setup rules"
+      },
+      "avoided_low_quality": {
+        "label": "Avoided low-quality conditions"
+      },
+      "took_planned_profits": {
+        "label": "Took planned profits"
+      },
+      "let_winner_run": {
+        "label": "Let the winner develop"
+      },
+      "waited_for_liquidity": {
+        "label": "Waited for liquidity"
+      },
+      "followed_htf": {
+        "label": "Followed higher-timeframe structure"
+      },
+      "avoided_emotional_reentry": {
+        "label": "Avoided emotional re-entry"
+      }
+    },
+    "loss_types": {
+      "A": {
+        "label": "Good loss",
+        "meaning": "Valid setup, controlled risk, plan followed; the trade simply failed.",
+        "lesson": "Keep the process. Do not change the strategy because of one normal loss."
+      },
+      "B": {
+        "label": "Strategy failure",
+        "meaning": "Setup looked valid but the strategy may underperform in these conditions.",
+        "lesson": "Investigate the conditions under which the strategy fails."
+      },
+      "C": {
+        "label": "Execution error",
+        "meaning": "Strategy valid, execution deviated from the plan.",
+        "lesson": "Fix execution rather than the strategy."
+      },
+      "D": {
+        "label": "Invalid setup",
+        "meaning": "The trade should never have been taken.",
+        "lesson": "Strengthen filtering criteria."
+      },
+      "E": {
+        "label": "Information deficiency",
+        "meaning": "Reasonable decision on available information; later information invalidated the thesis.",
+        "lesson": "Only add a rule if the missing information was knowable and recurs. Do not overfit one loss."
+      }
+    }
+  },
+  "strategies": [
+    {
+      "slug": "supply-demand-structure",
+      "meta": {
+        "id": "supply-demand-structure",
+        "name": "Supply/Demand + Price Action / Market Structure (liquidity confluences)",
+        "status": "unvalidated",
+        "current_version": "1.1",
+        "created": "2026-09-26",
+        "summary": "Trader's main strategy, in their words: \"supply/demand level and price action/market structure, adding few confluences with liquidity levels\". The long-side sequence was demonstrated in T-0001. The mirror case (supply zones, shorts) is presumed but not yet stated or demonstrated."
+      },
+      "versions": {
+        "1.0": {
+          "version": "1.0",
+          "date": "2026-09-26",
+          "source": "Stated by the trader with T-0001 (AAVE 4H), 2026-09-26",
+          "timeframes": {
+            "structure": "4h",
+            "execution": null
+          },
+          "market_conditions": [],
+          "required_conditions": [
+            "Bullish CHoCH: a candle CLOSE above the last lower high. A wick or move through it without a close does not count."
+          ],
+          "confirmation": [
+            "Bullish Reversal (4H)",
+            "Extreme demand level"
+          ],
+          "confluences": [
+            "Liquidity sweep",
+            "Strong bullish momentum + volume",
+            "Inducement (equal lows = liquidity resting below)",
+            "Potential resistance level (used for the target)"
+          ],
+          "entry_model": "Primary: long at the extreme demand level. Secondary (used in T-0001 when the primary was missed): long on the reclaim of the swept inducement level (former equal lows) as support.",
+          "stop_model": null,
+          "target_model": "Next resistance level. In T-0001: the wick + higher-low level (yellow line).",
+          "risk_model": null,
+          "leverage_model": null,
+          "management": {
+            "breakeven": null,
+            "partials": null,
+            "trailing": null,
+            "reentry": null,
+            "max_hold": null,
+            "early_exit": null,
+            "invalidation": null
+          },
+          "do_not_trade_when": [],
+          "common_mistakes": []
+        },
+        "1.1": {
+          "version": "1.1",
+          "date": "2026-09-26",
+          "source": "Trader's answers, 2026-09-26 (follow-up to T-0001). Clarifies v1.0; no rule changed (CHG-001).",
+          "supersedes": "1.0",
+          "timeframes": {
+            "structure": "4h",
+            "execution": "4h"
+          },
+          "market_structure": [
+            "Lower low: a candle must CLOSE below the previous low (its wick). A wick below without a close is not a lower low.",
+            "Higher high: a candle must CLOSE above the previous high (its wick). ('vice versa')",
+            "Bullish CHoCH: a candle CLOSE above the last lower high."
+          ],
+          "market_conditions": [],
+          "required_conditions": [
+            "Bullish CHoCH on the 4H, close-based (see market_structure)."
+          ],
+          "confirmation": [
+            "Bullish Reversal (4H)",
+            "Extreme demand level (the red box)"
+          ],
+          "confluences": [
+            "Liquidity sweep",
+            "Strong bullish momentum + volume",
+            "Inducement (equal lows = liquidity resting below)",
+            "Potential resistance level (used for the target)"
+          ],
+          "zones": {
+            "extreme_demand": "\"The red box.\" In T-0001 it spans about 85.61 to 88.05, which matches the wick-to-wick range (about 85.73 to 88.00) of the lowest candle at the lower low, within about 0.1. The exact construction rule is pending (open question 3)."
+          },
+          "entry_models": {
+            "extreme_demand": "Primary: long at the extreme demand level (the red box).",
+            "reclaim": "Secondary: long when price reclaims the swept inducement level (former equal lows) as support. Used when the primary entry was missed (T-0001)."
+          },
+          "stop_model": "At the level where the setup is invalidated: a return there means the move was a deviation or fakeout. Trader's words: \"invalidated setup - possible deviation/fakeout\". The mechanical placement is pending (open question 1). T-0001: 87.59, inside the red box, about 1.2 above the sweep low (86.40).",
+          "target_model": "Next resistance level. High R:R is sought: \"Hunting good RR setups is important.\" T-0001: the yellow line, 4.57R planned. No minimum R:R stated (open question 5).",
+          "risk_model": "1% of equity per trade, always.",
+          "leverage_model": "Chosen from the entry-to-stop distance. T-0001: stop 3.14% (trader's figure) -> 10x. Leverage does not change the 1% risk; it sets the margin posted and the liquidation distance. The mapping rule and margin mode are pending (open question 4).",
+          "management": {
+            "default": "Hold until TP hits.",
+            "breakeven": "Barely used.",
+            "partials": "Barely used.",
+            "trailing": null,
+            "reentry": null,
+            "max_hold": null,
+            "early_exit": null,
+            "invalidation": "Stop at the invalidation level (see stop_model)."
+          },
+          "do_not_trade_when": [],
+          "common_mistakes": [],
+          "open_questions": [
+            "1. Stop placement, mechanically. T-0001's stop (87.59) sat inside the red box, about 1.2 above the sweep low (86.40). Is it below the reclaim candle, a fixed point inside the zone, below the sweep wick, or something else?",
+            "2. Which lows count for the close-below rule? Read literally, it turns 4H structure bearish before T-0001's entry: Apr 18-19 closes fell below the post-CHoCH swing lows (about 103.04 and 97.08), and the Apr 20 candle closed at about 87.12, below the equal lows. Is only the major low (the lower low at the red box, about 85.73) protected, with smaller lows treated as internal structure or inducement?",
+            "3. Red box construction: is it the full wick-to-wick range of the lowest candle at the lower low?",
+            "4. Leverage: what rule maps stop distance to leverage (3.14% -> 10x), and do you use isolated or cross margin?",
+            "5. Is there a minimum R:R below which you skip a setup?",
+            "6. Do all rules mirror for shorts (supply zones, bearish CHoCH by a close below the last higher low)?"
+          ]
+        }
+      },
+      "changes": [
+        {
+          "id": "CHG-001",
+          "kind": "clarification",
+          "date": "2026-09-26",
+          "status": "adopted",
+          "rule_changed": false,
+          "statement": "Trader, 2026-09-26: \"Entry to SL range (invalidation) was 3,14% so I used 10x leverage. Risk management always goes to 1%. *IMPORTANT* Creating a Lower low must close BELOW the previous wick/low and vise versa. 1) invalidated setup - possible deviation/fakeout 2) 1% risk per trade 3) I barely use break even and partials, I hold until TP hits. Hunting good RR setups is important 4) red box 5) 4h\"",
+          "fields": [
+            "timeframes.execution",
+            "market_structure",
+            "zones.extreme_demand",
+            "entry_models",
+            "stop_model",
+            "target_model",
+            "risk_model",
+            "leverage_model",
+            "management",
+            "open_questions"
+          ],
+          "note": "These rules were in force when T-0001 was taken; v1.0 recorded them incompletely. T-0001 and T-0002 are retagged to 1.1 so per-version statistics are not split by a documentation change.",
+          "resulting_version": "1.1"
+        }
+      ],
+      "measured_trades": [
+        "T-0001"
+      ],
+      "promotion": {
+        "developing": 10,
+        "established": 30
+      }
+    }
+  ],
+  "experiments": [],
+  "trades": [
+    {
+      "id": "T-0002",
+      "status": "missed",
+      "opened": "2026-04-20",
+      "closed": null,
+      "asset": "AAVEUSDT",
+      "market": "crypto perp (BloFin)",
+      "direction": "long",
+      "session": null,
+      "timeframes": {
+        "htf": "4h",
+        "execution": null
+      },
+      "setups": [
+        "choch",
+        "inducement",
+        "liquidity_sweep",
+        "extreme_demand"
+      ],
+      "regime": [
+        "bullish"
+      ],
+      "strategy": {
+        "id": "supply-demand-structure",
+        "version": "1.1",
+        "experiment": null,
+        "variant": null
+      },
+      "plan": {
+        "entry": null,
+        "stop": null,
+        "targets": [],
+        "invalidation": null,
+        "entry_model": "extreme_demand",
+        "confluences": [
+          "Liquidity sweep",
+          "Inducement"
+        ],
+        "confirmations": [
+          "Bullish Reversal (4H)",
+          "Extreme demand level (red box)"
+        ]
+      },
+      "risk": {
+        "account_equity": null,
+        "risk_amount": null,
+        "risk_pct": 1.0,
+        "leverage": null,
+        "margin_mode": null,
+        "size": null,
+        "notional": null
+      },
+      "fills": {
+        "entry_avg": null,
+        "exits": [],
+        "fees": null
+      },
+      "result": {
+        "pnl": null,
+        "r": null,
+        "hypothetical_r": null
+      },
+      "journal": {
+        "before": "Plan (trader's account): after the 4H CHoCH, long at the extreme demand level (red box), below\nthe equal-lows inducement at 89.36.\n",
+        "during": "",
+        "after": "Missed: trader was not at home when price swept the equal lows into the box on 2026-04-20\n(wick about 86.40, inside the box). Re-entered on the reclaim instead: T-0001.\n"
+      },
+      "evidence": {
+        "observed": [
+          "Price traded into the red box on 2026-04-20 (low about 86.40), so a resting order inside the box's upper part would have been reached."
+        ],
+        "interpreted": [],
+        "hypotheses": [
+          "The primary entry model needs either presence at the zone or a resting limit order. Whether a resting limit fits the strategy is not yet stated."
+        ],
+        "charts": [
+          "journal/charts/T-0001-aave-4h.png"
+        ]
+      },
+      "review": {
+        "scores": {
+          "setup": null,
+          "context": null,
+          "execution": null,
+          "risk": null,
+          "management": null
+        },
+        "setup_validity": "valid",
+        "followed_plan": null,
+        "loss_type": null,
+        "mistakes": [],
+        "behaviors": [],
+        "outside_control": [
+          "Availability: not at home when the zone was reached"
+        ],
+        "lesson": "Missed because of availability, not hesitation. Track how often the primary entry is missed this way.",
+        "actionable_change": null,
+        "strategy_change": null,
+        "evidence_strength": "low"
+      },
+      "derived": {
+        "r": null,
+        "r_source": null,
+        "risk": null,
+        "risk_source": null,
+        "pnl": null,
+        "outcome": null,
+        "grade": null,
+        "process_mean": null,
+        "label": null,
+        "counterfactual_r": null,
+        "missing": [],
+        "exposure": null,
+        "planned_rr": [],
+        "holding_days": null,
+        "sort_date": "2026-04-20"
+      }
+    },
+    {
+      "id": "T-0001",
+      "status": "closed",
+      "opened": "2026-04-20",
+      "closed": "2026-05-10",
+      "asset": "AAVEUSDT",
+      "market": "crypto perp (BloFin)",
+      "direction": "long",
+      "session": null,
+      "timeframes": {
+        "htf": "4h",
+        "execution": null
+      },
+      "setups": [
+        "choch",
+        "inducement",
+        "liquidity_sweep",
+        "extreme_demand",
+        "reclaim"
+      ],
+      "regime": [
+        "range",
+        "bullish"
+      ],
+      "strategy": {
+        "id": "supply-demand-structure",
+        "version": "1.1",
+        "experiment": null,
+        "variant": null
+      },
+      "plan": {
+        "entry": 90.41,
+        "stop": 87.59,
+        "targets": [
+          103.3
+        ],
+        "invalidation": null,
+        "entry_model": "reclaim",
+        "confluences": [
+          "Liquidity sweep",
+          "Strong bullish momentum + volume",
+          "Inducement",
+          "Potential resistance level (yellow line)"
+        ],
+        "confirmations": [
+          "Bullish Reversal (4H)",
+          "Extreme demand level (red box)"
+        ]
+      },
+      "risk": {
+        "account_equity": null,
+        "risk_amount": null,
+        "risk_pct": 1.0,
+        "leverage": 10,
+        "margin_mode": null,
+        "size": null,
+        "notional": null
+      },
+      "fills": {
+        "entry_avg": null,
+        "exits": [
+          {
+            "price": 103.3,
+            "reason": "TP at yellow line, touched 2026-05-10. Full exit assumed: partials not stated."
+          }
+        ],
+        "fees": null
+      },
+      "result": {
+        "pnl": null,
+        "r": null,
+        "hypothetical_r": null
+      },
+      "journal": {
+        "before": "Reconstructed from the trader's account on 2026-09-26 (after the outcome, so not hindsight-proof).\n4H AAVE. Bearish leg made a lower low; strong bullish reversal followed but did not CLOSE above\nthe last lower high (green \"CH\" line), so no bullish CHoCH yet. Equal lows formed at 89.36 =\ninducement (liquidity resting below). Price then broke the last lower high: structure bearish ->\nbullish. Noted the wick + higher low at the yellow line as a potential level.\nPlan: long at the extreme demand level (red box). That entry was missed (not at home; see T-0002).\nPrice swept the equal lows into the extreme demand zone, then reclaimed the 89.36 line (former\ninducement) as support. Took the long on that reclaim with TP at the yellow line.\n",
+        "during": "Held 2026-04-20 to 2026-05-10 through choppy conditions (trader's words).\n",
+        "after": "Trader, 2026-09-26: \"Entry to SL range (invalidation) was 3,14% so I used 10x leverage\", 1% risk.\nThe chart levels (90.41 / 87.59) give 3.12%; the 0.02-point gap is unexplained (actual fill?).\nTP hit. Trader stated R:R 4.57. Trader stated the method: supply/demand levels + price action /\nmarket structure, with liquidity levels as confluences; asked for these to be memorised.\n"
+      },
+      "evidence": {
+        "observed": [
+          "BloFin AAVE/USDT perpetual, 4H. Position tool: entry 90.41, stop 87.59, target 103.30 (labelled).",
+          "(103.30 - 90.41) / (90.41 - 87.59) = 4.57 via tj: matches the trader's stated R:R.",
+          "Lower low about 85.7 on Apr 7-8, the base of the red box (about 85.6 to 88.05).",
+          "Reversal on Apr 8 stayed below the green CH line (about 97.9); no close above it until Apr 13-14.",
+          "Equal lows around 89.0 to 89.4 on Apr 9-13 (red line 89.36). One wick about 88.75 near Apr 13 dipped below the line before the CHoCH.",
+          "Apr 14 candles: bodies topped about 103.2, wick about 104.05. Apr 17 lower wick about 103.0. The yellow line (about 103.3) sits across both.",
+          "Rally to above 115 on Apr 16-17, then full retrace on Apr 18-20. The sweep wick low was about 86.40, inside the red box and above the Apr 7-8 lower low.",
+          "The Apr 20 bullish reversal candle opened about 87.1 and closed about 89.9, back above 89.36. The entry at 90.41 came on the following candle.",
+          "After entry: low about 89.9 (Apr 22 wick), then about 91.0 in early May. The stop at 87.59 was not approached.",
+          "Highest price before TP was about 100.71 on Apr 27 (3.65R at the planned stop). Price then fell back to about 91.0 before the May 10 rally to the 103.30 target.",
+          "No volume pane on the chart. The volume confluence cannot be verified from this image.",
+          "Prices marked 'about' were read from chart pixels, calibrated on the labelled levels, to within about 0.1."
+        ],
+        "interpreted": [
+          "The sequence is lower low, failed CHoCH, equal-low inducement, CHoCH by close, then a pullback that swept the inducement into extreme demand. The chart matches the trader's account.",
+          "The yellow line is a flip level: the Apr 14 breakout highs, then retested as support by the Apr 17 wick (the trader's 'wick + higher low'). The trader used it later as resistance and TP.",
+          "The stop at 87.59 sits inside the extreme demand zone, about 1.2 above the sweep low (86.40) and about 1.9 above the protected lower low (85.7). It is tighter than the structural invalidation."
+        ],
+        "hypotheses": [
+          "A reclaim of the swept inducement level may be a valid secondary entry when the primary extreme-demand entry is missed (n=1).",
+          "Stops inside the demand zone above the sweep low may raise nominal R:R at the cost of more stop-outs on zone retests (untested, n=1)."
+        ],
+        "charts": [
+          "journal/charts/T-0001-aave-4h.png"
+        ]
+      },
+      "review": {
+        "scores": {
+          "setup": 4,
+          "context": 3,
+          "execution": 4,
+          "risk": 4,
+          "management": 4
+        },
+        "setup_validity": "valid",
+        "followed_plan": null,
+        "loss_type": null,
+        "mistakes": [],
+        "behaviors": [
+          "waited_for_liquidity",
+          "followed_setup",
+          "took_planned_profits"
+        ],
+        "outside_control": [
+          "Not available when price reached the extreme demand zone (primary entry missed, T-0002)",
+          "20-day chop between about 90 and 101 before the target"
+        ],
+        "lesson": "When the primary entry at extreme demand was missed, a reclaim of the swept inducement level gave a defined-risk re-entry that captured the move. This is one example: track reclaim entries and extreme-demand entries separately. The stop sat inside the zone, above the sweep low. The trader defines it as the invalidation level (\"possible deviation/fakeout\"); the mechanical placement is still open (strategy v1.1, open question 1).",
+        "actionable_change": "Process only: make the stop placement mechanical (v1.1 open question 1) before any automation.",
+        "strategy_change": "no",
+        "evidence_strength": "low"
+      },
+      "derived": {
+        "r": 4.570921985815614,
+        "r_source": "price-based from exits (gross of fees)",
+        "risk": null,
+        "risk_source": null,
+        "pnl": null,
+        "outcome": "win",
+        "grade": "good",
+        "process_mean": 3.8,
+        "label": "GOOD OUTCOME / GOOD PROCESS",
+        "counterfactual_r": null,
+        "missing": [],
+        "exposure": {
+          "side": "long",
+          "stop_pct": 3.119123990708985,
+          "notional_pct": 32.06028368794334,
+          "effective_leverage": 0.3206028368794334,
+          "margin_pct": 3.206028368794334,
+          "liq_mode_assumed": true,
+          "liq_isolated": 81.77788944723618,
+          "liq_distance_pct": 9.547738693467338,
+          "liq_to_stop": 3.061032110909163,
+          "liq_before_stop": false
+        },
+        "planned_rr": [
+          4.570921985815614
+        ],
+        "holding_days": 20,
+        "sort_date": "2026-05-10"
+      }
+    }
+  ],
+  "stats": {
+    "overall": {
+      "n": 1,
+      "wins": 1,
+      "losses": 0,
+      "breakevens": 0,
+      "win_rate": 1.0,
+      "avg_win": 4.570921985815614,
+      "avg_loss": null,
+      "payoff": null,
+      "expectancy": 4.570921985815614,
+      "median": 4.570921985815614,
+      "total": 4.570921985815614,
+      "profit_factor": null,
+      "max_win_streak": 1,
+      "max_loss_streak": 0,
+      "max_drawdown": 0.0,
+      "ci": null,
+      "evidence": "LOW"
+    },
+    "histogram": [
+      {
+        "label": "< -1.1R (loss exceeded 1R)",
+        "count": 0
+      },
+      {
+        "label": "-1.1R to BE",
+        "count": 0
+      },
+      {
+        "label": "breakeven",
+        "count": 0
+      },
+      {
+        "label": "BE to +1R",
+        "count": 0
+      },
+      {
+        "label": "+1R to +2R",
+        "count": 0
+      },
+      {
+        "label": "+2R to +3R",
+        "count": 0
+      },
+      {
+        "label": ">= +3R",
+        "count": 1
+      }
+    ],
+    "equity_curve": [
+      {
+        "id": "T-0001",
+        "date": "2026-05-10",
+        "r": 4.570921985815614,
+        "cum_r": 4.570921985815614
+      }
+    ],
+    "by": {
+      "setup": [
+        {
+          "label": "choch",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
+          "label": "extreme_demand",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
+          "label": "inducement",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
+          "label": "liquidity_sweep",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
+          "label": "reclaim",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ],
+      "entry_model": [
+        {
+          "label": "reclaim",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ],
+      "version": [
+        {
+          "label": "supply-demand-structure@v1.1",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ],
+      "direction": [
+        {
+          "label": "long",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ],
+      "asset": [
+        {
+          "label": "AAVEUSDT",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ],
+      "regime": [
+        {
+          "label": "bullish",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
+          "label": "range",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ],
+      "session": [
+        {
+          "label": "(unknown)",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ],
+      "timeframe": [
+        {
+          "label": "(unknown)",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ],
+      "leverage": [
+        {
+          "label": "5-10x",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ],
+      "risk": [
+        {
+          "label": "0.5-1%",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ],
+      "month": [
+        {
+          "label": "2026-05",
+          "ids": [
+            "T-0001"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 1,
+            "losses": 0,
+            "breakevens": 0,
+            "win_rate": 1.0,
+            "avg_win": 4.570921985815614,
+            "avg_loss": null,
+            "payoff": null,
+            "expectancy": 4.570921985815614,
+            "median": 4.570921985815614,
+            "total": 4.570921985815614,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 0,
+            "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        }
+      ]
+    },
+    "errors": [],
+    "behaviors": [
+      {
+        "tag": "followed_setup",
+        "n_with": 1,
+        "mean_with": 4.570921985815614,
+        "n_without": 0,
+        "mean_without": null
+      },
+      {
+        "tag": "took_planned_profits",
+        "n_with": 1,
+        "mean_with": 4.570921985815614,
+        "n_without": 0,
+        "mean_without": null
+      },
+      {
+        "tag": "waited_for_liquidity",
+        "n_with": 1,
+        "mean_with": 4.570921985815614,
+        "n_without": 0,
+        "mean_without": null
+      }
+    ],
+    "process_outcome": [
+      {
+        "grade": "good",
+        "outcome": "win",
+        "n": 1
+      }
+    ],
+    "loss_types": {},
+    "mistake_free": {
+      "n": 1,
+      "wins": 1,
+      "losses": 0,
+      "breakevens": 0,
+      "win_rate": 1.0,
+      "avg_win": 4.570921985815614,
+      "avg_loss": null,
+      "payoff": null,
+      "expectancy": 4.570921985815614,
+      "median": 4.570921985815614,
+      "total": 4.570921985815614,
+      "profit_factor": null,
+      "max_win_streak": 1,
+      "max_loss_streak": 0,
+      "max_drawdown": 0.0,
+      "ci": null,
+      "evidence": "LOW"
+    },
+    "with_mistakes": {
+      "n": 0,
+      "wins": 0,
+      "losses": 0,
+      "breakevens": 0,
+      "win_rate": null,
+      "avg_win": null,
+      "avg_loss": null,
+      "payoff": null,
+      "expectancy": null,
+      "median": null,
+      "total": 0.0,
+      "profit_factor": null,
+      "max_win_streak": 0,
+      "max_loss_streak": 0,
+      "max_drawdown": 0.0,
+      "ci": null,
+      "evidence": "LOW"
+    },
+    "counterfactual": [
+      {
+        "id": "T-0002",
+        "hypothetical_r": null
+      }
+    ]
+  },
+  "gaps": {
+    "unmeasurable": [],
+    "unreviewed": []
+  },
+  "build": {
+    "fingerprint": "f2746cc77df638d8",
+    "generated_at": "2026-09-26T17:37:54+00:00",
+    "validation": [
+      {
+        "level": "INFO",
+        "where": "T-0001.yaml",
+        "msg": "risk.margin_mode unknown: liquidation vs stop not checked"
+      },
+      {
+        "level": "INFO",
+        "where": "profile/trader.yaml",
+        "msg": "12 unresolved parameter(s): learn them from the trader, never assume: account.base_currency, account.equity, account.equity_as_of, risk.max_daily_loss_r, risk.max_open_risk_pct, risk.max_consecutive_losses_before_pause, leverage.max_leverage, leverage.margin_mode, leverage.maintenance_margin_rate, fees.maker_rate, fees.taker_rate, sessions"
+      }
+    ]
+  }
+}

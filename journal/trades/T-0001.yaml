@@ -19,7 +19,7 @@ regime: [range, bullish]      # range = trader's "choppy conditions" during the 
 
 strategy:
   id: supply-demand-structure
-  version: "1.0"
+  version: "1.1"            # retagged from 1.0 by CHG-001 (clarification)
   experiment: null
   variant: null
 
@@ -27,7 +27,8 @@ plan:
   entry: 90.41                # position-tool label on chart; reclaim of the 89.36 line
   stop: 87.59                 # position-tool label on chart
   targets: [103.30]           # yellow line; position-tool label
-  invalidation: null          # not stated in words (see open question on stop logic)
+  invalidation: null
+  entry_model: reclaim          # not stated in words (see open question on stop logic)
   confluences:                # trader's list, trader's words
     - "Liquidity sweep"
     - "Strong bullish momentum + volume"
@@ -40,8 +41,8 @@ plan:
 risk:
   account_equity: null
   risk_amount: null
-  risk_pct: null
-  leverage: null
+  risk_pct: 1.0                # trader: "always 1%"
+  leverage: 10                 # trader: stop 3.14% -> 10x
   margin_mode: null
   size: null
   notional: null
@@ -70,6 +71,8 @@ journal:
   during: |
     Held 2026-04-20 to 2026-05-10 through choppy conditions (trader's words).
   after: |
+    Trader, 2026-09-26: "Entry to SL range (invalidation) was 3,14% so I used 10x leverage", 1% risk.
+    The chart levels (90.41 / 87.59) give 3.12%; the 0.02-point gap is unexplained (actual fill?).
     TP hit. Trader stated R:R 4.57. Trader stated the method: supply/demand levels + price action /
     market structure, with liquidity levels as confluences; asked for these to be memorised.
 
@@ -101,7 +104,7 @@ review:
     setup: 4                  # full sequence present per the trader's framework; volume confluence unverifiable
     context: 3                # 4H only; no daily/weekly context given; a 25% retrace nearly undercut the protected low
     execution: 4              # clean confirmation entry one candle after the reclaim close
-    risk: null                # size, leverage, account risk unknown; stop rule not stated
+    risk: 4                   # 1% risk, stop at the stated invalidation, 10x with liquidation about 3x the stop distance (if isolated)
     management: 4             # held to the planned TP through chop; no management rules stated to test against
   setup_validity: valid
   followed_plan: null         # planned entry (extreme demand) missed; executed a secondary entry not in the original plan
@@ -114,8 +117,9 @@ review:
   lesson: >-
     When the primary entry at extreme demand was missed, a reclaim of the swept inducement level
     gave a defined-risk re-entry that captured the move. This is one example: track reclaim entries
-    and extreme-demand entries separately. The stop sat inside the zone, above the sweep low. Its rule
-    is not yet stated, so the risk dimension cannot be scored.
-  actionable_change: "Process only: state the stop rule and the management rule (break-even, partials) so future trades can be scored against them."
+    and extreme-demand entries separately. The stop sat inside the zone, above the sweep low. The
+    trader defines it as the invalidation level ("possible deviation/fakeout"); the mechanical
+    placement is still open (strategy v1.1, open question 1).
+  actionable_change: "Process only: make the stop placement mechanical (v1.1 open question 1) before any automation."
   strategy_change: "no"
   evidence_strength: low

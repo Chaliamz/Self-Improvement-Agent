@@ -1,0 +1,79 @@
+# Strategy version file (§5, §21). IMMUTABLE once committed.
+#
+# v1.1 is a CLARIFICATION of v1.0 (CHG-001): it records rules the trader stated on
+# 2026-09-26 that were already in force when T-0001 was taken. No rule changed.
+# Only the trader's statements are recorded; anything unstated stays null.
+
+version: "1.1"
+date: 2026-09-26
+source: "Trader's answers, 2026-09-26 (follow-up to T-0001). Clarifies v1.0; no rule changed (CHG-001)."
+supersedes: "1.0"
+
+timeframes:
+  structure: "4h"
+  execution: "4h"
+
+market_structure:              # trader: "*IMPORTANT*"
+  - "Lower low: a candle must CLOSE below the previous low (its wick). A wick below without a close is not a lower low."
+  - "Higher high: a candle must CLOSE above the previous high (its wick). ('vice versa')"
+  - "Bullish CHoCH: a candle CLOSE above the last lower high."
+
+market_conditions: []         # not stated
+
+required_conditions:
+  - "Bullish CHoCH on the 4H, close-based (see market_structure)."
+
+confirmation:
+  - "Bullish Reversal (4H)"
+  - "Extreme demand level (the red box)"
+
+confluences:
+  - "Liquidity sweep"
+  - "Strong bullish momentum + volume"
+  - "Inducement (equal lows = liquidity resting below)"
+  - "Potential resistance level (used for the target)"
+
+zones:
+  extreme_demand: >-
+    "The red box." In T-0001 it spans about 85.61 to 88.05, which matches the wick-to-wick range
+    (about 85.73 to 88.00) of the lowest candle at the lower low, within about 0.1. The exact
+    construction rule is pending (open question 3).
+
+entry_models:
+  extreme_demand: "Primary: long at the extreme demand level (the red box)."
+  reclaim: "Secondary: long when price reclaims the swept inducement level (former equal lows) as support. Used when the primary entry was missed (T-0001)."
+
+stop_model: >-
+  At the level where the setup is invalidated: a return there means the move was a deviation or
+  fakeout. Trader's words: "invalidated setup - possible deviation/fakeout". The mechanical
+  placement is pending (open question 1). T-0001: 87.59, inside the red box, about 1.2 above the
+  sweep low (86.40).
+target_model: >-
+  Next resistance level. High R:R is sought: "Hunting good RR setups is important." T-0001: the
+  yellow line, 4.57R planned. No minimum R:R stated (open question 5).
+risk_model: "1% of equity per trade, always."
+leverage_model: >-
+  Chosen from the entry-to-stop distance. T-0001: stop 3.14% (trader's figure) -> 10x. Leverage
+  does not change the 1% risk; it sets the margin posted and the liquidation distance. The
+  mapping rule and margin mode are pending (open question 4).
+
+management:
+  default: "Hold until TP hits."
+  breakeven: "Barely used."
+  partials: "Barely used."
+  trailing: null
+  reentry: null
+  max_hold: null
+  early_exit: null
+  invalidation: "Stop at the invalidation level (see stop_model)."
+
+do_not_trade_when: []         # not stated
+common_mistakes: []
+
+open_questions:
+  - "1. Stop placement, mechanically. T-0001's stop (87.59) sat inside the red box, about 1.2 above the sweep low (86.40). Is it below the reclaim candle, a fixed point inside the zone, below the sweep wick, or something else?"
+  - "2. Which lows count for the close-below rule? Read literally, it turns 4H structure bearish before T-0001's entry: Apr 18-19 closes fell below the post-CHoCH swing lows (about 103.04 and 97.08), and the Apr 20 candle closed at about 87.12, below the equal lows. Is only the major low (the lower low at the red box, about 85.73) protected, with smaller lows treated as internal structure or inducement?"
+  - "3. Red box construction: is it the full wick-to-wick range of the lowest candle at the lower low?"
+  - "4. Leverage: what rule maps stop distance to leverage (3.14% -> 10x), and do you use isolated or cross margin?"
+  - "5. Is there a minimum R:R below which you skip a setup?"
+  - "6. Do all rules mirror for shorts (supply zones, bearish CHoCH by a close below the last higher low)?"
