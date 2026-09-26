@@ -96,6 +96,11 @@ class ValidationTest(KBTestCase):
         self.assertTrue(any("hypothetical_r is for missed" in m for m in msgs))
         self.assertTrue(any("use result.hypothetical_r" in m for m in msgs))
 
+    def test_bare_yes_no_boolean_hint(self):
+        self.write_trade("T-0001", result={"r": 1.0},
+                         review={"strategy_change": False, "mistakes": [], "behaviors": []})
+        self.assertTrue(any("quote it" in i.msg for i in self.issues("ERROR")))
+
     def test_non_numeric_price(self):
         self.write_trade("T-0001", plan={"entry": "100 USDT", "stop": 98})
         self.assertTrue(any("plain number" in i.msg for i in self.issues("ERROR")))

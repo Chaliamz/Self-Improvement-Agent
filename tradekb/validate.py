@@ -186,7 +186,9 @@ def _check_risk(t: dict, kb: KB, where: str, add: _Sink) -> None:
 def _check_review(t: dict, kb: KB, where: str, add: _Sink, outcome: str | None) -> None:
     for path, allowed in ENUMS.items():
         value = dig(t, path)
-        if value is not None and value not in allowed:
+        if isinstance(value, bool):
+            add(ERROR, where, f"{path}: YAML read a bare yes/no as {value}; quote it (\"yes\" / \"no\")")
+        elif value is not None and value not in allowed:
             add(ERROR, where, f"{path} must be one of {', '.join(allowed)} (got {value!r})")
     for dim in model.DIMENSIONS:
         value = dig(t, f"review.scores.{dim}")

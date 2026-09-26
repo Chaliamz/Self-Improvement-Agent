@@ -8,9 +8,14 @@ version: "1.0"
 date: null
 source: null                  # where the rules came from (message date / trade id)
 
+timeframes:
+  structure: null
+  execution: null
+
 market_conditions: []         # when it appears to work
 required_conditions: []       # must all be present for a valid setup
 confirmation: []              # what confirms it
+confluences: []               # supporting factors, in the trader's words
 entry_model: null
 stop_model: null              # where invalidation sits
 target_model: null

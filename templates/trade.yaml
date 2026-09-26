@@ -28,6 +28,8 @@ plan:
   stop: null                  # INITIAL stop = invalidation. Never overwrite when the stop moves.
   targets: []
   invalidation: null          # in words: what proves the thesis wrong
+  confluences: []             # the trader's confluences, in their words
+  confirmations: []           # the trader's confirmations, in their words
 
 risk:
   account_equity: null
@@ -74,5 +76,5 @@ review:
   outside_control: []
   lesson: null
   actionable_change: null
-  strategy_change: null       # yes | no | insufficient_evidence
+  strategy_change: null       # "yes" | "no" | insufficient_evidence  (quote yes/no: bare yes/no parse as booleans)
   evidence_strength: null     # low | moderate | high
