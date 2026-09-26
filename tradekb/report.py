@@ -11,6 +11,10 @@ from .stats import Comparison, Summary, histogram
 from .store import KB, dig, unresolved
 
 
+def _hours(x: float) -> str:
+    return f"{x * 60:.0f}m" if x < 1 else f"{x:.1f}h" if x < 48 else f"{x / 24:.1f}d"
+
+
 def fr(x: float | None) -> str:
     return "—" if x is None else f"{x:+.2f}R"
 
@@ -188,9 +192,11 @@ def full_report(kb: KB, rs: list[Row], scope: str) -> str:
 
     overall = analysis.summarize_rows(rs, kb)
     out += ["## 1. Overall", "", summary_table("scope", [("all", overall)]), ""]
-    held = analysis.holding_days(rs)
+    held = [h for h in (analysis.holding_hours(row) for row in rs) if h is not None]
     if held:
-        out.append(f"Holding time (days, n={len(held)}): mean {fmean(held):.1f}, median {median(held):.1f}")
+        out.append(f"Time in trade (n={len(held)}, stated minutes when given, else dates): "
+                   f"median {_hours(median(held))}, range {_hours(min(held))} to {_hours(max(held))}. "
+                   f"Mixed scalps and swings: read it per timeframe, not as one average.")
     rs_values = [row.d.r for row in rs]
     out += ["", "R distribution:", ""] + [f"- {label}: {count}" for label, count in
                                            histogram(rs_values, cfg["breakeven_band_r"])]

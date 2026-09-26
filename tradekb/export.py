@@ -14,7 +14,6 @@ import dataclasses
 import datetime as dt
 import hashlib
 import json
-import mimetypes
 import re
 from pathlib import Path
 from typing import Any
@@ -30,8 +29,11 @@ OUTPUTS = ("exports/kb.json", "terminal.html")
 TEMPLATE = "templates/terminal.html"
 INPUT_GLOBS = ("config.yaml", "profile/*.yaml", "taxonomy/*.yaml", "journal/trades/*.yaml", "journal/charts/*",
                "playbook/*.yaml", "playbook/strategies/**/*.yaml", "playbook/experiments/*.yaml", "tradekb/*.py", TEMPLATE)
-BREAKDOWNS = ("setup", "entry_model", "version", "direction", "asset", "regime", "session", "timeframe",
-              "leverage", "risk", "month")
+BREAKDOWNS = ("setup", "entry_model", "strategy", "version", "direction", "asset", "regime", "session", "timeframe",
+              "top_down", "leverage", "risk", "grade", "month")
+# Explicit, because Python's built-in table lacks .webp and the system table is not always present.
+IMAGE_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",
+               ".gif": "image/gif", ".avif": "image/avif"}
 FINGERPRINT_RE = re.compile(r'"fingerprint":\s*"([0-9a-f]+)"|<meta name="kb-fingerprint" content="([0-9a-f]+)"')
 
 
@@ -76,9 +78,8 @@ def _trade(row: analysis.Row, kb: KB) -> dict:
         mmr = num(dig(kb.profile, "leverage.maintenance_margin_rate")) or kb.config["risk_checks"]["default_mmr_rate"]
         exp = exposure(entry, stop, num(dig(t, "risk.risk_pct")), num(dig(t, "risk.leverage")),
                        dig(t, "risk.margin_mode"), mmr, num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct")))
-    held = analysis.holding_days([row])
     derived = jsonable(row.d)
-    derived.update({"exposure": exp, "planned_rr": model.planned_rr(t), "holding_days": held[0] if held else None,
+    derived.update({"exposure": exp, "planned_rr": model.planned_rr(t), "holding_hours": analysis.holding_hours(row), "top_down": dig(t, "timeframes.top_down"),
                     "sort_date": row.when.isoformat() if row.when else None})
     return {**jsonable(t), "derived": derived}
 
@@ -163,8 +164,8 @@ def _charts(kb: KB, payload: dict) -> dict[str, str]:
             path = kb.root / str(rel)
             if rel in out or not path.is_file():
                 continue
-            mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
-            if mime.startswith("image/"):
+            mime = IMAGE_TYPES.get(path.suffix.lower())
+            if mime:
                 out[rel] = f"data:{mime};base64,{base64.b64encode(path.read_bytes()).decode()}"
     return out
 

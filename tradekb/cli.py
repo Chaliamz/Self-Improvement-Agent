@@ -205,6 +205,17 @@ def cmd_build(kb: KB, args) -> int:
     return 0
 
 
+def cmd_audit(kb: KB, args) -> int:
+    from .audit import run
+    result = run(kb, check_outputs=not args.no_outputs)
+    for ok, message in result.results:
+        if args.verbose or not ok:
+            print(("PASS  " if ok else "FAIL  ") + message)
+    failed = len(result.failures)
+    print(f"\naudit: {len(result.results) - failed} passed, {failed} failed")
+    return 1 if failed else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="tj", description="Trading journal and knowledge base.")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -252,6 +263,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("errors", help="recurring-error and behaviour databases")
     sub.add_parser("build", help="rebuild terminal.html and exports/kb.json from the knowledge base")
+    au = sub.add_parser("audit", help="recompute every published number and check outputs on disk")
+    au.add_argument("-v", "--verbose", action="store_true", help="list passing checks too")
+    au.add_argument("--no-outputs", action="store_true", help="skip kb.json / terminal.html comparison")
 
     c = sub.add_parser("compare", help="A/B comparison with a bootstrap CI on the expectancy difference")
     c.add_argument("field", choices=sorted(analysis.GROUPERS))
@@ -264,7 +278,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 COMMANDS = {"status": cmd_status, "validate": cmd_validate, "new": cmd_new, "show": cmd_show,
             "size": cmd_size, "stats": cmd_stats, "errors": cmd_errors, "compare": cmd_compare,
-            "report": cmd_report, "build": cmd_build}
+            "report": cmd_report, "build": cmd_build, "audit": cmd_audit}
 
 
 def main(argv: list[str] | None = None) -> int:

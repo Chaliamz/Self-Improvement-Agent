@@ -16,6 +16,7 @@
   --up: #009485; --down: #e8474a; --up-text: #00796b; --down-text: #c62828;
   --up-wash: rgba(0,148,133,.12); --down-wash: rgba(232,71,74,.12);
   --glow-up: rgba(0,148,133,.16); --glow-down: rgba(232,71,74,.12); --glow-accent: rgba(42,120,214,.10); --tape-opacity: .07;
+  --brand: #6d4bd6; --brand-wash: rgba(109,75,214,.10); --glow-brand: rgba(124,77,255,.16); --bg-opacity: .75;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -27,6 +28,7 @@
     --up: #26a69a; --down: #ef5350; --up-text: #26a69a; --down-text: #ef5350;
     --up-wash: rgba(38,166,154,.14); --down-wash: rgba(239,83,80,.14);
     --glow-up: rgba(38,166,154,.20); --glow-down: rgba(239,83,80,.15); --glow-accent: rgba(57,135,229,.12); --tape-opacity: .09;
+    --brand: #a594f9; --brand-wash: rgba(165,148,249,.12); --glow-brand: rgba(124,77,255,.24); --bg-opacity: 1;
   }
 }
 :root[data-theme="dark"] {
@@ -38,6 +40,7 @@
   --up: #26a69a; --down: #ef5350; --up-text: #26a69a; --down-text: #ef5350;
   --up-wash: rgba(38,166,154,.14); --down-wash: rgba(239,83,80,.14);
   --glow-up: rgba(38,166,154,.20); --glow-down: rgba(239,83,80,.15); --glow-accent: rgba(57,135,229,.12); --tape-opacity: .09;
+  --brand: #a594f9; --brand-wash: rgba(165,148,249,.12); --glow-brand: rgba(124,77,255,.24); --bg-opacity: 1;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
@@ -57,7 +60,11 @@ header.top { border-bottom: 1px solid var(--border); background: var(--surface);
 nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 nav.tabs::-webkit-scrollbar { display: none; }
 nav.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 12px 10px; cursor: pointer; color: var(--ink-2); white-space: nowrap; }
-nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--pos); font-weight: 600; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--brand); font-weight: 600; }
+nav.tabs button:hover { color: var(--ink); }
+.brand h1 .title { background: linear-gradient(90deg, var(--brand), var(--up)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.top-actions select { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; }
+.btn:hover, .top-actions select:hover { border-color: var(--brand); }
 main { padding: 16px 0 48px; }
 section.panel { display: none; }
 section.panel.active { display: block; }
@@ -88,7 +95,7 @@ td.wrap-cell { white-space: normal; min-width: 200px; }
 tbody tr:last-child td { border-bottom: 0; }
 tbody tr.clickable { cursor: pointer; }
 tbody tr.clickable:hover td { background: var(--surface-2); }
-.linkish { background: none; border: 0; padding: 0; color: var(--pos); cursor: pointer; font-weight: 600; }
+.linkish { background: none; border: 0; padding: 0; color: var(--brand); cursor: pointer; font-weight: 600; }
 .badge { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; font-size: 12px; white-space: nowrap; background: var(--surface-2); color: var(--ink); }
 .badge .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .badge.unstated { color: var(--ink-2); border-style: dashed; background: transparent; }
@@ -139,32 +146,64 @@ dialog::backdrop { background: rgba(0,0,0,.55); }
 .flag { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); margin-top: 8px; }
 .flag .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex: none; }
 .empty { color: var(--ink-2); font-style: italic; margin: 4px 0; }
-/* background: drifting glows + faint grid + candle tape. Decorative only; never over the data. */
+/* backgrounds: one decorative layer at a time, chosen in the header. Never over the data. */
 body { position: relative; isolation: isolate; }
-body::before { content: ""; position: fixed; inset: -25%; z-index: -2; pointer-events: none;
-  background:
-    radial-gradient(38% 32% at 18% 22%, var(--glow-up), transparent 70%),
-    radial-gradient(34% 30% at 82% 78%, var(--glow-down), transparent 70%),
-    radial-gradient(30% 28% at 72% 18%, var(--glow-accent), transparent 70%);
-  animation: drift 38s ease-in-out infinite alternate; }
-:root[data-pnl="up"] body::before { background:
-    radial-gradient(46% 38% at 18% 22%, var(--glow-up), transparent 70%),
-    radial-gradient(26% 22% at 82% 78%, var(--glow-down), transparent 72%),
-    radial-gradient(30% 28% at 72% 18%, var(--glow-accent), transparent 70%); }
-:root[data-pnl="down"] body::before { background:
-    radial-gradient(26% 22% at 18% 22%, var(--glow-up), transparent 72%),
-    radial-gradient(46% 38% at 82% 78%, var(--glow-down), transparent 70%),
-    radial-gradient(30% 28% at 72% 18%, var(--glow-accent), transparent 70%); }
-body::after { content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+#bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; opacity: var(--bg-opacity); }
+#bg > * { position: absolute; inset: 0; display: none; }
+:root[data-bg="aurora"] #bg .bg-aurora, :root[data-bg="aurora"] #bg .bg-grid,
+:root[data-bg="constellation"] #bg #bg-canvas,
+:root[data-bg="synthwave"] #bg .bg-synth,
+:root[data-bg="tape"] #bg .bg-glow, :root[data-bg="tape"] #bg .bg-grid, :root[data-bg="tape"] #bg #bg-tape,
+:root[data-bg="off"] #bg .bg-static { display: block; }
+.bg-grid { background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
   background-size: 64px 64px; opacity: .35;
   -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 70%); mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 70%);
   animation: grid-pan 60s linear infinite; }
-#bg-tape { position: fixed; left: 0; right: 0; bottom: 0; height: 42vh; z-index: -1; pointer-events: none; overflow: hidden;
-  opacity: var(--tape-opacity); -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 100%); mask-image: linear-gradient(to top, #000 10%, transparent 100%); }
+.bg-static { background: radial-gradient(60% 50% at 15% 10%, var(--glow-brand), transparent 70%), radial-gradient(50% 40% at 90% 90%, var(--glow-accent), transparent 70%); }
+/* aurora: three soft blobs on independent orbits; the teal/red one leans with net R */
+.bg-aurora { filter: blur(48px); }
+.bg-aurora i { position: absolute; width: 58vmax; height: 58vmax; border-radius: 50%; }
+.bg-aurora i:nth-child(1) { left: -12vmax; top: -18vmax; background: radial-gradient(circle, var(--glow-brand), transparent 65%); animation: orbit-a 28s ease-in-out infinite alternate; }
+.bg-aurora i:nth-child(2) { right: -14vmax; bottom: -20vmax; background: radial-gradient(circle, var(--glow-up), transparent 65%); animation: orbit-b 34s ease-in-out infinite alternate; }
+:root[data-pnl="down"] .bg-aurora i:nth-child(2) { background: radial-gradient(circle, var(--glow-down), transparent 65%); }
+.bg-aurora i:nth-child(3) { left: 30vw; top: 20vh; width: 42vmax; height: 42vmax; background: radial-gradient(circle, var(--glow-accent), transparent 65%); animation: orbit-c 41s ease-in-out infinite alternate; }
+@keyframes orbit-a { to { transform: translate3d(22vw, 16vh, 0) scale(1.15); } }
+@keyframes orbit-b { to { transform: translate3d(-26vw, -14vh, 0) scale(1.1); } }
+@keyframes orbit-c { 0% { transform: translate3d(-10vw, 0, 0) scale(.9); } 100% { transform: translate3d(12vw, 18vh, 0) scale(1.2); } }
+/* synthwave: horizon glow, striped sun, grid floor rolling toward the viewer */
+.bg-synth { background: linear-gradient(to bottom, transparent 30%, var(--glow-brand) 55%, transparent 56%); }
+.bg-synth .sun { position: absolute; left: 50%; top: 20%; width: 34vmin; height: 34vmin; transform: translateX(-50%); border-radius: 50%;
+  background: linear-gradient(to bottom, var(--brand), var(--down)); opacity: .28;
+  -webkit-mask-image: repeating-linear-gradient(to bottom, #000 0 9px, transparent 9px 13px); mask-image: repeating-linear-gradient(to bottom, #000 0 9px, transparent 9px 13px);
+  animation: sun-pulse 6s ease-in-out infinite alternate; }
+.bg-synth .floor { position: absolute; left: -50%; right: -50%; top: 55%; bottom: -40%; transform-origin: top; transform: perspective(320px) rotateX(62deg);
+  background-image: linear-gradient(var(--brand) 1px, transparent 1px), linear-gradient(90deg, var(--brand) 1px, transparent 1px); background-size: 56px 56px; opacity: .22;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 40%); mask-image: linear-gradient(to bottom, transparent, #000 40%);
+  animation: floor-roll 2.4s linear infinite; }
+@keyframes floor-roll { to { background-position: 0 56px, 0 0; } }
+@keyframes sun-pulse { to { opacity: .4; transform: translateX(-50%) scale(1.04); } }
+/* candle tape (the previous background) */
+.bg-glow { background:
+    radial-gradient(40% 34% at 18% 22%, var(--glow-up), transparent 70%),
+    radial-gradient(34% 30% at 82% 78%, var(--glow-down), transparent 70%),
+    radial-gradient(30% 28% at 60% 12%, var(--glow-brand), transparent 70%);
+  animation: drift 38s ease-in-out infinite alternate; inset: -25% !important; }
+#bg-tape { top: auto !important; height: 42vh; opacity: var(--tape-opacity);
+  -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 100%); mask-image: linear-gradient(to top, #000 10%, transparent 100%); }
 #bg-tape .strip { display: flex; width: max-content; height: 100%; animation: tape 120s linear infinite; }
 #bg-tape svg { height: 100%; width: auto; flex: none; }
 #bg-tape .c-up { fill: var(--up); stroke: var(--up); } #bg-tape .c-down { fill: var(--down); stroke: var(--down); }
+#bg-canvas { width: 100%; height: 100%; }
+.tag { background: var(--brand-wash); }
+svg .bar-up { fill: var(--up); } svg .bar-down { fill: var(--down); }
+svg .grow-down { transform-box: fill-box; transform-origin: top; animation: grow .7s cubic-bezier(.2,.7,.2,1) both; }
+svg .whisker { stroke: var(--ink-2); stroke-width: 1.5; }
+svg .dd-line { fill: none; stroke: var(--down); stroke-width: 2; stroke-linejoin: round; }
+svg .dd-line.flat { stroke: var(--neutral); }
+svg .dd-area { fill: var(--down-wash); }
+svg .axis-title { fill: var(--ink-2); font-size: 11.5px; }
+svg .row-label { fill: var(--ink); font-size: 12px; }
+svg .hit:hover + .mark, svg .hit:focus + .mark { opacity: .8; }
 @keyframes drift { from { transform: translate3d(-3%, -2%, 0) scale(1); } to { transform: translate3d(3%, 2.5%, 0) scale(1.08); } }
 @keyframes grid-pan { from { background-position: 0 0, 0 0; } to { background-position: 64px 64px, 64px 64px; } }
 @keyframes tape { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -189,7 +228,7 @@ svg .grow { transform-box: fill-box; transform-origin: bottom; animation: grow .
 svg .draw { animation: fade .6s ease both; }
 .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--up); animation: pulse 2.4s ease-in-out infinite; margin-right: 8px; vertical-align: 2px; }
 .stage { border-left: 3px solid var(--border); }
-.stage[data-status="done"] { border-left-color: var(--up); } .stage[data-status="active"] { border-left-color: var(--pos); }
+.stage[data-status="done"] { border-left-color: var(--up); } .stage[data-status="active"] { border-left-color: var(--brand); }
 .stage[data-status="locked"] { opacity: .62; }
 .crit { display: grid; grid-template-columns: 22px 1fr minmax(90px, 160px); gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--grid); }
 .crit .mark { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; background: var(--neutral); }
@@ -205,14 +244,29 @@ footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top:
   <div class="wrap">
     <div class="top-row">
       <div class="brand"><h1>Trading Terminal</h1><div class="sub" id="brand-sub"></div></div>
-      <div class="top-actions"><button class="btn" id="theme-btn" type="button">Theme</button></div>
+      <div class="top-actions">
+        <label class="sr" for="bg-select" style="position:absolute;left:-9999px">Background</label>
+        <select id="bg-select" aria-label="Background animation">
+          <option value="aurora">Aurora</option><option value="constellation">Constellation</option>
+          <option value="synthwave">Synthwave</option><option value="tape">Candle tape</option><option value="off">No animation</option>
+        </select>
+        <button class="btn" id="theme-btn" type="button">Theme</button>
+      </div>
     </div>
     <nav class="tabs" role="tablist" id="tabs"></nav>
   </div>
 </header>
 <main class="wrap" id="main"></main>
 <div class="wrap"><footer id="footer"></footer></div>
-<div id="bg-tape" aria-hidden="true"></div>
+<div id="bg" aria-hidden="true">
+  <div class="bg-static"></div>
+  <div class="bg-aurora"><i></i><i></i><i></i></div>
+  <canvas id="bg-canvas"></canvas>
+  <div class="bg-synth"><div class="sun"></div><div class="floor"></div></div>
+  <div class="bg-glow"></div>
+  <div id="bg-tape"></div>
+  <div class="bg-grid"></div>
+</div>
 <div id="tooltip" role="tooltip"></div>
 <dialog id="trade-dialog" aria-labelledby="dlg-title"></dialog>
 
@@ -356,9 +410,9 @@ const tagLabel = (tax, tag) => ((KB.taxonomy[tax] || {})[tag] || {}).label || ti
 
 const STATUS = {
   win: ["var(--up)", "▲ Win"], loss: ["var(--down)", "▼ Loss"], breakeven: ["var(--neutral)", "● Breakeven"],
-  long: ["var(--up)", "▲ Long"], short: ["var(--down)", "▼ Short"], done: ["var(--up)", "✓ Done"], active: ["var(--pos)", "In progress"], locked: ["var(--neutral)", "Locked"],
+  long: ["var(--up)", "▲ Long"], short: ["var(--down)", "▼ Short"], done: ["var(--up)", "✓ Done"], active: ["var(--brand)", "In progress"], locked: ["var(--neutral)", "Locked"],
   missed: ["var(--neutral)", "○ Missed"], not_taken: ["var(--neutral)", "○ Not taken"],
-  planned: ["var(--pos)", "◇ Planned"], open: ["var(--warning)", "◐ Open"],
+  planned: ["var(--brand)", "◇ Planned"], open: ["var(--warning)", "◐ Open"],
   CRITICAL: ["var(--critical)", "Critical"], ERROR: ["var(--critical)", "Error"], WARN: ["var(--warning)", "Warning"],
   INFO: ["var(--neutral)", "Info"], recurring: ["var(--serious)", "Recurring"],
 };
@@ -466,7 +520,9 @@ function niceTicks(min, max, count = 4) {
 function responsive(host, draw) {
   let width = 0;
   const render = () => { const w = host.clientWidth; if (w && w !== width) { width = w; host.replaceChildren(draw(w)); } };
-  new ResizeObserver(render).observe(host);
+  if (host._observer) host._observer.disconnect();
+  host._observer = new ResizeObserver(render);
+  host._observer.observe(host);
   render();
 }
 function equityChart(host, curve) {
@@ -582,6 +638,160 @@ function histogramChart(host, bins) {
   });
 }
 
+function roundedDown(x, y, w, hgt, r = 4) {
+  r = Math.min(r, w / 2, hgt);
+  return `M${x},${y}V${y + hgt - r}Q${x},${y + hgt} ${x + r},${y + hgt}H${x + w - r}Q${x + w},${y + hgt} ${x + w},${y + hgt - r}V${y}Z`;
+}
+function hitTip(el, value, lines, anchor) {
+  el.addEventListener("pointermove", e => showTip(value, lines, e.clientX, e.clientY));
+  el.addEventListener("pointerleave", hideTip);
+  el.addEventListener("focus", () => { const r = anchor(); showTip(value, lines, r.x, r.y); });
+  el.addEventListener("blur", hideTip);
+}
+function perTradeChart(host, curve) {
+  responsive(host, W => {
+    const H = 230, m = { t: 20, r: 12, b: 30, l: 52 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const vals = curve.map(c => c.r), yt = niceTicks(Math.min(0, ...vals), Math.max(0, ...vals));
+    const y0 = yt[0], y1 = yt[yt.length - 1], Y = v => m.t + ih - (v - y0) / (y1 - y0) * ih;
+    const band = iw / curve.length, bw = Math.min(24, band * 0.6);
+    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `R of each of ${curve.length} closed trades` });
+    for (const v of yt) {
+      root.append(s("line", { x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v), class: v === 0 ? "axis" : "grid" }));
+      root.append(s("text", { x: m.l - 8, y: Y(v), "text-anchor": "end", "dominant-baseline": "middle" }, fmtTick(v)));
+    }
+    const iMax = vals.indexOf(Math.max(...vals)), iMin = vals.indexOf(Math.min(...vals));
+    const every = Math.max(1, Math.ceil(curve.length / Math.max(1, Math.floor(iw / 64))));
+    curve.forEach((c, i) => {
+      const cx = m.l + band * i + band / 2, x = cx - bw / 2, top = Y(Math.max(0, c.r)), bottom = Y(Math.min(0, c.r));
+      const hgt = Math.max(1, bottom - top), up = c.r >= 0;
+      const hit = s("rect", { x: m.l + band * i, y: m.t, width: band, height: ih, fill: "transparent", tabindex: 0, class: "hit",
+                              "aria-label": `${c.id}: ${fmtR(c.r)}` });
+      hitTip(hit, fmtR(c.r), [{ key: up ? "var(--up)" : "var(--down)", text: c.id }, { text: c.date || "" }],
+             () => { const b = root.getBoundingClientRect(); return { x: b.left + cx, y: b.top + top }; });
+      root.append(hit, s("path", { d: up ? columnPath(x, top, bw, hgt) : roundedDown(x, top, bw, hgt),
+                                   class: `mark ${up ? "bar-up grow" : "bar-down grow-down"}`, style: `animation-delay:${i * 50}ms` }));
+      if ((i === iMax && c.r > 0) || (i === iMin && c.r < 0))
+        root.append(s("text", { x: cx, y: up ? top - 6 : bottom + 14, "text-anchor": "middle", class: "cap-label" }, fmtR(c.r)));
+      if (i % every === 0) root.append(s("text", { x: cx, y: H - 8, "text-anchor": "middle" }, c.id));
+    });
+    return root;
+  });
+}
+function drawdownChart(host, curve) {
+  const pts = [{ id: "Start", date: null, dd: 0 }];
+  let peak = 0;
+  for (const c of curve) { peak = Math.max(peak, c.cum_r); pts.push({ id: c.id, date: c.date, dd: c.cum_r - peak }); }
+  responsive(host, W => {
+    const H = 230, m = { t: 16, r: 16, b: 30, l: 52 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const low = Math.min(...pts.map(p => p.dd));
+    const yt = niceTicks(low < 0 ? low : -1, 0), y0 = yt[0], y1 = yt[yt.length - 1];
+    const X = i => m.l + (pts.length === 1 ? iw / 2 : i * iw / (pts.length - 1)), Y = v => m.t + ih - (v - y0) / (y1 - y0) * ih;
+    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img",
+                            "aria-label": low < 0 ? `Deepest drawdown ${fmtR(low)}` : "No drawdown so far" });
+    for (const v of yt) {
+      root.append(s("line", { x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v), class: v === 0 ? "axis" : "grid" }));
+      root.append(s("text", { x: m.l - 8, y: Y(v), "text-anchor": "end", "dominant-baseline": "middle" }, fmtTick(v)));
+    }
+    const d = pts.map((p, i) => `${i ? "L" : "M"}${X(i)},${Y(p.dd)}`).join("");
+    root.append(s("path", { d: `${d}L${X(pts.length - 1)},${Y(0)}L${X(0)},${Y(0)}Z`, class: "dd-area draw" }),
+                s("path", { d, class: low < 0 ? "dd-line" : "dd-line flat" }));
+    pts.forEach((p, i) => {
+      if (i % Math.max(1, Math.ceil(pts.length / Math.max(2, Math.floor(iw / 70)))) === 0 || i === pts.length - 1)
+        root.append(s("text", { x: X(i), y: H - 8, "text-anchor": i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle" }, p.id));
+    });
+    if (low >= 0) root.append(s("text", { x: m.l + iw / 2, y: m.t + ih / 2, "text-anchor": "middle", class: "axis-title" }, "No drawdown yet: every closed trade set a new equity high"));
+    const cross = s("line", { class: "crosshair", y1: m.t, y2: m.t + ih, visibility: "hidden" });
+    const hit = s("rect", { x: m.l - 8, y: m.t, width: iw + 16, height: ih, fill: "transparent", tabindex: 0, "aria-label": "Drawdown chart" });
+    root.append(cross, hit);
+    const show = (i, cx, cy) => { cross.setAttribute("x1", X(i)); cross.setAttribute("x2", X(i)); cross.setAttribute("visibility", "visible");
+      showTip(fmtR(pts[i].dd), [{ key: "var(--down)", text: `Drawdown · ${pts[i].id}` }, { text: pts[i].date || "" }], cx, cy); };
+    const nearest = cx => { const b = root.getBoundingClientRect(); let best = 0, dist = Infinity;
+      pts.forEach((_, i) => { const dd = Math.abs(b.left + X(i) - cx); if (dd < dist) { dist = dd; best = i; } }); return best; };
+    hit.addEventListener("pointermove", e => show(nearest(e.clientX), e.clientX, e.clientY));
+    hit.addEventListener("pointerleave", () => { hideTip(); cross.setAttribute("visibility", "hidden"); });
+    hit.addEventListener("focus", () => { const b = root.getBoundingClientRect(), i = pts.length - 1; show(i, b.left + X(i), b.top + Y(pts[i].dd)); });
+    hit.addEventListener("blur", () => { hideTip(); cross.setAttribute("visibility", "hidden"); });
+    return root;
+  });
+}
+function groupBarChart(host, groups, key) {
+  const rows = groups.filter(g => isNum(g.summary.expectancy));
+  if (!rows.length) { host.replaceChildren(h("p", { class: "empty", text: "No measured trades in any group yet." })); return; }
+  responsive(host, W => {
+    const rowH = 34, labelW = Math.min(170, W * 0.36), m = { t: 8, r: 96, b: 26, l: labelW + 12 };
+    const iw = W - m.l - m.r, H = m.t + rows.length * rowH + m.b;
+    const lo = Math.min(0, ...rows.map(r => r.summary.ci ? r.summary.ci[0] : r.summary.expectancy));
+    const hi = Math.max(0, ...rows.map(r => r.summary.ci ? r.summary.ci[1] : r.summary.expectancy));
+    const xt = niceTicks(lo, hi), x0 = xt[0], x1 = xt[xt.length - 1], X = v => m.l + (v - x0) / (x1 - x0) * iw;
+    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Expectancy per group" });
+    for (const v of xt) {
+      root.append(s("line", { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, class: v === 0 ? "axis" : "grid" }));
+      root.append(s("text", { x: X(v), y: H - 8, "text-anchor": "middle" }, fmtTick(v)));
+    }
+    rows.forEach((g, i) => {
+      const e = g.summary.expectancy, yc = m.t + i * rowH + rowH / 2, bh = Math.min(20, rowH - 12), up = e >= 0;
+      const full = String(groupLabel(key, g.label)), label = full.length > 24 ? full.slice(0, 23) + "…" : full;
+      root.append(s("text", { x: labelW, y: yc, "text-anchor": "end", "dominant-baseline": "middle", class: "row-label" }, label));
+      const hit = s("rect", { x: 0, y: yc - rowH / 2, width: W, height: rowH, fill: "transparent", tabindex: 0, class: "hit", "aria-label": `${full}: ${fmtR(e)}, n=${g.summary.n}` });
+      hitTip(hit, fmtR(e), [{ key: up ? "var(--up)" : "var(--down)", text: full }, { text: `n=${g.summary.n} · evidence ${g.summary.evidence}` },
+                            { text: g.summary.ci ? `95% CI ${fmtCI(g.summary.ci)}` : "No interval below n=" + KB.config.min_n_for_ci }],
+             () => { const b = root.getBoundingClientRect(); return { x: b.left + X(e), y: b.top + yc }; });
+      const xa = X(Math.min(0, e)), wv = Math.max(1, Math.abs(X(e) - X(0)));
+      root.append(hit, s("rect", { x: xa, y: yc - bh / 2, width: wv, height: bh, rx: 4, class: `mark ${up ? "bar-up" : "bar-down"} draw` }));
+      if (g.summary.ci) {
+        root.append(s("line", { x1: X(g.summary.ci[0]), x2: X(g.summary.ci[1]), y1: yc, y2: yc, class: "whisker" }));
+        for (const v of g.summary.ci) root.append(s("line", { x1: X(v), x2: X(v), y1: yc - 5, y2: yc + 5, class: "whisker" }));
+      }
+      root.append(s("text", { x: Math.max(X(e), X(0)) + 8, y: yc, "dominant-baseline": "middle", class: "cap-label" }, `${fmtR(e)} · n=${g.summary.n}`));
+    });
+    return root;
+  });
+}
+const HOUR_TICKS = [[0.25, "15m"], [1, "1h"], [4, "4h"], [24, "1d"], [168, "1w"], [720, "1mo"], [2160, "3mo"]];
+function scatterChart(host, points, o) {
+  if (!points.length) { host.replaceChildren(h("p", { class: "empty", text: o.empty || "No data yet." })); return; }
+  responsive(host, W => {
+    const H = 250, m = { t: 16, r: 18, b: 44, l: 52 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const ys = points.map(p => p.y), yt = niceTicks(Math.min(0, ...ys), Math.max(0, ...ys));
+    const y0 = yt[0], y1 = yt[yt.length - 1], Y = v => m.t + ih - (v - y0) / (y1 - y0) * ih;
+    let X, xt;
+    if (o.log) {
+      const lx = points.map(p => Math.log10(p.x)), a = Math.min(...lx) - 0.3, b = Math.max(...lx) + 0.3;
+      X = v => m.l + (Math.log10(v) - a) / (b - a) * iw;
+      xt = HOUR_TICKS.filter(([v]) => Math.log10(v) >= a && Math.log10(v) <= b);
+    } else {
+      const [a, b] = o.domain; X = v => m.l + (v - a) / (b - a) * iw;
+      xt = o.ticks.map(v => [v, String(v)]);
+    }
+    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": o.aria });
+    for (const v of yt) {
+      root.append(s("line", { x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v), class: v === 0 ? "axis" : "grid" }));
+      root.append(s("text", { x: m.l - 8, y: Y(v), "text-anchor": "end", "dominant-baseline": "middle" }, fmtTick(v)));
+    }
+    for (const [v, label] of xt) {
+      root.append(s("line", { x1: X(v), x2: X(v), y1: m.t, y2: m.t + ih, class: "grid" }));
+      root.append(s("text", { x: X(v), y: m.t + ih + 16, "text-anchor": "middle" }, label));
+    }
+    root.append(s("text", { x: m.l + iw / 2, y: H - 6, "text-anchor": "middle", class: "axis-title" }, o.xLabel));
+    const labelAll = points.length <= 6;
+    points.forEach(p => {
+      const cx = X(p.x), cy = Y(p.y), up = p.y >= 0;
+      const hit = s("circle", { cx, cy, r: 12, fill: "transparent", tabindex: 0, class: "hit", "aria-label": `${p.id}: ${fmtR(p.y)}, ${p.xText}` });
+      hitTip(hit, fmtR(p.y), [{ key: up ? "var(--up)" : "var(--down)", text: p.id }, { text: p.xText }],
+             () => { const b = root.getBoundingClientRect(); return { x: b.left + cx, y: b.top + cy }; });
+      root.append(hit, s("circle", { cx, cy, r: 5, class: `mark dot draw ${up ? "up" : "down"}` }));
+      if (labelAll) root.append(s("text", { x: cx + 9, y: cy - 8, class: "cap-label" }, p.id));
+    });
+    return root;
+  });
+}
+const fmtHours = x => !isNum(x) ? "—" : x < 1 ? `${Math.round(x * 60)}m` : x < 48 ? `${+x.toFixed(1)}h` : `${Math.round(x / 24)}d`;
+
+/* Charts measure their host, so they draw only once the panel is attached. select() flushes this queue
+   right after mounting a panel: deterministic, no dependence on animation-frame scheduling. */
+const afterMount = [];
+const mount = fn => afterMount.push(fn);
+
 /* ---------- data helpers ---------- */
 const trades = KB.trades || [];
 const closed = trades.filter(t => t.status === "closed");
@@ -643,20 +853,38 @@ function renderOverview() {
 
   const recent = newestFirst(trades).slice(0, 6);
   const latestLesson = newestFirst(closed).find(t => dig(t, "review.lesson"));
-  const el = h("div", { class: "stack" }, banner, hero, tiles, h("div", { class: "grid2" }, eqCard, histCard),
+  const ptHost = h("div", { class: "chart-host" }), ddHost = h("div", { class: "chart-host" });
+  const ptCard = card("R per trade", "Each closed trade in order. Only the best and worst results are labelled; hover for the rest.",
+    curve.length ? ptHost : h("p", { class: "empty", text: "No measurable trades yet." }),
+    h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
+      table([{ key: "id", label: "Trade" }, { key: "date", label: "Date" }, { label: "R", num: true, render: r => rSpan(r.r) }], curve)));
+  const ddCard = card("Drawdown", "Distance below the running equity high, in R. Zero means a new high.",
+    curve.length ? ddHost : h("p", { class: "empty", text: "No measurable trades yet." }),
+    h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
+      table([{ key: "id", label: "Trade" }, { label: "Cumulative", num: true, render: r => rSpan(r.cum_r) },
+             { label: "Drawdown", num: true, render: r => { let pk = 0; for (const c of curve) { pk = Math.max(pk, c.cum_r); if (c.id === r.id) break; } return rSpan(r.cum_r - pk); } }], curve)));
+  const el = h("div", { class: "stack" }, banner, hero, tiles, h("div", { class: "grid2" }, eqCard, histCard), h("div", { class: "grid2" }, ptCard, ddCard),
     card("Recent trades", "Newest first. Click a row for the full record.", journalTable(recent)),
     latestLesson ? card(`Latest lesson · ${latestLesson.id}`, null, h("p", { class: "prose", text: latestLesson.review.lesson })) : null);
-  requestAnimationFrame(() => { if (curve.length) equityChart(eqHost, curve); histogramChart(histHost, KB.stats.histogram); });
+  mount(() => {
+    if (curve.length) { equityChart(eqHost, curve); perTradeChart(ptHost, curve); drawdownChart(ddHost, curve); }
+    histogramChart(histHost, KB.stats.histogram);
+  });
   return el;
 }
 
 function journalTable(rows) {
   return table([
     { label: "ID", render: t => h("button", { class: "linkish", type: "button", text: t.id, onclick: () => openTrade(t.id) }) },
-    { key: "opened", label: "Opened" }, { key: "closed", label: "Closed" }, { key: "asset", label: "Asset" },
+    { key: "opened", label: "Opened" }, { key: "asset", label: "Asset" },
     { label: "Dir", render: t => dirBadge(t.direction) },
+    { label: "Result", num: true, render: t => t.status === "closed" ? rSpan(t.derived.r) : isNum(t.derived.counterfactual_r) ? fmtR(t.derived.counterfactual_r) + " (hyp.)" : "—" },
+    { label: "Outcome", render: tradeBadge },
+    { label: "Process", render: t => t.derived.label || (t.status === "closed" ? "Unscored" : "—") },
     { label: "Entry model", render: t => dig(t, "plan.entry_model") ? titleCase(t.plan.entry_model) : "—" },
-    { label: "Setups", render: t => tags(t.setups, "setups") },
+    { label: "TF", render: t => dig(t, "timeframes.execution") || "—" },
+    { label: "Top-down", render: t => t.derived.top_down === true ? badge("win", "✓ Yes") : t.derived.top_down === false ? badge("loss", "✗ No") : "—" },
+    { label: "Held", num: true, render: t => fmtHours(t.derived.holding_hours) },
     { label: "Entry", num: true, render: t => fmtPrice(dig(t, "plan.entry")) },
     { label: "Stop", num: true, render: t => fmtPrice(dig(t, "plan.stop")) },
     { label: "Target", num: true, render: t => (dig(t, "plan.targets") || []).map(fmtPrice).join(", ") || "—" },
@@ -664,9 +892,8 @@ function journalTable(rows) {
     { label: "Risk %", num: true, render: t => fmtPct(dig(t, "risk.risk_pct"), 1) },
     { label: "Lev", num: true, render: t => isNum(dig(t, "risk.leverage")) ? t.risk.leverage + "x" : "—" },
     { label: "Plan R:R", num: true, render: t => (t.derived.planned_rr || []).filter(isNum).map(x => x.toFixed(2)).join(", ") || "—" },
-    { label: "Result", num: true, render: t => t.status === "closed" ? rSpan(t.derived.r) : isNum(t.derived.counterfactual_r) ? fmtR(t.derived.counterfactual_r) + " (hyp.)" : "—" },
-    { label: "Outcome", render: tradeBadge },
-    { label: "Process", render: t => t.derived.label || (t.status === "closed" ? "Unscored" : "—") },
+    { key: "closed", label: "Closed" },
+    { label: "Setups", wrap: true, render: t => tags(t.setups, "setups") },
   ], rows, { onRow: t => openTrade(t.id), empty: "No trades recorded yet.",
               rowClass: t => t.derived.outcome === "win" ? "row-win" : t.derived.outcome === "loss" ? "row-loss" : null });
 }
@@ -697,15 +924,17 @@ function renderJournal() {
 }
 
 function renderPerformance() {
-  const labels = { setup: "Setup", entry_model: "Entry model", version: "Strategy version", direction: "Direction", asset: "Asset",
-                   regime: "Market regime", session: "Session", timeframe: "Execution timeframe", leverage: "Leverage setting",
-                   risk: "Risk per trade", month: "Month" };
+  const labels = { strategy: "Strategy", setup: "Setup", entry_model: "Entry model", version: "Strategy version", direction: "Direction (long vs short)",
+                   timeframe: "Execution timeframe", top_down: "Top-down analysis", asset: "Asset", regime: "Market regime", session: "Session",
+                   leverage: "Leverage setting", risk: "Risk per trade", grade: "Process grade", month: "Month" };
   const multi = new Set(["setup", "regime"]);
   const pick = h("select", { "aria-label": "Breakdown" }, Object.entries(labels).map(([k, v]) => h("option", { value: k, text: v })));
-  const host = h("div", {}), note = h("p", { class: "note" });
+  const host = h("div", {}), note = h("p", { class: "note" }), barHost = h("div", { class: "chart-host", style: "min-height:0" });
   const render = () => {
     const key = pick.value;
     host.replaceChildren(table(SUMMARY_COLS(labels[key], key), KB.stats.by[key] || []));
+    const draw = () => groupBarChart(barHost, KB.stats.by[key] || [], key);
+    if (barHost.isConnected) draw(); else mount(draw);
     note.textContent = multi.has(key) ? "Multi-valued field: a trade appears in every group it is tagged with, so groups overlap." : "";
   };
   pick.addEventListener("change", render); render();
@@ -713,9 +942,24 @@ function renderPerformance() {
   const cell = (g, o) => (matrix.find(m => m.grade === g && m.outcome === o) || { n: 0 }).n;
   const loss = Object.entries(KB.stats.loss_types).map(([k, v]) => ({ type: k, ...v }));
   const cf = KB.stats.counterfactual;
+  const measuredTrades = trades.filter(t => t.status === "closed" && isNum(t.derived.r));
+  const holdPts = measuredTrades.filter(t => isNum(t.derived.holding_hours) && t.derived.holding_hours > 0)
+    .map(t => ({ id: t.id, x: t.derived.holding_hours, y: t.derived.r, xText: `Held ${fmtHours(t.derived.holding_hours)}` }));
+  const procPts = measuredTrades.filter(t => isNum(t.derived.process_mean))
+    .map(t => ({ id: t.id, x: t.derived.process_mean, y: t.derived.r, xText: `Process ${t.derived.process_mean.toFixed(2)} / 5 (${t.derived.grade})` }));
+  const holdHost = h("div", { class: "chart-host" }), procHost = h("div", { class: "chart-host" });
+  mount(() => {
+    scatterChart(holdHost, holdPts, { log: true, xLabel: "Time in trade (log scale)", aria: "Holding time against R", empty: "No trades with a known duration yet." });
+    scatterChart(procHost, procPts, { domain: [1, 5], ticks: [1, 2, 3, 4, 5], xLabel: "Process score (mean of five dimensions)", aria: "Process score against R", empty: "No scored trades yet." });
+  });
+  const pointTable = pts => h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
+    table([{ key: "id", label: "Trade" }, { key: "xText", label: "Value" }, { label: "R", num: true, render: r => rSpan(r.y) }], pts));
   return h("div", { class: "stack" },
-    card("Breakdown", "Every row carries its sample size and evidence tier. Small groups are noise until proven otherwise.",
-      h("div", { class: "filters" }, h("label", {}, "Group by", pick)), note, host),
+    card("Breakdown", "One selector scopes the chart and the table. Bars show expectancy with its 95% interval once a group reaches n=" + KB.config.min_n_for_ci + ". Small groups are noise until proven otherwise.",
+      h("div", { class: "filters" }, h("label", {}, "Group by", pick)), note, barHost, h("div", { style: "height:12px" }), host),
+    h("div", { class: "grid2" },
+      card("Time in trade vs R", "Scalps and swings on one axis (log scale). Duration uses your stated minutes when given, otherwise the dates.", holdHost, pointTable(holdPts)),
+      card("Process score vs R", "If process quality matters, better scores should sit higher over time. Correlation, not proof.", procHost, pointTable(procPts))),
     h("div", { class: "grid2" },
       card("Process vs outcome", "Good outcome with poor process is luck, not a pattern to repeat.",
         table([{ key: "grade", label: "Process" }, { label: "Win", num: true, render: r => cell(r.grade, "win") },
@@ -945,8 +1189,9 @@ function openTrade(id) {
       h("button", { class: "btn", type: "button", text: "Close", onclick: () => dlg.close() })),
     h("div", { class: "dlg-body stack" },
       h("div", { class: "grid2" },
-        card("Trade", null, kv([["Opened", t.opened], ["Closed", t.closed], ["Held", isNum(d.holding_days) ? `${d.holding_days} days` : null],
-          ["Market", t.market], ["Session", t.session], ["Timeframes", `HTF ${dig(t, "timeframes.htf") || "—"} · execution ${dig(t, "timeframes.execution") || "—"}`],
+        card("Trade", null, kv([["Opened", t.opened], ["Closed", t.closed], ["Market", t.market], ["Session", t.session], ["Timeframes", `HTF ${dig(t, "timeframes.htf") || "—"} · execution ${dig(t, "timeframes.execution") || "—"}`],
+          ["Top-down analysis", t.derived.top_down === true ? `Yes · ${(dig(t, "timeframes.chain") || []).join(" → ")}` : t.derived.top_down === false ? "No (lower timeframe only)" : null],
+          ["Time in trade", isNum(t.derived.holding_hours) ? fmtHours(t.derived.holding_hours) + (isNum(dig(t, "fills.duration_minutes")) ? " (stated)" : " (from dates)") : null],
           ["Strategy", strategyLabel(t)], ["Entry model", dig(t, "plan.entry_model") ? titleCase(t.plan.entry_model) : null],
           ["Setups", tags(t.setups, "setups")], ["Regime", tags(t.regime, "regimes")]])),
         card("Plan and result", null, kv([["Entry", fmtPrice(dig(t, "plan.entry"))], ["Stop (initial)", fmtPrice(dig(t, "plan.stop"))],
@@ -993,7 +1238,7 @@ function select(id) {
     const btn = document.getElementById("tab-" + pid), panel = document.getElementById("panel-" + pid);
     const on = pid === id;
     btn.setAttribute("aria-selected", on); btn.tabIndex = on ? 0 : -1; panel.classList.toggle("active", on);
-    if (on && !rendered[pid]) { panel.append(fn()); rendered[pid] = true; }
+    if (on && !rendered[pid]) { panel.append(fn()); rendered[pid] = true; while (afterMount.length) afterMount.shift()(); }
   }
   store.set("tj-tab", id);
   if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
@@ -1022,15 +1267,67 @@ themeBtn.addEventListener("click", () => {
 });
 applyTheme(store.get("tj-theme"));
 
-const strat = KB.strategies[0];
 backgroundTape();
+const bgSelect = document.getElementById("bg-select");
+let constellation = null;
+function startConstellation() {
+  const canvas = document.getElementById("bg-canvas"), ctx = canvas.getContext("2d");
+  const css = getComputedStyle(document.documentElement);
+  const col = name => css.getPropertyValue(name).trim() || "#a594f9";
+  let W = 0, H = 0, dpr = 1, pts = [], raf = 0, pointer = null, running = true;
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const size = () => {
+    dpr = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.max(24, Math.min(80, Math.round(W * H / 16000)));
+    pts = Array.from({ length: n }, () => ({ x: rnd() * W, y: rnd() * H, vx: (rnd() - 0.5) * 0.25, vy: (rnd() - 0.5) * 0.25, up: rnd() < 0.5 }));
+  };
+  const frame = () => {
+    const brand = col("--brand"), up = col("--up"), link = 140;
+    ctx.clearRect(0, 0, W, H);
+    for (const p of pts) {
+      if (!reduceMotion) { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1; }
+    }
+    ctx.lineWidth = 1;
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d = Math.hypot(dx, dy);
+        if (d < link) { ctx.globalAlpha = (1 - d / link) * 0.35; ctx.strokeStyle = brand; ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke(); }
+      }
+      if (pointer) {
+        const d = Math.hypot(pts[i].x - pointer.x, pts[i].y - pointer.y);
+        if (d < 180) { ctx.globalAlpha = (1 - d / 180) * 0.5; ctx.strokeStyle = up; ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pointer.x, pointer.y); ctx.stroke(); }
+      }
+    }
+    for (const p of pts) { ctx.globalAlpha = 0.8; ctx.fillStyle = p.up ? up : brand; ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, Math.PI * 2); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    if (running && !reduceMotion) raf = requestAnimationFrame(frame);
+  };
+  const onMove = e => { pointer = { x: e.clientX, y: e.clientY }; };
+  const onVis = () => { if (document.hidden) { cancelAnimationFrame(raf); } else if (running && !reduceMotion) { raf = requestAnimationFrame(frame); } };
+  size(); addEventListener("resize", size); addEventListener("pointermove", onMove); document.addEventListener("visibilitychange", onVis);
+  frame();
+  return { stop() { running = false; cancelAnimationFrame(raf); removeEventListener("resize", size); removeEventListener("pointermove", onMove);
+                    document.removeEventListener("visibilitychange", onVis); ctx.clearRect(0, 0, W, H); } };
+}
+function applyBackground(mode) {
+  if (![...bgSelect.options].some(o => o.value === mode)) mode = "aurora";
+  document.documentElement.dataset.bg = mode; bgSelect.value = mode;
+  if (mode === "constellation" && !constellation) constellation = startConstellation();
+  if (mode !== "constellation" && constellation) { constellation.stop(); constellation = null; }
+}
+bgSelect.addEventListener("change", () => { store.set("tj-bg", bgSelect.value); applyBackground(bgSelect.value); });
+applyBackground(new URLSearchParams(location.search).get("bg") || store.get("tj-bg") || "aurora");
 {
   const net = KB.stats.overall.total;
   document.documentElement.dataset.pnl = net > 0 ? "up" : net < 0 ? "down" : "flat";
 }
-document.querySelector(".brand h1").prepend(h("span", { class: "live-dot", "aria-hidden": "true" }));
+{
+  const h1 = document.querySelector(".brand h1"), label = h1.textContent;
+  h1.replaceChildren(h("span", { class: "live-dot", "aria-hidden": "true" }), h("span", { class: "title", text: label }));
+}
 document.getElementById("brand-sub").textContent = [
-  strat ? `${strat.meta.name || strat.slug} · v${strat.meta.current_version} · ${titleCase(strat.meta.status)}` : "No strategy recorded",
+  KB.strategies.length ? KB.strategies.map(st => `${st.slug} v${st.meta.current_version} (${st.meta.status})`).join(" · ") : "No strategy recorded",
   `${KB.phase.name} ${KB.phase.measured}/${KB.phase.target}`].join("  ·  ");
 document.getElementById("footer").textContent =
   `Built ${KB.build.generated_at} · fingerprint ${KB.fingerprint} · schema v${KB.schema_version} · source of truth: journal/trades/*.yaml · rebuild with ./tj build · machine-readable copy: exports/kb.json`;

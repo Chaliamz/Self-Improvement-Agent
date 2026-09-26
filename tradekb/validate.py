@@ -25,7 +25,7 @@ ENUMS = {
 }
 NUMERIC = ("plan.entry", "plan.stop", "risk.account_equity", "risk.risk_amount", "risk.risk_pct",
            "risk.leverage", "risk.size", "risk.notional", "fills.entry_avg", "fills.fees",
-           "result.pnl", "result.r", "result.hypothetical_r")
+           "fills.duration_minutes", "result.pnl", "result.r", "result.hypothetical_r")
 TAG_FIELDS = (("setups", "setups"), ("regime", "regimes"), ("review.mistakes", "mistakes"),
               ("review.behaviors", "behaviors"))
 STRATEGY_STATUSES = ("unvalidated", "developing", "established", "retired")
@@ -35,6 +35,8 @@ EXPERIMENT_STATUSES = ("planned", "running", "concluded", "abandoned")
 CHANGE_ID_RE = re.compile(r"^CHG-\d{3,}$")
 EXPERIMENT_ID_RE = re.compile(r"^EXP-\d{3,}$")
 VERSION_FILE_RE = re.compile(r"^playbook/strategies/[^/]+/v[^/]+\.yaml$")
+# TradingView notation: m minutes, h hours, D days, W weeks, M months. "1M" is a month, never a minute.
+TIMEFRAME_RE = re.compile(r"^\d+(m|h|D|W|M)$")
 
 
 @dataclass
@@ -104,7 +106,7 @@ def _check_numbers(t: dict, where: str, add: _Sink) -> None:
             add(ERROR, where, f"{path} must be a plain number (no units, %, or thousands separators), "
                               f"got {value!r}")
     for path in ("plan.entry", "plan.stop", "fills.entry_avg", "risk.account_equity", "risk.leverage",
-                 "risk.size", "risk.notional", "risk.risk_amount"):
+                 "risk.size", "risk.notional", "risk.risk_amount", "fills.duration_minutes"):
         value = num(dig(t, path))
         if value is not None and value <= 0:
             add(ERROR, where, f"{path} must be > 0")
@@ -125,6 +127,40 @@ def _check_numbers(t: dict, where: str, add: _Sink) -> None:
             fraction = num(ex.get("fraction"))
             if fraction is not None and not 0 < fraction <= 1:
                 add(ERROR, where, f"fills.exits[{i}].fraction must be in (0, 1]")
+
+
+def _check_timeframes(t: dict, where: str, add: _Sink, opened, closed) -> None:
+    for path in ("timeframes.htf", "timeframes.execution"):
+        value = dig(t, path)
+        if value is not None and not TIMEFRAME_RE.match(str(value)):
+            add(ERROR, where, f"{path} '{value}' is not a timeframe: use m/h/D/W/M, e.g. 1m, 15m, 4h, 1D "
+                              f"(1M means one month)")
+    chain = dig(t, "timeframes.chain", [])
+    if not isinstance(chain, list):
+        add(ERROR, where, "timeframes.chain must be a list, highest timeframe first")
+        chain = []
+    for value in chain:
+        if not TIMEFRAME_RE.match(str(value)):
+            add(ERROR, where, f"timeframes.chain entry '{value}' is not a timeframe (m/h/D/W/M)")
+    top_down = dig(t, "timeframes.top_down")
+    if top_down is not None and not isinstance(top_down, bool):
+        add(ERROR, where, "timeframes.top_down must be true, false or null")
+    elif top_down is True and len(chain) < 2:
+        add(WARN, where, "top_down is true but timeframes.chain lists fewer than two timeframes")
+    elif top_down is False and len(chain) > 1:
+        add(WARN, where, "top_down is false but timeframes.chain lists several timeframes")
+    execution = dig(t, "timeframes.execution")
+    if execution is not None and str(execution).endswith("M"):
+        add(WARN, where, f"timeframes.execution '{execution}' means {str(execution)[:-1]} month(s). For minutes write "
+                         f"'{str(execution)[:-1]}m'")
+    if chain and execution is not None and str(chain[-1]) != str(execution):
+        add(WARN, where, f"timeframes.chain should end at the execution timeframe ({execution})")
+    minutes = num(dig(t, "fills.duration_minutes"))
+    if minutes is not None and opened and closed:
+        days = (closed - opened).days
+        if minutes > (days + 1) * 1440 or minutes < max(0, days - 1) * 1440:
+            add(WARN, where, f"fills.duration_minutes = {minutes:g} does not fit the dates "
+                             f"({opened} to {closed}, {days} day(s))")
 
 
 def _check_geometry(t: dict, where: str, add: _Sink) -> None:
@@ -259,6 +295,7 @@ def _check_trade(trade: Trade, kb: KB, add: _Sink) -> None:
         add(WARN, where, "closed trade has no closed date")
 
     _check_numbers(t, where, add)
+    _check_timeframes(t, where, add, opened, closed)
     _check_tags(t, kb, where, add)
     _check_geometry(t, where, add)
     _check_risk(t, kb, where, add)
@@ -293,6 +330,12 @@ def _check_trade(trade: Trade, kb: KB, add: _Sink) -> None:
         elif version is None:
             add(WARN, where, f"strategy '{sid}' set without strategy.version: A/B by version impossible")
         else:
+            stated_tf = ((strat.versions[str(version)] or {}).get("timeframes") or {}).get("execution")
+            trade_tf = dig(t, "timeframes.execution")
+            if stated_tf and trade_tf and str(stated_tf) != str(trade_tf):
+                add(WARN, where, f"execution timeframe {trade_tf} differs from {sid} v{version} ({stated_tf})")
+            elif stated_tf and not trade_tf:
+                add(INFO, where, f"timeframes.execution is empty; {sid} v{version} states {stated_tf}")
             models = (strat.versions[str(version)] or {}).get("entry_models") or {}
             entry_model = dig(t, "plan.entry_model")
             if entry_model is not None and models and str(entry_model) not in models:

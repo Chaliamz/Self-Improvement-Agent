@@ -107,6 +107,7 @@ GROUPERS: dict[str, Callable[[Row], list[str]]] = {
     "market": lambda r: _one(r.t.get("market")),
     "direction": lambda r: _one(r.t.get("direction")),
     "timeframe": lambda r: _one(dig(r.t, "timeframes.execution")),
+    "top_down": lambda r: [{True: "yes", False: "no"}.get(dig(r.t, "timeframes.top_down"), "(unknown)")],
     "htf": lambda r: _one(dig(r.t, "timeframes.htf")),
     "leverage": lambda r: [leverage_bucket(r.t)],
     "risk": lambda r: [risk_bucket(r.t)],
@@ -241,6 +242,20 @@ def loss_type_breakdown(rs: list[Row]) -> dict[str, list[Row]]:
     for row in losses:
         out[str(dig(row.t, "review.loss_type", "(unclassified)"))].append(row)
     return dict(sorted(out.items()))
+
+
+def holding_hours(row: Row) -> float | None:
+    """Stated duration wins; otherwise whole days from the dates (same-day trades stay unknown)."""
+    minutes = num(dig(row.t, "fills.duration_minutes"))
+    if minutes is not None:
+        return minutes / 60
+    try:
+        opened, closed = as_date(row.t.get("opened")), as_date(row.t.get("closed"))
+    except ValueError:
+        return None
+    if opened and closed and closed > opened:
+        return (closed - opened).days * 24.0
+    return None
 
 
 def holding_days(rs: list[Row]) -> list[int]:

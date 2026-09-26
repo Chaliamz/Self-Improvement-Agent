@@ -53,11 +53,15 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
 3. Score the five dimensions (§42), set `setup_validity`, `followed_plan`, `loss_type`
    (losses), `mistakes`, `behaviors`, `lesson`, `strategy_change`. Set `plan.entry_model` to one
    of the strategy version's `entry_models`, and record the trader's confluences/confirmations.
+   Record `timeframes.chain` (highest first) and `timeframes.top_down` (true/false); record
+   `fills.duration_minutes` when the trader states a duration (dates alone cannot time a scalp).
+   Timeframe notation is TradingView's: m minutes, h hours, D days, W weeks, M months. The trader
+   may write "1M" for one minute; check the chart interval and record `1m`.
 4. `./tj show T-####` → use its R, outcome and GOOD/BAD OUTCOME × PROCESS label.
    `./tj validate` must report 0 errors.
 5. Reply in the §44 TRADE REVIEW format. If `./tj status` flags a recurring error,
    say so (§15) as a system-design problem, without shaming.
-6. `./tj build` (regenerates `terminal.html` and `exports/kb.json`), then commit:
+6. `./tj build` (regenerates `terminal.html` and `exports/kb.json`), `./tj audit` (must pass), then commit:
    `journal: T-#### ASSET long|short +1.8R (setup)`.
 
 ### B. The trader presents a setup BEFORE entry
@@ -118,6 +122,12 @@ exist, tag trades with `strategy.experiment` and `strategy.variant`, evaluate wi
 - Canonical tags only (the validator rejects aliases and unknown tags).
 - `./tj validate` must show 0 errors before every commit, and no `stale` warning: run `./tj build`
   after any knowledge-base change and commit `terminal.html` + `exports/kb.json` with it.
+- `./tj audit` must pass before every commit. It recomputes every published number independently
+  and checks kb.json, the terminal's embedded copy and every chart file. Never commit around it.
+- When the trader states a rule that applies to trades already recorded, update those records too
+  (a strategy clarification that leaves old trades contradicting it is corrupted data).
+- Verify chart reads before recording them: calibrate on axis ticks (never on stacked label boxes),
+  measure wicks with a tolerant detector, and record reads as "about" with the stated accuracy.
 - Contradictions between the trader's rules and their own trades go into the strategy version's
   `open_questions` (INITIALIZATION step 11). Ask; never resolve them by assumption.
 - Never promote, generalise or declare a winner beyond what `./tj` output supports.
