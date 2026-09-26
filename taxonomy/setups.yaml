@@ -24,6 +24,7 @@ tags:
   # --- Trader's own terms (introduced with T-0001, 2026-09-26) ---
   choch:
     label: CHoCH (change of character)
+    aliases: [ch]                # the trader labels it "CH" on charts
     definition: "Bullish CHoCH requires a candle CLOSE above the last lower high; a wick through does not count."
     introduced_in: T-0001
   inducement:
@@ -54,3 +55,7 @@ tags:
     label: Retest
     definition: "Price returns to a level it just broke or lost and tests it from the other side."
     introduced_in: T-0003
+  divergence:
+    label: RSI divergence
+    definition: "Price makes a higher high while RSI makes a lower high (bearish), or the mirror (bullish). Trader's confluence in T-0004."
+    introduced_in: T-0004

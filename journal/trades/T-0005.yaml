@@ -1,0 +1,96 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0005
+status: not_taken
+opened: 2026-01-06            # entry reached by the 15:30 30m candle (Europe/Athens, UTC+2)
+closed: null
+asset: "PENGUUSDT"
+market: "crypto perp (BloFin)"
+direction: "short"
+session: null
+timeframes:
+  htf: "4h"
+  execution: "30m"            # shown on the 30m; the trader's exact execution timeframe is not stated
+  chain: ["4h", "30m"]
+  top_down: true
+
+setups: [key_level, liquidity_sweep, choch, extreme_supply, divergence]
+regime: [bullish]             # the 30m trend was still up into the sweep; the CHoCH turned it
+
+strategy:
+  id: supply-demand-structure
+  version: "1.3"
+  experiment: null
+  variant: null
+
+plan:
+  entry: 0.013492             # position-tool label: bottom of the new supply
+  stop: 0.013844              # position-tool label: above the supply / sweep high
+  targets: [0.012406]         # position-tool label
+  invalidation: "Price accepts above the new supply (0.013844)."
+  entry_model: extreme_supply
+  confluences:
+    - "Major key level 4H"
+    - "Liquidity swept above the Jan 5 spike high (the T-0004 stop: 'I became the liquidity')"
+    - "Bearish divergence at the sweep high (30m)"
+  confirmations:
+    - "30m CHoCH by close (Jan 6 10:30)"
+    - "Retrace into the new supply"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # the trader's standing rule
+  leverage: null              # not stated; the 50% rule allows up to 19.2x for this 2.61% stop
+  margin_mode: isolated
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits: []
+  fees: null
+  duration_minutes: null
+
+result:
+  pnl: null
+  r: null
+  hypothetical_r: 3.0852      # COUNTERFACTUAL: (0.013492 - 0.012406) / (0.013844 - 0.013492); see evidence
+
+journal:
+  before: |
+    Counterfactual, recorded 2026-09-26 from the trader's picture 2: "Picture 2 was the proper trade I had
+    to take." Trader's label on the zone: "NEW SUPPLY - I BECAME THE LIQUIDITY AFTER LONG TIME :D"
+  during: ""
+  after: |
+    The executed trade was T-0004 (-1R). This is the valid short the trader describes: at the supply
+    that formed from the sweep of T-0004's stop, after the 30m CHoCH.
+
+evidence:
+  observed:
+    - "Same BloFin PENGU 30m data as T-0004 (the two screenshots agree to within 0.000002 on every overlapping candle). Picture 2's header says UTC+3 because it was taken in September; the axis is Europe/Athens, UTC+2 on these January dates."
+    - "Position tool: entry 0.013492, stop 0.013844, target 0.012406 (3.09R). Picture calibration residual 0.82 px."
+    - "Sweep high about 0.013813 (Jan 6 05:30). 30m CHoCH: the 10:30 close about 0.012816, below the about 0.012842/0.012850 lows."
+    - "Retrace into the supply: highs about 0.013499 (13:00), 0.013539 (15:30), 0.013565 (16:00). The entry fills by 15:30 at the latest."
+    - "Highest price after the fill, before the target: about 0.013565. The 0.013844 stop was never touched."
+    - "Target: the 19:30 candle closed about 0.012383 and the 20:00 candle's low was about 0.012326, below 0.012406. Target hit about 4-4.5 hours after entry."
+  interpreted:
+    - "Every item of strategy v1.3's checklist passes here, where T-0004 failed items 3, 5 and 6."
+    - "The zone the trader drew (0.013492-0.013844) is not the sweep candle's wick-to-wick range (0.013412-0.013813); see strategy v1.3 open question 8."
+  hypotheses: []
+  charts: [journal/charts/T-0005-pengu-30m-proper.png]
+
+review:
+  scores: {setup: null, context: null, execution: null, risk: null, management: null}
+  setup_validity: valid
+  followed_plan: null
+  loss_type: null
+  mistakes: []
+  behaviors: []
+  outside_control: []
+  lesson: "The valid short sat exactly where T-0004's stop was. Same market, same day: -1R taken, +3.09R available."
+  actionable_change: null
+  strategy_change: null
+  evidence_strength: low

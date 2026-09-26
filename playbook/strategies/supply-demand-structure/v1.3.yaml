@@ -1,0 +1,111 @@
+# Strategy version file (§5, §21). IMMUTABLE once committed.
+#
+# v1.3 is a CLARIFICATION of v1.2 (CHG-003): the trader's diagnosis of the T-0004 loss, which
+# applies the top-down method they already hold. No rule changed; the rules were violated.
+
+version: "1.3"
+date: 2026-09-26
+source: "Trader's T-0004 review, 2026-09-26: timeframe alignment and stop placement. Clarifies v1.2 (CHG-003)."
+supersedes: "1.2"
+
+direction: "Both. Longs from demand, shorts from supply. Every rule mirrors (trader: '6) yes')."
+
+timeframes:
+  key_levels: "4h"
+  structure_confirmation: ["15m", "30m"]
+  execution: ["4h", "30m", "5m"]   # timeframes the strategy has been executed or shown on: T-0001, T-0005, T-0004
+
+timeframe_alignment: >-
+  A lower-timeframe CHoCH counts only when the 15m-30m structure confirms it. If the 30m has not broken
+  the previous bullish (for shorts) or bearish (for longs) 30m candle, a 5m CHoCH is only 30m
+  consolidation (trader, T-0004: "the 5M CH was a 30M consolidation").
+
+market_structure:
+  - "Lower low: a candle must CLOSE below the previous low (its wick). A wick below without a close is not a lower low."
+  - "Higher high: a candle must CLOSE above the previous high (its wick)."
+  - "Bullish CHoCH: a candle CLOSE above the last lower high."
+  - "Bearish CHoCH: a candle CLOSE below the last higher low (mirror, confirmed)."
+
+market_conditions: []         # not stated
+
+required_conditions:
+  - "CHoCH on the 4H in the trade's direction, close-based (see market_structure)."
+
+confirmation:
+  - "Reversal on the 4H (bullish for longs, bearish for shorts)"
+  - "Extreme demand level (longs) / extreme supply level (shorts)"
+
+confluences:
+  - "Liquidity sweep"
+  - "Strong momentum + volume in the trade's direction"
+  - "Inducement (equal lows below for longs, equal highs above for shorts)"
+  - "Potential opposing level (used for the target)"
+  - "Divergence at the swing: bearish for shorts, bullish for longs (trader, T-0004)"
+
+zones:
+  extreme_demand: >-
+    The full wick-to-wick range of the candle at the lower low that formed massive volume and a
+    point of interest (trader, 2026-09-26). T-0001: 85.61 to 88.05.
+  extreme_supply: "Mirror: the full wick-to-wick range of the high-volume candle at the higher high."
+
+entry_models:
+  extreme_demand: "Primary (long): at the extreme demand level."
+  extreme_supply: >-
+    Primary (short): at the extreme supply level (mirror), including a new supply formed by a
+    liquidity sweep above an obvious high (T-0005, "the proper trade").
+  reclaim: >-
+    Secondary: longs when price reclaims a swept level as support; shorts when price loses a swept
+    level and retests it as resistance. Used when the primary entry was missed (T-0001).
+
+stop_model: >-
+  Placed where the setup is invalidated. Longs: below the demand zone, the swing low, or a liquidity
+  level. Shorts: above the supply zone, the swing high, or a liquidity level (trader, 2026-09-26).
+  T-0001: at a liquidity level from the left that had been reclaimed as support. A return there means
+  price reverses lower or goes into consolidation, and the setup is invalid.
+  Not just beyond an obvious swing high/low: that is liquidity price sweeps before reversing, and the
+  valid entry forms exactly there (trader, T-0004: "valid short position would be exactly on where I
+  put my SL"). The stop goes beyond the zone that forms from the sweep (T-0005: above the new supply).
+target_model: >-
+  Next opposing level. High R:R is hunted: 1:3 minimum preferred, 1:2.5 accepted (trader, 2026-09-26).
+filters:
+  min_rr: 2.5
+  preferred_rr: 3.0
+risk_model: "1% of equity per trade, always."
+leverage_model: >-
+  Isolated margin. Leverage is chosen so that the loss on the posted margin at the stop
+  (stop distance % x leverage) does not exceed 50%: leverage <= 50 / stop %. T-0001: 3.14% x 10x = 31.4%.
+  Leverage never changes the 1% risk.
+
+management:
+  default: "Hold until TP hits."
+  breakeven: "Barely used."
+  partials: "Barely used."
+  trailing: null
+  reentry: null
+  max_hold: null
+  early_exit: null
+  invalidation: "Stop at the invalidation level (see stop_model)."
+
+do_not_trade_when:
+  - "Best target gives less than 2.5R."
+  - "The lower-timeframe CHoCH is not confirmed on 15m-30m (T-0004)."
+
+checklist:                     # run item by item in every pre-trade analysis (workflow B)
+  - "1. HTF key level or supply/demand zone identified (4h)."
+  - "2. Liquidity swept into the zone (equal highs/lows or an obvious swing)."
+  - "3. CHoCH by candle close, confirmed on 15m-30m; a 5m CHoCH alone does not count."
+  - "4. Entry at the zone (supply for shorts, demand for longs), not at a lower-timeframe CHoCH below/above it."
+  - "5. Stop beyond the zone, not just beyond the obvious swing where the liquidity sits."
+  - "6. Leverage <= 50 / stop % (isolated) and best target >= 2.5R (3R preferred)."
+
+common_mistakes: [ignored_htf, stop_in_liquidity, excessive_leverage]   # T-0004
+
+open_questions:
+  - "1. Which lows does the close-below rule apply to? After the AAVE CHoCH, candles closed below the Apr 15 swing low (about 97.08) and later below the equal lows (about 87.12 close on Apr 20). Was structure still bullish because only the lower low at the red box (about 85.73) mattered? Or did those closes turn it bearish?"
+  - "2. When the zone edge, the swing low and a liquidity level are all possible stops, which one is chosen: the nearest that invalidates the setup, the one under the most liquidity, or another rule?"
+  - "3. 'Massive volume': how much more than usual? For example, at least 2x the average of the previous 20 candles."
+  - "4. Target: when several opposing levels exist, is it the first one that gives at least 2.5R, or the strongest level?"
+  - "5. Equal lows/highs: how close must they be to count as equal? In T-0001 they sat within about 0.4 (about 0.45% of price)."
+  - "6. 30m confirmation: what exactly counts? A 30m candle closing below the previous bullish 30m candle's low, or a full 30m CHoCH by close?"
+  - "7. Divergence: which RSI length and timeframe, and is it measured on wicks or closes?"
+  - "8. How is a new supply drawn? In T-0005 it is 0.013492-0.013844, but the sweep candle ran 0.013412-0.013813 wick to wick (the red-box rule)."

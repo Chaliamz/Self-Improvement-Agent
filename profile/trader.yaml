@@ -33,6 +33,7 @@ fees:
 instruments:                          # list of markets/assets traded
   - "AAVEUSDT perpetual (BloFin)"
   - "SOLUSDT perpetual (BTCC)"
+  - "PENGUUSDT perpetual (BloFin)"
 sessions: null                        # the trader's own session names
 timeframes:                           # notation: m minutes, h hours, D days, W weeks, M months
   swing:
@@ -41,6 +42,10 @@ timeframes:                           # notation: m minutes, h hours, D days, W 
   scalp:
     structure: null                   # T-0003 used no higher timeframe; to be learned from top-down examples
     execution: "1m"                   # T-0003 (trader wrote "1M"; the chart interval is 1 minute)
+  intraday:
+    key_levels: "4h"                  # T-0004: "Major key level 4H"
+    confirmation: "15m-30m"           # T-0004 lesson: the 30m must confirm a 5m CHoCH
+    execution: "5m"
 
 # How the trader analyses, in their words.
 process:
@@ -66,6 +71,9 @@ terminology:
   deviation: "Price moves through a level and fails to hold: a fakeout."
   retest: "Price returns to a broken level and tests it from the other side."
   reclaim-retest-accept: "Long sequence: level reclaimed, retested from above, and held."
+  CH: "The trader's chart label for CHoCH."
+  I became the liquidity: "My stop sat in the liquidity that price swept before reversing (T-0004)."
+  divergence: "RSI divergence against price at a swing (bearish: higher high in price, lower high in RSI)."
 
 # Where each resolved value came from: {path: "stated 2026-09-26 in T-0003 review"}
 sources:
@@ -77,6 +85,7 @@ sources:
   timeframes.swing.execution: "Trader: '5) 4h', 2026-09-26"
   timeframes.scalp.execution: "Trader: 'Time execution: 1M' (1-minute chart), T-0003"
   process.top_down: "Trader: 'memorize Top Down analysis', 2026-09-26"
+  timeframes.intraday: "Trader, T-0004: 4H key level, 15-30M ignored (the mistake), 5M execution"
   leverage.margin_mode: "Trader: 'which means I use an isolated margin', 2026-09-26"
   leverage.max_margin_loss_at_stop_pct: "Trader: 'leverage planning not to exceed -50%', 2026-09-26"
   risk.min_rr: "Trader: 'I could enter a trade with 1:2,5RR as well', 2026-09-26"
