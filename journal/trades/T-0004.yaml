@@ -21,7 +21,7 @@ regime: [bullish]             # 30m: rally from about 0.0106 (Jan 4) and a fresh
 
 strategy:
   id: supply-demand-structure
-  version: "1.4"                # retagged by CHG-004 (clarification)
+  version: "1.5"                # retagged by CHG-004, CHG-005 (clarifications)
   experiment: null
   variant: null
 
@@ -88,7 +88,7 @@ evidence:
     - "The chart confirms the trader's diagnosis: the 5m CHoCH at 22:30 sat inside the range of the bullish 22:00 30m candle."
     - "The stop sat just above the obvious 22:00 spike high: resting liquidity. Price swept it (up to about 0.013813) before the real 30m CHoCH formed."
     - "On the 30m, the bearish divergence appears only at the Jan 6 05:30 sweep high (price higher high, RSI lower high: 65.2 vs 76.2). At the Jan 5 22:30 entry, RSI rose with price (76.2 vs 74.5): no 30m divergence yet. If it was seen on the 5m, it was the same 5m-vs-30m misalignment."
-    - "Risk (tj size): stop 3.837%. At 20x, 76.7% of the posted margin is lost at the stop, above the 50% rule (max 13.0x). Isolated liquidation about 0.013561, only 1.17x the stop distance; the 03:00 candle traded through it (high about 0.013595). The stop filling was the only thing between -1R and liquidation of the margin (about 1.30R at 1% risk sizing)."
+    - "Risk (tj size): stop 3.837%. At 20x, 76.7% of the posted margin is lost at the stop, beyond the 55% tolerance (13.03x for the 50% target, 14.33x at most). Isolated liquidation about 0.013561, only 1.17x the stop distance; the 03:00 candle traded through it (high about 0.013595). The stop filling was the only thing between -1R and liquidation of the margin (about 1.30R at 1% risk sizing)."
   hypotheses:
     - "A 5m CHoCH that the 30m does not confirm may be consolidation, not a reversal (n=1, trader-diagnosed)."
     - "Stops just beyond an obvious swing are swept before the move (n=1)."
@@ -99,7 +99,7 @@ review:
     setup: 2                  # valid 4H level; the 5m confirmation was invalid on 30m
     context: 2                # 4H considered; 15m-30m ignored
     execution: 2              # entered on an unconfirmed 5m CHoCH below the supply, not at the zone
-    risk: 1                   # stop in the liquidity; 20x above the 50% rule, liquidation 1.17x the stop distance
+    risk: 1                   # stop in the liquidity; 20x far beyond the 50% target / 55% tolerance, liquidation 1.17x the stop distance
     management: 4             # the stop was respected: -1R taken, no moving or removing
   setup_validity: invalid
   followed_plan: true
@@ -110,8 +110,8 @@ review:
   lesson: >-
     A lower-timeframe CHoCH is not a confirmation until the 15m-30m agrees. The stop just above the
     obvious spike high was the liquidity the market needed; the valid short formed exactly there
-    (T-0005, +3.09R counterfactual). Leverage must follow the 50% rule from the actual stop distance
-    (3.8% here: 13x maximum), not the lower timeframe's feel.
+    (T-0005, +3.09R counterfactual). Leverage must follow the margin rule from the actual stop distance
+    (3.8% here: 13x for the 50% target, 14.3x at most), not the lower timeframe's feel.
   actionable_change: "Run strategy v1.3's checklist before every entry; items 3, 5 and 6 would each have blocked this trade."
   strategy_change: "no"
   evidence_strength: low

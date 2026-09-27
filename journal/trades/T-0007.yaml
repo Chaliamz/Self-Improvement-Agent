@@ -1,0 +1,124 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0007
+status: closed
+opened: 2026-08-28            # trader: "Lasted from 28/8/26"; the Aug 28 4h wick filled the sell limit
+closed: 2026-09-15            # trader: "to 15/9/26"; target first reached in the Sep 15 morning 4h candles
+asset: "SPX500"
+market: "index CFD (Capital.com)"
+direction: "short"
+session: null
+timeframes:
+  htf: "4h"
+  execution: "4h"             # sell limit at the 4h supply
+  chain: ["4h"]
+  top_down: null              # only the 4h is shown; the ATH bias implies higher timeframes, not stated
+
+setups: [supply_level, choch, divergence, key_level]
+regime: [bullish]             # trader: "Our bias over here was bullish since we are on All Time High (ATH) levels"
+
+strategy:
+  id: supply-demand-structure
+  version: "1.5"
+  experiment: null
+  variant: null
+
+plan:
+  entry: 7770.6               # position-tool label: sell limit just under the supply box
+  stop: 7818.4                # position-tool label: above the Aug 13 ATH swing high (about 7,817.6)
+  targets: [7573.9]           # position-tool label: the red ray support (7,573.8)
+  invalidation: "Price back above the latest swing high (the ATH that created the bearish CH)."
+  entry_model: supply_level
+  confluences:
+    - "RSI bearish divergence (4H)"
+    - "Red ray at 7,574: key support/resistance level (many reactions)"
+    - "Bullish FVG (against the short: may be closed or may push price higher)"
+    - "Supply level which formed a bearish CH (red box)"
+  confirmations:
+    - "Bearish CH (red line): after a new higher high, a lower low broke the previous higher low"
+    - "Supply level (red box): sellers gaining strength and pushing price lower"
+    - "Supply not retested: sell limit placed there; SL on the latest swing high; TP at the red ray support"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # trader: "Risk was 1%"
+  leverage: 20                # trader: "20X because of 0.64% invalidation" (tj: the drawn stop is 0.615%)
+  margin_mode: isolated       # the trader's standing rule
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits:
+    - {price: 7573.9, reason: "Target (position-tool label). Trader: won, 4.12RR."}
+  fees: null                  # inside the 1% risk (trader, 2026-09-27)
+  duration_minutes: null      # stated as dates (Aug 28 - Sep 15); index CFD hours, weekends closed
+
+result:
+  pnl: null
+  r: null                     # derived price-based from the 7573.9 exit: matches the trader's 4.12
+  hypothetical_r: null
+
+journal:
+  before: |
+    Reconstructed from the trader's account on 2026-09-27 (after the outcome, so not hindsight-proof).
+    Bias bullish (ATH levels), but the 4H showed a market reversal: after a new higher high, a lower low
+    broke the previous higher low (bearish CH, red line). Confluences: RSI bearish divergence (4H), the red
+    ray at 7,574 (key level, many reactions), a bullish FVG against the short, and the supply level that
+    formed the bearish CH (red box). The supply was not retested, so a sell limit was placed there, SL on
+    the latest swing high, TP at the red ray. Risk 1%, 20x because of the 0.64% invalidation.
+  during: |
+    The limit filled on the Aug 28 4h wick (high about 7,771-7,772 vs the 7,770.6 limit), which closed near
+    7,710. Price never returned to the entry: the highest later high was about 7,757.6 (Sep 4). The target
+    was reached on Sep 15.
+  after: |
+    Trader: "It was a risky trade because we traded against the trend since it's bullish. However our setup
+    was very solid giving us a whopping 4.12RR which was definitely worth the risk, and bullish FVG would be
+    an indication to either close the gap or continue higher. Thankfully for us setup worked and we got that
+    win. Definitely an S setup."
+
+evidence:
+  observed:
+    - "Capital.com S&P 500 index CFD (SPX500), 4h, chart time UTC+3. Position tool: entry 7,770.6, stop 7,818.4, target 7,573.9. Red ray label 7,573.8."
+    - "Prices read from chart pixels, scaled on the position tool's own lines (entry row 249, stop row 188, target row 498); the axis ticks agree within 1.6 points. Times from the trading-day axis (21 date labels, max residual 0.03 trading days)."
+    - "Structure: Aug 5 high about 7,793.9; Aug 6 higher low about 7,698.3 (the red dashed CH line, about 7,698.7, drawn Aug 6-18); Aug 13 new high about 7,817.6 (ATH); first 4h candle entirely below the CH line on Aug 19 (about 7,681.7-7,697.5); Aug 20 low about 7,637.5."
+    - "Supply box (red): about 7,776.5-7,801.0, drawn from Aug 13. The 7,770.6 entry sits about 6 points under its lower edge; the stop is about 0.8 above the ATH."
+    - "Fill: the Aug 28 4h candle at the tool's left edge has an upper wick to about 7,771-7,772, one pixel above the entry row, and closes near 7,710. It is the only candle touching the entry after Aug 28."
+    - "After the fill: highest high about 7,757.6 (Sep 4), below the entry; the 7,818.4 stop was never approached. The target row is first reached at the Sep 15 morning 4h candles (about 7,571-7,573), matching the trader's 15/9."
+    - "RSI (4h pane, wicks): the Aug 5 high (about 7,793.9) with RSI about 81.1; the Aug 13 high (about 7,817.6) with RSI about 70.5. Price higher high, RSI lower high."
+    - "Red ray 7,573.8 drawn from late May; candles traded through it in May, June and July; price closed fully above it from Jul 30 and came back to it on Sep 15. After the trade: a spike to about 7,506 (Sep 16), then a rally to about 7,782 (Sep 22), back inside the supply box but under the 7,818.4 stop."
+    - "tj size: stop distance 0.615% (trader: 0.64%). At 20x, 12.3% of margin is lost at the stop, far inside the 50% target. Isolated liquidation about 8,118.5 (7.28x the stop distance). Target 7,573.9 = 4.12R."
+  interpreted:
+    - "The chart matches the trader's sequence: higher high, then a close below the previous higher low (bearish CH), then a supply at the ATH left untouched until the sell limit."
+    - "Regular bearish divergence into the ATH, read on wicks as the trader specifies."
+    - "Checklist v1.5: 1 pass (4h supply from the CH, unretested); 2 pass on the chart (the ATH took out the Aug 5 high; the trader frames it as a new higher high, not a sweep); 3 pass (4h CH by close, Aug 18-19); 4 pass (limit at the zone's lower edge); 5 as in T-0006: the stop is beyond the zone and about 0.8 above the swing that created the CH (open question on stop placement); 6 pass (12.3% of margin; 4.12R); 7 pass."
+    - "The fill margin is thin: the wick clears the limit by about 1 point (one pixel). On a CFD, spread and feed differences between the chart and the broker could decide a fill this close; the trader reports the fill."
+    - "Counter-trend: a short against the bullish ATH bias. The trader names it risky and accepted it for the setup quality and the 4.12R."
+  hypotheses:
+    - "Counter-trend S/D shorts at ATH may need a higher R:R to be worth their lower base rate (trader: 'risky ... definitely worth the risk'; n=1)."
+  charts: [journal/charts/T-0007-spx500-4h.png]
+
+review:
+  scores:
+    setup: 5                  # CH-born supply, unretested, divergence, clear key-level target
+    context: 3                # counter-trend at ATH with a bullish FVG against it; the trader named the risk
+    execution: 5              # sell limit at the untouched supply, as planned
+    risk: 5                   # 1%, stop above the CH swing high, 12.3% of margin at the stop
+    management: 5             # held to the target
+  trader_grade: "S"           # trader: "Definitely an S setup"
+  setup_validity: valid
+  followed_plan: true
+  loss_type: null
+  mistakes: []
+  behaviors: [waited_for_confirmation, followed_setup, took_planned_profits, correct_sizing]
+  outside_control: []
+  lesson: >-
+    A counter-trend supply short can be worth taking when the reversal is confirmed by a 4h CH by close, the
+    supply is untouched, divergence agrees, and the target is a proven key level at 4R or more. The risk the
+    trader named (trading against the ATH trend) is recorded, not dismissed: one trade proves nothing.
+  actionable_change: null
+  strategy_change: insufficient_evidence
+  evidence_strength: low

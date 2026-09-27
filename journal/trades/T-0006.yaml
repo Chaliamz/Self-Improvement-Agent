@@ -21,14 +21,14 @@ regime: [range, bullish]      # 4h: range about 51-77 since June; trader's bias 
 
 strategy:
   id: supply-demand-structure
-  version: "1.4"
+  version: "1.5"                # retagged by CHG-005 (clarification)
   experiment: null
   variant: null
 
 plan:
   entry: 54.44                # position-tool label
   stop: 51.02                 # position-tool label: below the Aug 2 swing low (about 51.12), "the last swing low it created"
-  targets: [66.10]            # position-tool label = the 3.41R the trader quotes; the trader names 62.64 as the target (2.40R): open question 11
+  targets: [66.10]            # the order (trader, 2026-09-27: "TP was 66.1"; 62.64 was ignored as a potential key level)
   invalidation: "Price back below the Aug 2 swing low that created the reversal (stop 51.02)."
   entry_model: reclaim
   confluences:
@@ -44,7 +44,7 @@ risk:
   account_equity: null
   risk_amount: null
   risk_pct: 1.0               # trader: "risk 1%"
-  leverage: null              # trader: "7-8X due to 6,26% invalidation". tj: 7x = 44.0% of margin at the stop, 8x = 50.3% (cap 7.95x)
+  leverage: null              # trader: "7-8X due to 6,26% invalidation"; exact setting not stated. 7x = 44.0%, 8x = 50.3% of margin: both within the 55% tolerance
   margin_mode: isolated       # the trader's standing rule
   size: null
   notional: null
@@ -76,6 +76,10 @@ journal:
     Trader: "trade was won definitely a great setup ... There wasn't any mistake here, only to place my TP
     on supply level (red box) to hunt better RR." On the target: "target was the 62.64 resistance level (i
     could target for longer (70.70 supply level)) but 3.41RR was good for me back in a day."
+    Correction (trader, 2026-09-27): "that would be my fault. Our goal was 66.1, I ignored 62.64 because of
+    potential key level. TP was 66.1". On the target choice: "both are ideal but it's more preferable to hunt
+    strongest levels (70.7 supply). I closed it because I was happy with RR". On 7x vs 8x: "it's a personal
+    preference ... i prefer to adjust it until 50%, it's okay if it goes to 55% or something."
 
 evidence:
   observed:
@@ -90,15 +94,15 @@ evidence:
     - "The 1h candles at Aug 19 ~19:00-21:00 top out at about 62.4-62.65, at the 62.64 line. The Aug 19 ~22:00 1h candle runs from about 62.03 through 66.10 to above 69.91 (the top of the pane)."
     - "4h: one candle (Aug 19, 19:00-23:00 local) runs from about 61.51 to about 72.26, through 62.64, 66.10 and into the supply box (bottom about 70.82). Later highs: about 74.59 (Aug 20), about 82.59 (Aug 22)."
     - "RSI (1h pane): Jul 28 low about 53.97 with RSI about 22.5; Aug 2 low about 51.12 with RSI about 31.7. Price lower low, RSI higher low. No RSI pane on the 4h screenshot."
-    - "tj size: stop distance 6.282%. 7x: 44.0% of margin lost at the stop, isolated liquidation about 46.90 (2.21x the stop distance). 8x: 50.3% of margin, above the 50% limit (cap 7.95x), liquidation about 47.87. Targets: 62.64 = 2.40R, 66.10 = 3.41R, 70.70 = 4.75R."
+    - "tj size: stop distance 6.282%. 7x: 44.0% of margin lost at the stop, isolated liquidation about 46.90 (2.21x the stop distance). 8x: 50.3% of margin, above the 50% target but within the 55% tolerance (caps 7.95x and 8.75x), liquidation about 47.87. Targets: 62.64 = 2.40R, 66.10 = 3.41R, 70.70 = 4.75R."
   interpreted:
     - "The 1h shows the trader's sequence: demand traded through (sweep to about 51.12), bullish CH by close above about 56.00, demand reclaimed, retest into the zone, long. The same CH line is drawn on the 4h."
     - "The 1h RSI shows a regular bullish divergence into the Aug 2 sweep low (lower low in price, higher low in RSI). It supports the trader's 4h divergence; the 4h reading itself is not visible in the screenshots."
-    - "Checklist v1.4: items 1-4 pass (4h demand; sweep below it; CH by close on 1h and 4h; entry at the zone on the retest). Item 6: 7x passes, 8x is 0.3 points over the 50% rule; the 66.10 target passes at 3.41R, while the 62.64 target the trader names would give 2.40R, under the 2.5R minimum. Item 5 is ambiguous: the stop is beyond the zone but only about 0.10 below the obvious Aug 2 low (open question 10). Item 7 passes (no entry at an inducement)."
-    - "The demand had already been traded through (Jul 30-Aug 2) before the Aug 7 entry. By the trader's own freshness rule it was a mitigated zone; the trade is a reclaim-and-retest of it (open question 9)."
+    - "Checklist v1.4: items 1-4 pass (4h demand; sweep below it; CH by close on 1h and 4h; entry at the zone on the retest). Item 6 passes: 7x (44.0%) and 8x (50.3%) are both within the 55% tolerance, and the 66.10 order gives 3.41R (the trader confirmed 66.10; 62.64 was not the target). Item 5 is ambiguous: the stop is beyond the zone but only about 0.10 below the obvious Aug 2 low (strategy v1.5 open question 5). Item 7 passes (no entry at an inducement)."
+    - "The demand had already been traded through (Jul 30-Aug 2) before the Aug 7 entry. By the trader's own freshness rule it was a mitigated zone; the trade is a reclaim-and-retest of it (strategy v1.5 open question 4)."
     - "COUNTERFACTUAL: a TP at the supply's lower edge (70.70) would have filled in the same Aug 19 4h candle: about +4.75R instead of +3.41R. One trade; the counterfactual is only as good as that single path."
   hypotheses:
-    - "Targeting the next opposing supply/demand zone instead of the first S/R level may raise R per winner without a large drop in hit rate (trader's reflection on T-0006; n=1)."
+    - "Targeting the strongest opposing level (here the 70.70 supply) instead of a nearer one may raise R per winner without a large drop in hit rate. The trader now states the preference (2026-09-27); whether it pays is untested (n=1)."
   charts: [journal/charts/T-0006-hype-4h.png, journal/charts/T-0006-hype-1h.png]
 
 review:
@@ -106,7 +110,7 @@ review:
     setup: 4                  # demand + sweep + CH by close + reclaim + retest; the zone was already mitigated
     context: 4                # 4h to 1h top-down; the 4h bias was mixed (June bearish CH), which the trader named
     execution: 5              # limit at the demand on the retest, as planned
-    risk: 4                   # 1% risk, stop at the structural invalidation; 7-8x straddles the 50% rule (8x = 50.3%)
+    risk: 5                   # 1% risk, stop at the structural invalidation, 7-8x within the 55% tolerance (rescored 2026-09-27 after the trader's clarification)
     management: 5             # held to the target, no interference
   setup_validity: valid
   followed_plan: true
@@ -116,8 +120,8 @@ review:
   outside_control: []
   lesson: >-
     The full supply/demand sequence on a 4h zone with 1h execution: sweep through the zone, CH by close,
-    reclaim, retest, entry at the zone, stop under the sweep low. The only change the trader would make is
-    the target: the next supply (about 70.70, about 4.75R) instead of the 62.64 resistance.
-  actionable_change: "Hypothesis only (n=1): test targeting the next supply/demand zone when the first S/R level is closer. Record both levels on future trades."
+    reclaim, retest, entry at the zone, stop under the sweep low. The order was 66.10 (3.41R). The only change
+    the trader would make is the target: the strongest level, the 70.70 supply (about 4.75R).
+  actionable_change: "Prefer the strongest opposing level as the target (trader's stated preference); record both the nearer level and the strongest one on future trades so the choice can be compared."
   strategy_change: insufficient_evidence
   evidence_strength: low

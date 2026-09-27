@@ -21,7 +21,7 @@ regime: [bullish]
 
 strategy:
   id: supply-demand-structure
-  version: "1.4"            # retagged by CHG-001..004 (clarifications)
+  version: "1.5"            # retagged by CHG-001..005 (clarifications)
   experiment: null
   variant: null
 

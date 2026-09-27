@@ -21,7 +21,7 @@ regime: [bullish]             # the 30m trend was still up into the sweep; the C
 
 strategy:
   id: supply-demand-structure
-  version: "1.4"                # retagged by CHG-004 (clarification)
+  version: "1.5"                # retagged by CHG-004, CHG-005 (clarifications)
   experiment: null
   variant: null
 
@@ -30,7 +30,7 @@ plan:
   stop: 0.013844              # position-tool label: above the supply / sweep high
   targets: [0.012406]         # position-tool label
   invalidation: "Price accepts above the new supply (0.013844)."
-  entry_model: extreme_supply
+  entry_model: supply_level     # v1.5 names this model (was extreme_supply under v1.3-1.4)
   confluences:
     - "Major key level 4H"
     - "Liquidity swept above the Jan 5 spike high (the T-0004 stop: 'I became the liquidity')"
@@ -43,7 +43,7 @@ risk:
   account_equity: null
   risk_amount: null
   risk_pct: 1.0               # the trader's standing rule
-  leverage: null              # not stated; the 50% rule allows up to 19.2x for this 2.61% stop
+  leverage: null              # not stated; the 50% target allows 19.16x for this 2.61% stop (21.08x within the 55% tolerance)
   margin_mode: isolated
   size: null
   notional: null
@@ -78,7 +78,7 @@ evidence:
     - "Target: the 19:30 candle closed about 0.012383 and the 20:00 candle's low was about 0.012326, below 0.012406. Target hit about 4-4.5 hours after entry."
   interpreted:
     - "Every item of strategy v1.3's checklist passes here, where T-0004 failed items 3, 5 and 6."
-    - "The zone the trader drew (0.013492-0.013844) is not the sweep candle's wick-to-wick range (0.013412-0.013813); see strategy v1.4 open question 8."
+    - "The zone the trader drew (0.013492-0.013844) is not the sweep candle's wick-to-wick range (0.013412-0.013813); see strategy v1.5 open question 3."
     - "Trader, 2026-09-27: the new supply is drawn there because the sweep printed a bearish CH; the short is its retest. An FVG would make it stronger."
   hypotheses: []
   charts: [journal/charts/T-0005-pengu-30m-proper.png]

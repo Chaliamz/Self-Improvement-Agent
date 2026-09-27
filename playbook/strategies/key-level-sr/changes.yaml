@@ -26,6 +26,20 @@ changes:
              open_questions]
     note: "T-0003 retagged 1.1; its duration corrected to the chart measurement (24 minutes)."
     resulting_version: "1.1"
+  - id: CHG-002
+    kind: clarification
+    date: 2026-09-27
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-27: "we can't know that from first place. we grab a level and we see if that level is key
+      for traders. If it reacts or not. Resistance if it touches many times and reacts with rejection or breaks
+      past it, retests and goes higher. Or creates a deviation which breaks past it, retests and fails to go
+      higher resulting losing the level once again. In this case it's deviation most of times so we take the
+      retest for continuation."
+    fields: [reactions, open_questions]
+    note: "T-0003 retagged 1.2."
+    resulting_version: "1.2"
 #  - id: CHG-001
 #    date: 2026-01-01
 #    current_rule: "Enter after liquidity sweep."

@@ -4,7 +4,7 @@
 id: key-level-sr
 name: "Key level S/R: reclaim-retest-accept / deviation-retest"
 status: unvalidated
-current_version: "1.1"
+current_version: "1.2"
 created: 2026-09-26
 summary: >-
   Trader, with T-0003: "Found a key level Support/Resistance waiting for price to react multiple times

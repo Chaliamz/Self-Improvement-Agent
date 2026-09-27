@@ -90,3 +90,26 @@ changes:
       mitigated), inducements avoided, divergence types, the 1h execution of a 4h zone. The T-0006 target
       reflection stays a hypothesis (n=1). T-0001, T-0002, T-0004, T-0005 retagged 1.4; T-0006 recorded at 1.4.
     resulting_version: "1.4"
+  - id: CHG-005
+    kind: clarification
+    date: 2026-09-27
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-27: "30m candle should close below the previous bullish 30m candle's low/above the previous
+      bearish 30m candle's high to form a potential CH" ... target: "both are ideal but it's more preferable to
+      hunt strongest levels (70.7 supply). I closed it because I was happy with RR" ... "TP was 66.1" (T-0006) ...
+      divergence: "length is irrelevant and swings on RSI and chart are read on wicks" ... equal lows/highs: "it's
+      not that important how close they should be ... still considers as a liquidity level which is likely to get
+      swept" ... volume: "much more than 2x, I don't want you to focus a lot on this" ... leverage: "since margin
+      call occurs on 80% i prefer to adjust it until 50%, it's okay if it goes to 55% or something." T-0007: "supply
+      level didn't get retested so we placed sell limit order there. Our SL would obviously be our latest swing high."
+    fields: [timeframe_alignment, market_structure, trend_context, confirmation, confluences, zones.definition,
+             zones.extreme_demand, inducements, divergence, entry_models.supply_level, entry_models.demand_level,
+             entry_models.extreme_supply, stop_model, target_model, leverage_model, checklist, open_questions]
+    note: >-
+      Answers recorded as the rules already in force. The new entry models name what T-0005 and T-0007 did
+      (a supply level born from a CH); T-0005 moves from extreme_supply to supply_level. The margin rule is a
+      50% target with a 55% tolerance, so the validator, tj size and rule compliance flag a breach only beyond
+      55%. T-0001, T-0002, T-0004, T-0005, T-0006 retagged 1.5; T-0007 recorded at 1.5.
+    resulting_version: "1.5"
