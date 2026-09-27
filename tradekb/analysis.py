@@ -14,6 +14,7 @@ from statistics import fmean
 from typing import Callable
 
 from .model import COUNTERFACTUAL, REALIZED, Derived, derive, entry_price, num, planned_rr
+from .risk import margin_status
 from .stats import Summary, summarize
 from .store import KB, Trade, as_date, dig, trade_number
 
@@ -93,6 +94,15 @@ def _many(values) -> list[str]:
     return [str(v) for v in values] if isinstance(values, list) and values else ["(none)"]
 
 
+def trend_alignment(t: dict) -> str:
+    """Direction against the recorded bias regime: a short in a bullish environment is counter-trend (T-0007)."""
+    regime, direction = set(t.get("regime") or []), t.get("direction")
+    bias = [side for tag, side in (("bullish", "long"), ("bearish", "short")) if tag in regime]
+    if len(bias) != 1 or direction not in ("long", "short"):
+        return "(unknown)"
+    return "with_trend" if bias[0] == direction else "counter_trend"
+
+
 GROUPERS: dict[str, Callable[[Row], list[str]]] = {
     "setup": lambda r: _many(r.t.get("setups")),
     "entry_model": lambda r: _one(dig(r.t, "plan.entry_model")),
@@ -116,6 +126,8 @@ GROUPERS: dict[str, Callable[[Row], list[str]]] = {
     "behavior": lambda r: _many(dig(r.t, "review.behaviors")),
     "validity": lambda r: _one(dig(r.t, "review.setup_validity")),
     "grade": lambda r: _one(r.d.grade),
+    "trader_grade": lambda r: _one(dig(r.t, "review.trader_grade")),
+    "trend": lambda r: [trend_alignment(r.t)],
     "outcome": lambda r: _one(r.d.outcome),
     "month": lambda r: _one(r.when.strftime("%Y-%m") if r.when else None),
 }
@@ -256,11 +268,14 @@ def rule_definitions(kb: KB) -> list[dict]:
     p = kb.profile
     cap, limit, floor = (dig(p, "risk.max_risk_per_trade_pct"), dig(p, "leverage.max_margin_loss_at_stop_pct"),
                          dig(p, "risk.min_rr"))
+    tol = dig(p, "leverage.margin_loss_tolerance_pct")
+    lev_rule = (f"Stop % x leverage at most {limit}% of margin" + (f" (up to {tol}% tolerated)" if tol is not None else "")
+                if limit is not None else "Margin rule not stated")
     return [
         {"key": "top_down", "label": "Top-down", "rule": "HTF context, key levels, then LTF execution (timeframes.top_down)"},
         {"key": "setup_valid", "label": "Valid setup", "rule": "Setup valid under the strategy version (review.setup_validity)"},
         {"key": "risk_pct", "label": "Risk", "rule": f"Risk per trade at most {cap}%" if cap is not None else "Risk cap not stated"},
-        {"key": "leverage", "label": "Leverage", "rule": f"Stop % x leverage at most {limit}% of margin" if limit is not None else "Margin rule not stated"},
+        {"key": "leverage", "label": "Leverage", "rule": lev_rule},
         {"key": "min_rr", "label": "R:R", "rule": f"Best target at least {floor}R" if floor is not None else "Minimum R:R not stated"},
         {"key": "stop", "label": "Stop", "rule": "Stop respected: not moved, widened or removed"},
     ]
@@ -275,9 +290,9 @@ def rule_checks(row: Row, kb: KB) -> dict[str, bool | None]:
     risk_pct, cap = num(dig(t, "risk.risk_pct")), num(dig(p, "risk.max_risk_per_trade_pct"))
     out["risk_pct"] = None if None in (risk_pct, cap) else risk_pct <= cap + 1e-9
     entry, stop, lev = entry_price(t), num(dig(t, "plan.stop")), num(dig(t, "risk.leverage"))
-    limit = num(dig(p, "leverage.max_margin_loss_at_stop_pct"))
+    limit, tol = num(dig(p, "leverage.max_margin_loss_at_stop_pct")), num(dig(p, "leverage.margin_loss_tolerance_pct"))
     out["leverage"] = (None if None in (entry, stop, lev, limit) or not entry or entry == stop
-                       else abs(entry - stop) / entry * 100 * lev <= limit + 1e-9)
+                       else margin_status(abs(entry - stop) / entry * 100 * lev, limit, tol) != "breach")
     rrs, floor = [x for x in planned_rr(t) if x is not None], num(dig(p, "risk.min_rr"))
     out["min_rr"] = None if not rrs or floor is None else max(rrs) >= floor - 1e-9
     behaviors = set(dig(t, "review.behaviors") or [])

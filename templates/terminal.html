@@ -856,7 +856,7 @@ function renderJournal() {
 function renderPerformance() {
   const labels = { strategy: "Strategy", setup: "Setup", entry_model: "Entry model", version: "Strategy version", direction: "Direction (long vs short)",
                    timeframe: "Execution timeframe", top_down: "Top-down analysis", asset: "Asset", regime: "Market regime", session: "Session",
-                   leverage: "Leverage setting", risk: "Risk per trade", grade: "Process grade", month: "Month" };
+                   leverage: "Leverage setting", risk: "Risk per trade", grade: "Process grade", trader_grade: "Trader's setup grade", trend: "With vs against the trend", month: "Month" };
   const multi = new Set(["setup", "regime"]);
   const pick = h("select", { "aria-label": "Breakdown" }, Object.entries(labels).map(([k, v]) => h("option", { value: k, text: v })));
   const host = h("div", {}), note = h("p", { class: "note" }), barHost = h("div", { class: "chart-host", style: "min-height:0" });
@@ -971,7 +971,9 @@ function renderRisk() {
     ["Max daily loss", "risk.max_daily_loss_r", v => v + "R"], ["Max open risk", "risk.max_open_risk_pct", v => v + "% of equity"],
     ["Pause after consecutive losses", "risk.max_consecutive_losses_before_pause", v => String(v)],
     ["Max leverage", "leverage.max_leverage", v => v + "x"], ["Margin mode", "leverage.margin_mode", v => titleCase(v)],
-    ["Max loss on margin at stop", "leverage.max_margin_loss_at_stop_pct", v => `${v}% (leverage ≤ ${v} / stop %)`],
+    ["Margin loss at stop: target", "leverage.max_margin_loss_at_stop_pct", v => `${v}% (leverage ≤ ${v} / stop %)`],
+    ["Margin loss at stop: tolerated up to", "leverage.margin_loss_tolerance_pct", v => `${v}% (a breach only beyond this)`],
+    ["Margin call", "leverage.margin_call_at_margin_loss_pct", v => `at ${v}% of margin lost`],
     ["Minimum R:R", "risk.min_rr", v => "1:" + v], ["Preferred R:R", "risk.preferred_rr", v => "1:" + v],
     ["Maintenance margin rate", "leverage.maintenance_margin_rate", v => (v * 100).toFixed(2) + "%"],
     ["Maker fee", "fees.maker_rate", v => (v * 100).toFixed(3) + "%"], ["Taker fee", "fees.taker_rate", v => (v * 100).toFixed(3) + "%"],
@@ -990,11 +992,11 @@ function renderRisk() {
     { label: "Effective lev.", num: true, render: r => fmtX(r.e.effective_leverage) },
     { label: "Lev. setting", num: true, render: r => isNum(dig(r.t, "risk.leverage")) ? r.t.risk.leverage + "x" : "—" },
     { label: "Margin posted", num: true, render: r => isNum(r.e.margin_pct) ? fmtPct(r.e.margin_pct) + " of equity" : "—" },
-    { label: "Margin loss at stop", num: true, render: r => isNum(r.e.margin_loss_pct) ? h("span", { class: r.e.margin_loss_breach ? "down" : "up", text: fmtPct(r.e.margin_loss_pct, 1) }) : "—" },
+    { label: "Margin loss at stop", num: true, render: r => isNum(r.e.margin_loss_pct) ? h("span", { class: r.e.margin_loss_breach ? "down" : r.e.margin_loss_over_target ? null : "up", text: fmtPct(r.e.margin_loss_pct, 1) }) : "—" },
     { label: "Max lev. (rule)", num: true, render: r => fmtCap(r.e.max_leverage_for_rule) },
     { label: "Liquidation (isolated)", num: true, render: r => isNum(r.e.liq_isolated) ? fmtNum(r.e.liq_isolated) + (r.e.liq_mode_assumed ? " *" : "") : "—" },
     { label: "Liq. / stop distance", num: true, render: r => fmtX(r.e.liq_to_stop) },
-    { label: "Check", render: r => r.e.liq_before_stop ? badge("loss", "▼ Liq. before stop") : r.e.margin_loss_breach ? badge("loss", "▼ Over margin rule") : isNum(r.e.liq_to_stop) ? badge("win", "▲ Within rules") : "—" },
+    { label: "Check", render: r => r.e.liq_before_stop ? badge("loss", "▼ Liq. before stop") : r.e.margin_loss_breach ? badge("loss", "▼ Over margin rule") : r.e.margin_loss_over_target ? badge("WARN", "◐ Above target, tolerated") : isNum(r.e.liq_to_stop) ? badge("win", "▲ Within rules") : "—" },
   ], expRows, { empty: "No trades with entry and stop yet." });
 
   return h("div", { class: "stack" },
@@ -1100,7 +1102,7 @@ function openTrade(id) {
           ["Notional", isNum(e.notional_pct) ? fmtPct(e.notional_pct, 1) + " of equity" : null], ["Effective leverage", fmtX(e.effective_leverage)],
           ["Leverage setting", isNum(dig(t, "risk.leverage")) ? t.risk.leverage + "x" : null], ["Margin mode", dig(t, "risk.margin_mode") || unstated("Not recorded")],
           ["Margin posted", isNum(e.margin_pct) ? fmtPct(e.margin_pct) + " of equity" : null],
-          ["Margin loss at stop", isNum(e.margin_loss_pct) ? h("span", { class: e.margin_loss_breach ? "down" : "up", text: `${fmtPct(e.margin_loss_pct, 1)}${isNum(e.max_leverage_for_rule) ? ` · max ${fmtCap(e.max_leverage_for_rule)} under the ${dig(KB.profile, "leverage.max_margin_loss_at_stop_pct")}% rule` : ""}` }) : null],
+          ["Margin loss at stop", isNum(e.margin_loss_pct) ? h("span", { class: e.margin_loss_breach ? "down" : e.margin_loss_over_target ? null : "up", text: `${fmtPct(e.margin_loss_pct, 1)}${isNum(e.max_leverage_for_rule) ? ` · max ${fmtCap(e.max_leverage_for_rule)} for the ${dig(KB.profile, "leverage.max_margin_loss_at_stop_pct")}% target` : ""}${isNum(e.max_leverage_for_tolerance) ? `, ${fmtCap(e.max_leverage_for_tolerance)} within the ${dig(KB.profile, "leverage.margin_loss_tolerance_pct")}% tolerance` : ""}` }) : null],
           ["Liquidation", isNum(e.liq_isolated) ? `${fmtNum(e.liq_isolated)} (isolated${e.liq_mode_assumed ? ", assumed" : ""}), ${fmtPct(e.liq_distance_pct)} away, ${fmtX(e.liq_to_stop)} the stop distance` : null]])),
         card("Confluences and confirmations", null, h("h3", { text: "Confluences" }), list(dig(t, "plan.confluences")),
           h("h3", { text: "Confirmations" }), list(dig(t, "plan.confirmations")))),
@@ -1112,7 +1114,7 @@ function openTrade(id) {
         h("h3", { text: "Observed" }), list(dig(t, "evidence.observed")), h("h3", { text: "Interpreted" }), list(dig(t, "evidence.interpreted")),
         h("h3", { text: "Hypotheses" }), list(dig(t, "evidence.hypotheses"))),
       card("Review", d.process_mean ? `Process mean ${d.process_mean.toFixed(2)} / 5 → ${d.grade}` : "Process not yet scored.", ...scoreRows,
-        kv([["Setup validity", rv.setup_validity], ["Followed plan", rv.followed_plan === null || rv.followed_plan === undefined ? null : rv.followed_plan ? "Yes" : "No"],
+        kv([["Trader's grade", rv.trader_grade], ["Setup validity", rv.setup_validity], ["Followed plan", rv.followed_plan === null || rv.followed_plan === undefined ? null : rv.followed_plan ? "Yes" : "No"],
           ["Loss type", rv.loss_type ? `${rv.loss_type} · ${tagLabel("loss_types", rv.loss_type)}` : null],
           ["Mistakes", tags(rv.mistakes, "mistakes")], ["Behaviours", tags(rv.behaviors, "behaviors")], ["Outside control", list(rv.outside_control)],
           ["Lesson", rv.lesson], ["Actionable change", rv.actionable_change], ["Strategy change", rv.strategy_change], ["Evidence strength", rv.evidence_strength]])),

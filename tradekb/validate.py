@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 from . import model
 from .model import COUNTERFACTUAL, REALIZED, derive, num
-from .risk import fmt_cap, liquidation_price
+from .risk import fmt_cap, liquidation_price, margin_status
 from .store import KB, STATUSES, TRADE_ID_RE, Trade, as_date, dig, unresolved
 
 ERROR, WARN, INFO = "ERROR", "WARN", "INFO"
@@ -219,12 +219,19 @@ def _check_risk(t: dict, kb: KB, where: str, add: _Sink) -> None:
                                  f"the stop {stop}: the stop could not protect this position")
 
     max_margin_loss = num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct"))
+    tolerance = num(dig(kb.profile, "leverage.margin_loss_tolerance_pct"))
     if leverage and entry and stop and entry != stop and max_margin_loss is not None:
-        margin_loss = abs(entry - stop) / entry * 100 * leverage
-        if margin_loss > max_margin_loss + 1e-9:
+        stop_pct = abs(entry - stop) / entry * 100
+        margin_loss = stop_pct * leverage
+        status = margin_status(margin_loss, max_margin_loss, tolerance)
+        limit = f"{tolerance:g}% tolerance ({max_margin_loss:g}% target)" if tolerance is not None else f"{max_margin_loss:g}% limit"
+        if status == "breach":
             breach("excessive_leverage", f"RISK: stop distance x leverage = {margin_loss:.1f}% of the posted margin, above your "
-                                         f"{max_margin_loss:g}% limit (max {fmt_cap(max_margin_loss / (abs(entry - stop) / entry * 100))} "
+                                         f"{limit} (max {fmt_cap((tolerance if tolerance is not None else max_margin_loss) / stop_pct)} "
                                          f"for this stop)")
+        elif status == "over_target":
+            add(INFO, where, f"stop distance x leverage = {margin_loss:.1f}% of the posted margin: above your {max_margin_loss:g}% "
+                             f"target, within your {tolerance:g}% tolerance")
     min_rr = num(dig(kb.profile, "risk.min_rr"))
     rrs = [x for x in model.planned_rr(t) if x is not None]
     if min_rr is not None and rrs and max(rrs) < min_rr - 1e-9 and t.get("status") in ("planned", "open", "closed"):
@@ -248,6 +255,9 @@ def _check_review(t: dict, kb: KB, where: str, add: _Sink, outcome: str | None) 
         value = dig(t, f"review.scores.{dim}")
         if value is not None and (isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 5):
             add(ERROR, where, f"review.scores.{dim} must be an integer 1-5 or null")
+    grade = dig(t, "review.trader_grade")
+    if grade is not None and not isinstance(grade, str):
+        add(ERROR, where, "review.trader_grade must be the trader's grade as text (e.g. \"S\") or null")
     followed = dig(t, "review.followed_plan")
     if followed is not None and not isinstance(followed, bool):
         add(ERROR, where, "review.followed_plan must be true, false or null")

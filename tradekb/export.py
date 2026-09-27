@@ -30,7 +30,7 @@ TEMPLATE = "templates/terminal.html"
 INPUT_GLOBS = ("config.yaml", "profile/*.yaml", "taxonomy/*.yaml", "journal/trades/*.yaml", "journal/charts/*",
                "playbook/*.yaml", "playbook/strategies/**/*.yaml", "playbook/experiments/*.yaml", "tradekb/*.py", TEMPLATE)
 BREAKDOWNS = ("setup", "entry_model", "strategy", "version", "direction", "asset", "regime", "session", "timeframe",
-              "top_down", "leverage", "risk", "grade", "month")
+              "top_down", "leverage", "risk", "grade", "trader_grade", "trend", "month")
 # Explicit, because Python's built-in table lacks .webp and the system table is not always present.
 IMAGE_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",
                ".gif": "image/gif", ".avif": "image/avif"}
@@ -77,7 +77,8 @@ def _trade(row: analysis.Row, kb: KB) -> dict:
     if entry and stop and entry != stop:
         mmr = num(dig(kb.profile, "leverage.maintenance_margin_rate")) or kb.config["risk_checks"]["default_mmr_rate"]
         exp = exposure(entry, stop, num(dig(t, "risk.risk_pct")), num(dig(t, "risk.leverage")),
-                       dig(t, "risk.margin_mode"), mmr, num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct")))
+                       dig(t, "risk.margin_mode"), mmr, num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct")),
+                       num(dig(kb.profile, "leverage.margin_loss_tolerance_pct")))
     derived = jsonable(row.d)
     derived.update({"exposure": exp, "planned_rr": model.planned_rr(t), "holding_hours": analysis.holding_hours(row), "top_down": dig(t, "timeframes.top_down"),
                     "rule_checks": analysis.rule_checks(row, kb) if row.trade.status in analysis.TAKEN else None,

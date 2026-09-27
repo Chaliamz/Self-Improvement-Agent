@@ -73,6 +73,7 @@ review:
     execution: null
     risk: null
     management: null
+  trader_grade: null          # the trader's own grade of the setup, in their scale (e.g. "S"); null if not given
   setup_validity: null        # valid | invalid | uncertain
   followed_plan: null         # true | false
   loss_type: null             # A-E, losses only (taxonomy/loss_types.yaml)

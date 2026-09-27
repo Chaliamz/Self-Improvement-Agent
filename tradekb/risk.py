@@ -23,6 +23,18 @@ from decimal import ROUND_FLOOR, Decimal
 CRITICAL, WARN, NOTE = "CRITICAL", "WARN", "NOTE"
 
 
+def margin_status(margin_loss_pct: float | None, target: float | None, tolerance: float | None) -> str | None:
+    """The trader's isolated-margin rule: aim for `target`% of margin lost at the stop, accept up to
+    `tolerance`% (trader: "it's okay if it goes to 55% or something"). Beyond the tolerance is a breach.
+    Returns within | over_target | breach, or None when the loss or the rule is unknown."""
+    if margin_loss_pct is None or target is None:
+        return None
+    limit = tolerance if tolerance is not None else target
+    if margin_loss_pct > limit + 1e-9:
+        return "breach"
+    return "over_target" if margin_loss_pct > target + 1e-9 else "within"
+
+
 def fmt_cap(leverage: float) -> str:
     """A leverage ceiling for display, floored to 0.01x: rounding up would print a value that breaks the rule."""
     return f"{math.floor(leverage * 100 + 1e-9) / 100:.2f}x"
@@ -44,7 +56,8 @@ class SizingInput:
     targets: tuple[float, ...] = ()
     max_risk_pct: float | None = None
     max_leverage: float | None = None
-    max_margin_loss_pct: float | None = None   # isolated: max loss on posted margin at the stop, percent
+    max_margin_loss_pct: float | None = None   # isolated: TARGET max loss on posted margin at the stop, percent
+    margin_loss_tolerance_pct: float | None = None  # accepted above the target; a breach only beyond this
     min_rr: float | None = None                # minimum reward:risk (gross) for the best target
     fee_share_warn: float = 0.20
     liq_buffer_warn: float = 1.5
@@ -77,6 +90,7 @@ class SizingResult:
     max_leverage_for_rule: float | None         # highest leverage that keeps margin loss within the limit
     targets: list[TargetRR]
     flags: list[tuple[str, str]] = field(default_factory=list)
+    max_leverage_for_tolerance: float | None = None  # highest leverage within the tolerance
 
 
 def infer_side(entry: float, stop: float) -> str:
@@ -182,11 +196,21 @@ def size_position(inp: SizingInput) -> SizingResult:
     loss_pct_of_notional = per_unit_loss / inp.entry * 100
     max_leverage_for_rule = (inp.max_margin_loss_pct / loss_pct_of_notional
                              if inp.max_margin_loss_pct is not None else None)
+    tol = inp.margin_loss_tolerance_pct
+    max_leverage_for_tolerance = tol / loss_pct_of_notional if tol is not None and inp.max_margin_loss_pct is not None else None
     margin_loss_pct = loss_pct_of_notional * inp.leverage if inp.leverage else None
-    if margin_loss_pct is not None and inp.max_margin_loss_pct is not None \
-            and margin_loss_pct > inp.max_margin_loss_pct + 1e-9:
+    status = margin_status(margin_loss_pct, inp.max_margin_loss_pct, tol)
+    if status == "breach" and tol is not None:
+        flags.append((CRITICAL, f"loss at stop is {margin_loss_pct:.1f}% of the posted margin, above your {tol:g}% "
+                                f"tolerance ({inp.max_margin_loss_pct:g}% target): use {fmt_cap(max_leverage_for_tolerance)} "
+                                f"or less ({fmt_cap(max_leverage_for_rule)} for the target)"))
+    elif status == "breach":
         flags.append((CRITICAL, f"loss at stop is {margin_loss_pct:.1f}% of the posted margin, above your "
                                 f"{inp.max_margin_loss_pct:g}% limit: use {fmt_cap(max_leverage_for_rule)} or less"))
+    elif status == "over_target":
+        flags.append((WARN, f"loss at stop is {margin_loss_pct:.1f}% of the posted margin: above your "
+                            f"{inp.max_margin_loss_pct:g}% target, within your {tol:g}% tolerance "
+                            f"({fmt_cap(max_leverage_for_rule)} meets the target)"))
 
     margin_required = None
     if inp.leverage:
@@ -230,12 +254,13 @@ def size_position(inp: SizingInput) -> SizingResult:
 
     return SizingResult(side, qty, qty_raw, notional, stop_fill, stop_distance_pct, per_unit_loss,
                         fee_per_unit, loss_at_stop, risk_pct, effective_leverage, margin_required,
-                        liq, liq_ratio, margin_loss_pct, max_leverage_for_rule, targets, flags)
+                        liq, liq_ratio, margin_loss_pct, max_leverage_for_rule, targets, flags,
+                        max_leverage_for_tolerance=max_leverage_for_tolerance)
 
 
 def exposure(entry: float, stop: float, risk_pct: float | None, leverage: float | None = None,
              margin_mode: str | None = None, mmr_rate: float = 0.005,
-             max_margin_loss_pct: float | None = None) -> dict:
+             max_margin_loss_pct: float | None = None, margin_loss_tolerance_pct: float | None = None) -> dict:
     """Equity-free exposure decomposition for a trade that risks a fixed % of equity.
 
     Everything is a percentage of equity, so it works without knowing the account size:
@@ -249,6 +274,8 @@ def exposure(entry: float, stop: float, risk_pct: float | None, leverage: float 
     out: dict = {"side": side, "stop_pct": stop_pct}
     if max_margin_loss_pct is not None:
         out["max_leverage_for_rule"] = max_margin_loss_pct / stop_pct
+        if margin_loss_tolerance_pct is not None:
+            out["max_leverage_for_tolerance"] = margin_loss_tolerance_pct / stop_pct
     notional_pct = None
     if risk_pct:
         notional_pct = risk_pct / stop_pct * 100
@@ -257,7 +284,9 @@ def exposure(entry: float, stop: float, risk_pct: float | None, leverage: float 
     if leverage:
         out["margin_loss_pct"] = stop_pct * leverage          # the trader's own calc: fee-free
         if max_margin_loss_pct is not None:
-            out["margin_loss_breach"] = out["margin_loss_pct"] > max_margin_loss_pct + 1e-9
+            status = margin_status(out["margin_loss_pct"], max_margin_loss_pct, margin_loss_tolerance_pct)
+            out["margin_loss_breach"] = status == "breach"           # beyond the tolerance (or the target if none)
+            out["margin_loss_over_target"] = status != "within"      # above the target, tolerated or not
         if notional_pct is not None:
             out["margin_pct"] = notional_pct / leverage
         if margin_mode in (None, "isolated"):

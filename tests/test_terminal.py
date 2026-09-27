@@ -11,7 +11,7 @@ import yaml
 
 from tradekb import analysis
 from tradekb.export import build_payload
-from tradekb.risk import SizingInput, exposure, fmt_cap, size_position
+from tradekb.risk import SizingInput, exposure, fmt_cap, margin_status, size_position
 from tradekb.store import load_kb
 from tradekb.validate import validate
 from tests.test_kb import REPO, KBTestCase
@@ -74,6 +74,25 @@ class ExposureTest(unittest.TestCase):
         self.assertLessEqual(float(fmt_cap(50 / stop_pct)[:-1]) * stop_pct, 50)
         res = size_position(SizingInput(entry=54.44, stop=51.02, risk_amount=100, leverage=8, max_margin_loss_pct=50))
         self.assertTrue(any("use 7.95x or less" in m for _, m in res.flags))
+
+    def test_margin_target_and_tolerance(self):
+        # trader, 2026-09-27: aim for 50% of margin at the stop, "it's okay if it goes to 55%"
+        self.assertEqual(margin_status(44.0, 50, 55), "within")
+        self.assertEqual(margin_status(50.3, 50, 55), "over_target")
+        self.assertEqual(margin_status(55.0, 50, 55), "over_target")
+        self.assertEqual(margin_status(55.1, 50, 55), "breach")
+        self.assertEqual(margin_status(50.3, 50, None), "breach")      # no tolerance: the target is the limit
+        self.assertIsNone(margin_status(None, 50, 55))
+        base = dict(entry=54.44, stop=51.02, risk_amount=100, max_margin_loss_pct=50, margin_loss_tolerance_pct=55)
+        at8 = size_position(SizingInput(leverage=8, **base))                # T-0006 at 8x: 50.3%
+        self.assertEqual([lvl for lvl, _ in at8.flags], ["WARN"])
+        self.assertIn("within your 55% tolerance", at8.flags[0][1])
+        self.assertEqual(fmt_cap(at8.max_leverage_for_tolerance), "8.75x")
+        at9 = size_position(SizingInput(leverage=9, **base))                # 56.5%
+        self.assertTrue(any(lvl == "CRITICAL" and "use 8.75x or less (7.95x for the target)" in m for lvl, m in at9.flags))
+        e = exposure(54.44, 51.02, 1.0, leverage=8, margin_mode="isolated", max_margin_loss_pct=50, margin_loss_tolerance_pct=55)
+        self.assertTrue(e["margin_loss_over_target"]); self.assertFalse(e["margin_loss_breach"])
+        self.assertAlmostEqual(e["max_leverage_for_tolerance"], 55 / (3.42 / 54.44 * 100))
 
     def test_cross_mode_has_no_isolated_liquidation(self):
         self.assertNotIn("liq_isolated", exposure(100, 98, 1.0, leverage=10, margin_mode="cross"))
@@ -141,12 +160,13 @@ class ReadinessAndRulesTest(KBTestCase):
         import yaml as _yaml
         prof = _yaml.safe_load((self.tmp / "profile" / "trader.yaml").read_text())
         prof["leverage"]["max_margin_loss_at_stop_pct"] = 50
+        prof["leverage"]["margin_loss_tolerance_pct"] = 55
         prof["risk"]["min_rr"] = 2.5
         (self.tmp / "profile" / "trader.yaml").write_text(_yaml.safe_dump(prof))
         self.write_trade("T-0001", result={"r": 1.0}, risk={"risk_amount": 100, "leverage": 25},
                          plan={"entry": 100, "stop": 97, "targets": [104]})
         warns = [i.msg for i in self.issues("WARN")]
-        self.assertTrue(any("above your 50% limit" in m for m in warns))
+        self.assertTrue(any("above your 55% tolerance (50% target)" in m for m in warns))  # 75% of margin
         self.assertTrue(any("below your 2.5R minimum" in m for m in warns))
 
 
@@ -191,6 +211,40 @@ class RuleComplianceTest(KBTestCase):
         self.assertEqual((rules["any_broken"]["n"], rules["any_broken"]["total"]), (1, -1.0))
         self.assertEqual([d["key"] for d in rules["definitions"]], ["top_down", "setup_valid", "risk_pct", "leverage", "min_rr", "stop"])
         self.assertIn("50% of margin", rules["definitions"][3]["rule"])
+
+
+class MarginToleranceRecordsTest(KBTestCase):
+    def test_validator_and_rule_check_use_the_tolerance(self):
+        prof = yaml.safe_load((self.tmp / "profile" / "trader.yaml").read_text())
+        prof["leverage"].update(max_margin_loss_at_stop_pct=50, margin_loss_tolerance_pct=55)
+        (self.tmp / "profile" / "trader.yaml").write_text(yaml.safe_dump(prof))
+        plan = {"entry": 54.44, "stop": 51.02, "targets": [66.10]}
+        self.write_trade("T-0001", plan=plan, risk={"risk_pct": 1.0, "leverage": 8}, result={"r": 3.41})   # 50.3%
+        self.write_trade("T-0002", plan=plan, risk={"risk_pct": 1.0, "leverage": 9}, result={"r": 3.41})   # 56.5%
+        msgs = [(i.level, i.where, i.msg) for i in self.issues() if "of the posted margin" in i.msg]
+        self.assertIn("INFO", [lvl for lvl, w, _ in msgs if w == "T-0001.yaml"])
+        self.assertTrue(any(lvl == "WARN" and w == "T-0002.yaml" and "55% tolerance" in m for lvl, w, m in msgs))
+        kb = load_kb()
+        checks = {r.trade.id: analysis.rule_checks(r, kb)["leverage"] for r in analysis.rows(kb, analysis.TAKEN)}
+        self.assertEqual(checks, {"T-0001": True, "T-0002": False})
+
+
+class GradeAndTrendTest(KBTestCase):
+    def test_trader_grade_is_text_and_groups(self):
+        self.write_trade("T-0001", result={"r": 4.12}, review={"mistakes": [], "behaviors": [], "trader_grade": "S"})
+        self.write_trade("T-0002", result={"r": -1.0}, review={"mistakes": [], "behaviors": [], "trader_grade": 5})
+        self.assertTrue(any("trader_grade must be" in i.msg for i in self.issues("ERROR")))
+        self.write_trade("T-0002", result={"r": -1.0})
+        groups = analysis.group(analysis.realized(load_kb()), "trader_grade")
+        self.assertEqual({k: len(v) for k, v in groups.items()}, {"S": 1, "(unknown)": 1})
+
+    def test_trend_alignment_from_regime_and_direction(self):
+        self.write_trade("T-0001", direction="short", plan={"entry": 100, "stop": 101, "targets": []}, regime=["bullish"], result={"r": 4.0})
+        self.write_trade("T-0002", direction="long", regime=["range", "bullish"], result={"r": 1.0})
+        self.write_trade("T-0003", direction="long", regime=["neutral"], result={"r": 1.0})
+        groups = analysis.group(analysis.realized(load_kb()), "trend")
+        self.assertEqual({k: [r.trade.id for r in v] for k, v in groups.items()},
+                         {"counter_trend": ["T-0001"], "with_trend": ["T-0002"], "(unknown)": ["T-0003"]})
 
 
 class AcknowledgedBreachTest(KBTestCase):

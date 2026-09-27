@@ -106,6 +106,7 @@ def cmd_size(kb: KB, args) -> int:
         max_risk_pct=num(dig(p, "risk.max_risk_per_trade_pct")),
         max_leverage=num(dig(p, "leverage.max_leverage")),
         max_margin_loss_pct=num(dig(p, "leverage.max_margin_loss_at_stop_pct")),
+        margin_loss_tolerance_pct=num(dig(p, "leverage.margin_loss_tolerance_pct")),
         min_rr=num(dig(p, "risk.min_rr")),
         fee_share_warn=rc["fee_share_warn"], liq_buffer_warn=rc["liq_buffer_warn"],
     )
@@ -130,7 +131,9 @@ def cmd_size(kb: KB, args) -> int:
     if res.margin_loss_pct is not None:
         print(f"| Loss on margin at stop (isolated) | {res.margin_loss_pct:.1f}% |")
     if res.max_leverage_for_rule is not None:
-        print(f"| Max leverage under your margin-loss rule | {fmt_cap(res.max_leverage_for_rule)} |")
+        print(f"| Max leverage for your {inp.max_margin_loss_pct:g}% margin-loss target | {fmt_cap(res.max_leverage_for_rule)} |")
+    if res.max_leverage_for_tolerance is not None:
+        print(f"| Max leverage within your {inp.margin_loss_tolerance_pct:g}% tolerance | {fmt_cap(res.max_leverage_for_tolerance)} |")
     if res.liquidation is not None:
         print(f"| Liquidation, {margin_mode} (approx.) | {res.liquidation:,.6g} "
               f"({res.liq_to_stop_ratio:.2f}x stop distance) |")

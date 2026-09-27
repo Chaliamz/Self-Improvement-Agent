@@ -19,7 +19,7 @@ from .store import KB, trade_number
 
 TOL = 1e-9
 SINGLE_VALUED = ("direction", "asset", "timeframe", "top_down", "strategy", "version", "entry_model",
-                 "leverage", "risk", "grade", "month", "session")
+                 "leverage", "risk", "grade", "trader_grade", "trend", "month", "session")
 MAGIC = {".png": b"\x89PNG", ".jpg": b"\xff\xd8", ".jpeg": b"\xff\xd8", ".gif": b"GIF8"}
 KB_DATA_RE = re.compile(r'<script id="kb-data" type="application/json">(.*?)</script>', re.S)
 CHARTS_RE = re.compile(r'<script id="kb-charts" type="application/json">(.*?)</script>', re.S)
@@ -99,6 +99,8 @@ def run(kb: KB, check_outputs: bool = True) -> Audit:
     # rule compliance: the numeric rules recomputed from raw fields, and the counts re-tallied
     prof = kb.profile or {}
     limit = _num((prof.get("leverage") or {}).get("max_margin_loss_at_stop_pct"))
+    tol = _num((prof.get("leverage") or {}).get("margin_loss_tolerance_pct"))
+    ceiling = tol if tol is not None else limit     # independent restatement: a breach is beyond the tolerance
     cap = _num((prof.get("risk") or {}).get("max_risk_per_trade_pct"))
     taken = [t for t in trades if t["status"] in ("closed", "open")]
     for t in trades:
@@ -115,7 +117,7 @@ def run(kb: KB, check_outputs: bool = True) -> Audit:
         elif None in (entry, stop, lev, limit) or not entry or entry == stop:
             want = None
         else:
-            want = abs(entry - stop) / entry * 100 * lev <= limit + 1e-9
+            want = abs(entry - stop) / entry * 100 * lev <= ceiling + 1e-9
         a.check(rc["leverage"] == want, f"{t['id']}: leverage rule {rc['leverage']} equals recompute {want}")
         rp = _num((t.get("risk") or {}).get("risk_pct"))
         want = False if "oversized_position" in tags else None if None in (rp, cap) else rp <= cap + 1e-9
