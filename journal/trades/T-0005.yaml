@@ -21,7 +21,7 @@ regime: [bullish]             # the 30m trend was still up into the sweep; the C
 
 strategy:
   id: supply-demand-structure
-  version: "1.5"                # retagged by CHG-004, CHG-005 (clarifications)
+  version: "1.6"                # retagged by CHG-004..006 (clarifications)
   experiment: null
   variant: null
 
@@ -78,7 +78,7 @@ evidence:
     - "Target: the 19:30 candle closed about 0.012383 and the 20:00 candle's low was about 0.012326, below 0.012406. Target hit about 4-4.5 hours after entry."
   interpreted:
     - "Every item of strategy v1.3's checklist passes here, where T-0004 failed items 3, 5 and 6."
-    - "The zone the trader drew (0.013492-0.013844) is not the sweep candle's wick-to-wick range (0.013412-0.013813); see strategy v1.5 open question 3."
+    - "The zone the trader drew (0.013492-0.013844) is not the sweep candle's wick-to-wick range (0.013412-0.013813). Trader (2026-09-27): 'T-0005 was the level that created the reversal, it wasn't a sweep candle.'"
     - "Trader, 2026-09-27: the new supply is drawn there because the sweep printed a bearish CH; the short is its retest. An FVG would make it stronger."
   hypotheses: []
   charts: [journal/charts/T-0005-pengu-30m-proper.png]

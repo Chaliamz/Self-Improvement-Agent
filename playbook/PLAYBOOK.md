@@ -4,15 +4,15 @@ Consolidated knowledge (system prompt §27). Every entry must cite the evidence 
 trade IDs, n, and the `./tj` output it rests on. An entry without evidence does not belong
 here; it belongs in a trade record's `evidence.hypotheses`.
 
-Status: **INITIALIZATION.** 5 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007), 1 missed (T-0002), 1 not
-taken (T-0005, counterfactual only). Overall (`./tj stats`): +2.81R expectancy, 95% CI [+0.81, +4.16], n=5, LOW
+Status: **INITIALIZATION.** 5 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007), 1 missed (T-0002), 2 not
+taken (T-0005, T-0008; counterfactual only). Overall (`./tj stats`): +2.81R expectancy, 95% CI [+0.81, +4.16], n=5, LOW
 tier. Five trades cannot separate skill from luck. Nothing below is established.
 
 ## Strategies
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.5 | unvalidated | 4 (T-0001, T-0004, T-0006, T-0007) | n=4: +2.77R point estimate, no CI below n=5 (LOW) |
+| supply-demand-structure | 1.6 | unvalidated | 4 (T-0001, T-0004, T-0006, T-0007) | n=4: +2.77R point estimate, no CI below n=5 (LOW) |
 | key-level-sr | 1.2 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW) |
 
 ## Established rules
@@ -32,14 +32,17 @@ _None._
   70.70 supply would have given about 4.75R (COUNTERFACTUAL, same 4h candle). n=1. Record both levels on
   future trades. Status: hypothesis (performance), rule (preference).
 - **Counter-trend trades.** The trader calls T-0007 (short at ATH, bullish bias) risky but worth it for a very
-  solid setup at 4.12R. `./tj stats --by trend`: with-trend n=3 (+3.64R), counter-trend n=2 (T-0004 -1.00R,
-  T-0007 +4.12R). The trend label is derived from the regime tag, so T-0004 counts as counter-trend against
-  its bullish 30m regime. Far too few to compare. Status: observation.
-- **A 5m CHoCH the 30m has not confirmed is consolidation, not a reversal.** Trader's diagnosis of T-0004; the
-  chart agrees (the 22:30 fill sat inside the bullish 22:00 30m candle). n=1. Now a rule in v1.3 (clarification,
-  trader-stated), so later trades test it. Status: hypothesis.
-- **Stops just beyond an obvious swing get swept before the move.** T-0004: stop 0.013478 above the 0.013447 spike
-  high, swept to about 0.013813, then the valid short formed there (T-0005). n=1. Status: hypothesis.
+  solid setup at 4.12R; graded like any other setup, "just a bit riskier" (2026-09-27). `./tj stats --by
+  trend`: with-trend n=3 (+3.64R), counter-trend n=2 (T-0004 -1.00R, T-0007 +4.12R). The trend label is derived
+  from the regime tag, so T-0004 counts as counter-trend against its bullish 30m regime. Far too few to
+  compare. Status: observation.
+- **A break inside the impulsive candle's range is consolidation, not a CH ("NOT CH").** Now a rule (v1.6
+  checklist item 3). Evidence: T-0004 taken on a 5m break inside the 30m candle range, -1.00R (false_ch); T-0008
+  a break inside the 4h candle range, recognised and skipped, -1.00R COUNTERFACTUAL. n=2 (1 realized). Whether
+  the filter pays is untested. Status: rule (stated); hypothesis (performance).
+- **Stop beyond the swing that created the confirmed CH.** Now a rule (v1.6 checklist item 5; trader: "yes
+  exactly"). T-0006 and T-0007 kept it; T-0004's stop sat beyond a high whose CH was never confirmed and was
+  swept. Status: rule (stated).
 - **Fees on tight-stop scalps.** T-0003's stop was 0.239%. With HYPOTHETICAL fees of 0.02-0.05% per side, 2.94R
   gross becomes 2.38-1.78R net, below the 2.5R minimum, and fee-free sizing would really risk 1.17-1.42%.
   Answered (trader, 2026-09-27): fees are inside the 1% risk and will be counted separately by the bot.
@@ -48,7 +51,9 @@ _None._
 ## Avoid
 Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules, not performance findings (n=1).
 - Entering on a lower-timeframe CHoCH that the 15m-30m has not confirmed (strategy v1.3 checklist item 3).
-- A stop just beyond the obvious swing where the liquidity rests: the valid entry forms there (item 5).
+- A stop beyond a swing whose CH is unconfirmed: that swing is liquidity (item 5; T-0004).
+- A "CH" that breaks only an internal level of a candle range: NOT CH (item 3). T-0008 was skipped for this,
+  and the drawn short would have lost 1R (COUNTERFACTUAL).
 - Margin loss at the stop beyond the tolerance: target 50%, fine up to about 55%, margin call at 80% (trader,
   2026-09-27). T-0004: 20x on a 3.84% stop = 76.7% of margin (13.03x for the target, 14.33x at most);
   isolated liquidation about 0.013561 sat only 1.17x the stop distance away (`./tj show T-0004`).
@@ -60,14 +65,16 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
 - Fresh beats mitigated: "high probability when it's not retested"; "the more a supply/demand level
   mitigates the weaker it becomes". The reverse of S/R levels and trendlines, where at least 3 reactions
   are preferred.
-- Open: does a zone traded through, reclaimed and retested (T-0006) count as fresh? (v1.4 question 9)
+- A zone traded through and reclaimed with a CH is a reclaim level, not a mitigated zone (T-0006); T-0007's
+  supply is the mitigation example (trader, 2026-09-27).
+- The zone is the level that created the reversal/CH, not a sweep candle (T-0005, T-0007).
 
 ## High-quality setups
 _None._
 
 ## Execution errors
-_None recurring (threshold 3). Source of truth: `./tj errors`: ignored_htf, stop_in_liquidity and excessive_leverage
-x1 each (T-0004), skipped_top_down x1 (T-0003)._ The top-down rule was broken in both trades where it was recorded
+_None recurring (threshold 3). Source of truth: `./tj errors`: ignored_htf, stop_in_liquidity, excessive_leverage
+and false_ch x1 each (T-0004), skipped_top_down x1 (T-0003)._ The top-down rule was broken in both trades where it was recorded
 (T-0003, T-0004; terminal Rule compliance). Watch item, not yet a pattern.
 
 ## Risk rules
@@ -88,6 +95,8 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-09-27 | supply-demand-structure v1.6 clarification (CHG-006): 4H candle range / NOT CH rule (item 3), stop beyond the swing that created the confirmed CH (item 5), S grading (3.5R+), counter-trend graded normally, reclaim is not mitigation, zones are reversal/CH origins, bearish continuation close rule. No rule changed | T-0008 (avoided); trader's answers |
+| 2026-09-27 | Records corrected: T-0004 stop/leverage confirmed and false_ch added; T-0006 not mitigated (setup 4 -> 5); T-0005 zone origin; T-0007 item 5 passes | trader's answers |
 | 2026-09-27 | supply-demand-structure v1.5 clarification (CHG-005): 30m potential CH (close beyond the previous opposite candle), strongest-level target preferred, divergence on wicks, no fixed tolerance for equal highs/lows, margin rule 50% target / 55% tolerance, entry models supply_level / demand_level, counter-trend context. No rule changed | trader's answers; T-0006, T-0007 |
 | 2026-09-27 | key-level-sr v1.2 clarification (CHG-002): what counts as a reaction (rejection, break-retest-continue, or deviation) | trader's answer |
 | 2026-09-27 | T-0006 corrected: the order was 66.10 (not 62.64); risk rescored 4 -> 5 under the clarified margin rule | trader's correction |

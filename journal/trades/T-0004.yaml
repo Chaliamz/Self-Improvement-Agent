@@ -21,13 +21,13 @@ regime: [bullish]             # 30m: rally from about 0.0106 (Jan 4) and a fresh
 
 strategy:
   id: supply-demand-structure
-  version: "1.5"                # retagged by CHG-004, CHG-005 (clarifications)
+  version: "1.6"                # retagged by CHG-004..006 (clarifications)
   experiment: null
   variant: null
 
 plan:
   entry: 0.012980             # position-tool label
-  stop: 0.013478              # position-tool label: just above the 22:00 spike high (about 0.013447)
+  stop: 0.013478              # position-tool label, confirmed as the real stop (trader, 2026-09-27): just above the 22:00 spike high (about 0.013447)
   targets: [0.010954]         # position-tool label
   invalidation: "Price back above the spike high: stop just beyond it."
   entry_model: null           # a 5m CHoCH below the supply, not at a zone: no valid entry model (trader)
@@ -41,7 +41,7 @@ risk:
   account_equity: null
   risk_amount: null
   risk_pct: 1.0               # trader: "Risk: 1%"
-  leverage: 20                # trader: "20x due to low % invalidation"
+  leverage: 20                # trader: "20x due to low % invalidation"; confirmed as the real setting (2026-09-27)
   margin_mode: isolated       # the trader's standing rule
   size: null
   notional: null
@@ -104,7 +104,7 @@ review:
   setup_validity: invalid
   followed_plan: true
   loss_type: D
-  mistakes: [ignored_htf, stop_in_liquidity, excessive_leverage]
+  mistakes: [ignored_htf, stop_in_liquidity, excessive_leverage, false_ch]   # false_ch: the trader's own diagnosis, a 5m break inside the 30m candle range (named 2026-09-27)
   behaviors: [respected_invalidation]
   outside_control: []
   lesson: >-

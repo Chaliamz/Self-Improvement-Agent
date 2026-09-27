@@ -21,7 +21,7 @@ regime: [bullish]             # trader: "Our bias over here was bullish since we
 
 strategy:
   id: supply-demand-structure
-  version: "1.5"
+  version: "1.6"                # retagged by CHG-006 (clarification)
   experiment: null
   variant: null
 
@@ -94,7 +94,7 @@ evidence:
   interpreted:
     - "The chart matches the trader's sequence: higher high, then a close below the previous higher low (bearish CH), then a supply at the ATH left untouched until the sell limit."
     - "Regular bearish divergence into the ATH, read on wicks as the trader specifies."
-    - "Checklist v1.5: 1 pass (4h supply from the CH, unretested); 2 pass on the chart (the ATH took out the Aug 5 high; the trader frames it as a new higher high, not a sweep); 3 pass (4h CH by close, Aug 18-19); 4 pass (limit at the zone's lower edge); 5 as in T-0006: the stop is beyond the zone and about 0.8 above the swing that created the CH (open question on stop placement); 6 pass (12.3% of margin; 4.12R); 7 pass."
+    - "Checklist (v1.5, re-checked under v1.6): 1 pass (4h supply from the CH, unretested); 2 pass on the chart (the ATH took out the Aug 5 high; the trader frames it as a new higher high, not a sweep); 3 pass (4h CH by close, Aug 18-19); 4 pass (limit at the zone's lower edge); 5 pass (a bit above the swing that created the CH, the trader's stop rule; the zone sat close to the swing high and 'could be consider as an inducement', hence the stop above the high); 6 pass (12.3% of margin; 4.12R); 7 pass."
     - "The fill margin is thin: the wick clears the limit by about 1 point (one pixel). On a CFD, spread and feed differences between the chart and the broker could decide a fill this close; the trader reports the fill."
     - "Counter-trend: a short against the bullish ATH bias. The trader names it risky and accepted it for the setup quality and the 4.12R."
   hypotheses:

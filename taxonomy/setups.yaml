@@ -67,6 +67,10 @@ tags:
     label: Supply level (S/D)
     definition: "Drawn where price created a bearish CH; stronger with an FVG; high probability when not retested (mitigated). T-0005 is the trader's example."
     introduced_in: "trader statement 2026-09-27 (T-0005)"
+  candle_range:
+    label: 4H candle range (candle range)
+    definition: "The high-to-low range of the impulsive candle that made the swing (the trader's cyan lines). Price that stays inside it is consolidation. A pullback needs a CLOSE beyond the opposite end (below a bullish candle's low, above a bearish candle's high); a break of a level inside the range is NOT a CH (trader, T-0008; the same rule on the 30m in T-0004)."
+    introduced_in: T-0008
   fvg:
     label: Fair value gap (FVG)
     definition: "A gap left by an impulsive move. A supply/demand level that formed an FVG with its CH is stronger; T-0001's demand kept an unfilled FVG (trader, 2026-09-27)."

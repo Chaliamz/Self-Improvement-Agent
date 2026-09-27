@@ -21,7 +21,7 @@ regime: [range, bullish]      # 4h: range about 51-77 since June; trader's bias 
 
 strategy:
   id: supply-demand-structure
-  version: "1.5"                # retagged by CHG-005 (clarification)
+  version: "1.6"                # retagged by CHG-005, CHG-006 (clarifications)
   experiment: null
   variant: null
 
@@ -98,8 +98,8 @@ evidence:
   interpreted:
     - "The 1h shows the trader's sequence: demand traded through (sweep to about 51.12), bullish CH by close above about 56.00, demand reclaimed, retest into the zone, long. The same CH line is drawn on the 4h."
     - "The 1h RSI shows a regular bullish divergence into the Aug 2 sweep low (lower low in price, higher low in RSI). It supports the trader's 4h divergence; the 4h reading itself is not visible in the screenshots."
-    - "Checklist v1.4: items 1-4 pass (4h demand; sweep below it; CH by close on 1h and 4h; entry at the zone on the retest). Item 6 passes: 7x (44.0%) and 8x (50.3%) are both within the 55% tolerance, and the 66.10 order gives 3.41R (the trader confirmed 66.10; 62.64 was not the target). Item 5 is ambiguous: the stop is beyond the zone but only about 0.10 below the obvious Aug 2 low (strategy v1.5 open question 5). Item 7 passes (no entry at an inducement)."
-    - "The demand had already been traded through (Jul 30-Aug 2) before the Aug 7 entry. By the trader's own freshness rule it was a mitigated zone; the trade is a reclaim-and-retest of it (strategy v1.5 open question 4)."
+    - "Checklist (v1.4, re-checked under v1.6): items 1-4 pass (4h demand; sweep below it; CH by close on 1h and 4h; entry at the zone on the retest). Item 6 passes: 7x (44.0%) and 8x (50.3%) are both within the 55% tolerance, and the 66.10 order gives 3.41R (the trader confirmed 66.10; 62.64 was not the target). Item 5 passes: the stop sits a bit below the swing that created the confirmed CH (the Aug 2 low), the trader's stop rule ('yes exactly', 2026-09-27). Item 7 passes (no entry at an inducement)."
+    - "The demand had been traded through (Jul 30-Aug 2) before the Aug 7 entry. Trader (2026-09-27): 'on T-0006 there wasn't any mitigation, it was a reclaim level + CH.' My earlier reading of it as a mitigated zone was wrong and is withdrawn."
     - "COUNTERFACTUAL: a TP at the supply's lower edge (70.70) would have filled in the same Aug 19 4h candle: about +4.75R instead of +3.41R. One trade; the counterfactual is only as good as that single path."
   hypotheses:
     - "Targeting the strongest opposing level (here the 70.70 supply) instead of a nearer one may raise R per winner without a large drop in hit rate. The trader now states the preference (2026-09-27); whether it pays is untested (n=1)."
@@ -107,7 +107,7 @@ evidence:
 
 review:
   scores:
-    setup: 4                  # demand + sweep + CH by close + reclaim + retest; the zone was already mitigated
+    setup: 5                  # demand + sweep + CH by close + reclaim + retest (rescored 2026-09-27: a reclaim level + CH, not a mitigated zone)
     context: 4                # 4h to 1h top-down; the 4h bias was mixed (June bearish CH), which the trader named
     execution: 5              # limit at the demand on the retest, as planned
     risk: 5                   # 1% risk, stop at the structural invalidation, 7-8x within the 55% tolerance (rescored 2026-09-27 after the trader's clarification)

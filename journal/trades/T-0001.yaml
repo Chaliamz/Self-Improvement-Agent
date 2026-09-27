@@ -21,7 +21,7 @@ regime: [range, bullish]      # range = trader's "choppy conditions" during the 
 
 strategy:
   id: supply-demand-structure
-  version: "1.5"            # retagged by CHG-001..005 (clarifications)
+  version: "1.6"            # retagged by CHG-001..006 (clarifications)
   experiment: null
   variant: null
 
@@ -78,6 +78,9 @@ journal:
     Stop placement (trader): "the liquidity level which reclaimed support level from left ... in case
     price would reverse back there and prices moves lower or enters a consolidation phase."
     Leverage check (trader): 3.14% x 10x = 31.4% loss on margin at the stop, inside the 50% rule.
+    Trader, 2026-09-27: "Overall, market was bearish, we had just seen 4H reversal as a confirmation +
+    confluences and we executed in that way." On stops at liquidity: "we wait for them to break-sweep
+    (Liquidity Sweep) and reclaim level so we grab the retest. Perfect example was the AAVEUSDT."
     TP hit. Trader stated R:R 4.57. Trader stated the method: supply/demand levels + price action /
     market structure, with liquidity levels as confluences; asked for these to be memorised.
 
@@ -125,6 +128,6 @@ review:
     and extreme-demand entries separately. The stop sat at a liquidity level from the left that
     had been reclaimed as support. A return there would have invalidated the reclaim (reversal lower
     or consolidation), so the stop protects the reclaim thesis, not the whole demand zone.
-  actionable_change: "Process only: define which stop candidate the bot picks when several exist (strategy v1.2, open question 2)."
+  actionable_change: "Answered 2026-09-27: the stop goes a bit beyond the swing that created the confirmed CH; at liquidity levels, wait for the sweep and reclaim and take the retest (this trade is the trader's example)."
   strategy_change: "no"
   evidence_strength: low

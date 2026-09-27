@@ -113,3 +113,30 @@ changes:
       50% target with a 55% tolerance, so the validator, tj size and rule compliance flag a breach only beyond
       55%. T-0001, T-0002, T-0004, T-0005, T-0006 retagged 1.5; T-0007 recorded at 1.5.
     resulting_version: "1.5"
+  - id: CHG-006
+    kind: clarification
+    date: 2026-09-27
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-27, on the POL trade they avoided (T-0008): "witness on 4H time frame the bullish candle and
+      cyan lines. this is the high. to form a pull back from that price it had to break the lowest line and close
+      below ... it was a consolidation range. Pullback formed on bearish candles which created that red line which
+      is definitely not a CH". Answers: S setup = "proper confluences, clear confirmations, sniper entries leading
+      to TP and a high RR (3.5RR and higher)"; counter-trend "graded like any other setup. it's just a bit riskier";
+      T-0004's stop and 20x were real; stop beyond the swing that created the confirmed CH: "yes exactly"; stops:
+      "we place SL a bit lower on swing low/higher on lower high ... on liquidity level ... we wait for them to
+      break-sweep (Liquidity Sweep) and reclaim level so we grab the retest. Perfect example was the AAVEUSDT";
+      "on T-0006 there wasn't any mitigation, it was a reclaim level + CH. Mitigation formed on T-0007"; "T-0005 was
+      the level that created the reversal, it wasn't a sweep candle. T-0007 that level created the CH, it was close
+      to swing high, it could be consider as an inducement as well, that's the reason we places SL above the swing
+      high"; bearish continuation: "Lower Low has to close below the previous low (including the wick of previous
+      low)".
+    fields: [timeframe_alignment, market_structure, trend_context, grading, zones.definition, zones.freshness,
+             entry_models.supply_level, entry_models.reclaim, stop_model, checklist, common_mistakes, open_questions]
+    note: >-
+      Rules already in force, now written down: the candle-range / NOT CH rule (checklist item 3), the stop rule
+      (item 5), S grading. Records corrected to the answers: T-0004 (stop and leverage confirmed; false_ch added,
+      matching the trader's own "30M consolidation" diagnosis), T-0005 (zone origin), T-0006 (not mitigated; setup
+      rescored 4 -> 5), T-0007 (item 5 passes). T-0001, T-0002, T-0004-T-0007 retagged 1.6; T-0008 recorded at 1.6.
+    resulting_version: "1.6"

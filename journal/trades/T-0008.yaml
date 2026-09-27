@@ -1,0 +1,106 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0008
+status: not_taken
+opened: 2026-09-25            # the date the drawn short would have filled (the Sep 25 ~08:00 1h candle, UTC+3)
+closed: null
+asset: "POLUSDT"
+market: "crypto perp (BloFin)"
+direction: "short"
+session: null
+timeframes:
+  htf: "4h"
+  execution: "1h"             # trader: "we could jump to (2) 1H time frame"
+  chain: ["4h", "1h"]
+  top_down: true              # the 4h structure read is what rejected the trade
+
+setups: [candle_range, supply_level]
+regime: [bullish]             # 4h: higher highs; the Sep 23 drop stayed inside the Sep 18 candle range
+
+strategy:
+  id: supply-demand-structure
+  version: "1.6"
+  experiment: null
+  variant: null
+
+plan:
+  entry: 0.11071              # position-tool label: bottom of the red supply box
+  stop: 0.11355               # position-tool label: above the supply / Sep 23 high
+  targets: [0.10105]          # position-tool label
+  invalidation: "Price back above the supply (0.11355)."
+  entry_model: supply_level
+  confluences:
+    - "Supply level (red box) on the 1h/4h"
+  confirmations:
+    - "None: the red line was NOT a CH. No 4h close below the 4H candle range; a new higher high followed."
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # the trader's standing rule; this trade was not taken
+  leverage: null
+  margin_mode: isolated
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits: []
+  fees: null
+  duration_minutes: null
+
+result:
+  pnl: null
+  r: null
+  hypothetical_r: -1.0        # COUNTERFACTUAL: the 0.11071 short fills (Sep 25 ~08:00), the 0.11355 stop is hit (~15:00) before the target
+
+journal:
+  before: |
+    Recorded 2026-09-27 from the trader's review (the trade was never taken). Trader: "witness on 4H time frame
+    the bullish candle and cyan lines. this is the high. to form a pull back from that price it had to break the
+    lowest line and close below. in that case that would be a pull back. In conclusion, it was a consolidation
+    range. Pullback formed on bearish candles which created that red line which is definitely not a CH and
+    watching this chart, it formed a new Higher High (HH)."
+  during: ""
+  after: |
+    Trader: "If there was a pullback and would see a true CH for potential short, we could jump to (2) 1H time
+    frame. Red box (supply level) would be the perfect spot to short and that setup would definitely be perfectly
+    S setup meeting criteria and getting 3.4RR. Since that never happened and didn't meet the criteria, we avoided
+    that trade and the choice was wise. We avoided the L."
+
+evidence:
+  observed:
+    - "BloFin POLUSDT perpetual, 4h and 1h, chart time UTC+3, Sep 2026 (the charts end at the live candle on Sep 27). Position tool on both: entry 0.11071, stop 0.11355, target 0.10105 (tj: 3.40R planned, stop distance 2.565%)."
+    - "Prices read from chart pixels, calibrated on 24 axis ticks (max residual 0.000015); position-tool labels agree to within 0.00013. 4h candles read one by one (about 12 px each); the dotted live-price line and the drawing labels were masked."
+    - "Cyan lines (4H candle range): about 0.10945 and 0.10073, the range of the Sep 18 ~15:00 bullish 4h candle (about 0.10061-0.10936)."
+    - "Sep 18-21: consolidation inside that range (lows about 0.1025 on Sep 19-20). Red dashed 'NOT CH' line about 0.10242 at those lows."
+    - "Sep 21: breakout above the range to about 0.11446 (a new high). Sep 23 ~07:00 4h candle about 0.11203 -> 0.10702 (high about 0.11327): the origin of the red supply box, about 0.11072-0.11323."
+    - "Sep 23-24 sell-off: 4h closes about 0.10098, 0.10110, 0.10106, 0.10172, 0.10139, all above the 0.10073 range low; wicks to about 0.0998. It closed below the 0.10242 red line but never below the candle range."
+    - "Sep 24-27: rally to a new higher high, about 0.11746 on Sep 25 and about 0.1214 on Sep 27."
+    - "COUNTERFACTUAL sequence: the first 1h high above 0.11071 is about 0.11166 at Sep 25 ~08:00 (4h: the ~07:00 candle, high about 0.11240); the first above 0.11355 is about 0.11364 at ~15:00 (4h: the ~11:00 candle, high about 0.11475). Lowest price between: about 0.1092 on the 4h; the 0.10105 target was never approached."
+  interpreted:
+    - "The chart matches the trader's reading: the drop that broke the red line never closed below the Sep 18 candle range, so by the trader's rule it was consolidation inside a bullish structure, not a CH. The higher high that followed confirms it."
+    - "Checklist v1.6: item 3 fails (no CH by close beyond the candle range), so the trade is invalid regardless of the other items. Items 1, 4, 5 and 6 would have passed (supply level, entry at its edge, stop above it, 3.40R)."
+    - "This is the mirror image of T-0004: there a 5m break inside the 30m candle range was taken as a CH (-1R); here the same kind of break inside the 4h candle range was recognised as NOT CH and skipped. Had it been taken: -1R (counterfactual)."
+  hypotheses:
+    - "Breaks that stay inside the impulsive candle's range are consolidation; skipping them avoids losses like T-0004 (n=2: one taken -1R, one avoided with a -1R counterfactual)."
+  charts: [journal/charts/T-0008-pol-4h.png, journal/charts/T-0008-pol-1h.png]
+
+review:
+  scores: {setup: null, context: null, execution: null, risk: null, management: null}
+  trader_grade: null          # "would be perfectly S" only if a true CH had formed; it did not
+  setup_validity: invalid
+  followed_plan: true         # the plan is the checklist: no CH, no trade
+  loss_type: null
+  mistakes: []
+  behaviors: [avoided_low_quality, followed_htf, did_top_down]
+  outside_control: []
+  lesson: >-
+    No CH, no trade. A break of an internal level that does not close beyond the impulsive candle's range is
+    consolidation ("NOT CH"). The supply short at 3.40R would have been stopped in about 7 hours: -1R avoided
+    (COUNTERFACTUAL).
+  actionable_change: null
+  strategy_change: "no"
+  evidence_strength: low

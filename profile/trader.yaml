@@ -39,6 +39,7 @@ instruments:                          # list of markets/assets traded
   - "PENGUUSDT perpetual (BloFin)"
   - "HYPEUSDT perpetual (Bybit)"
   - "S&P 500 index CFD, SPX500 (Capital.com)"
+  - "POLUSDT perpetual (BloFin)"
 sessions: null                        # the trader's own session names
 timeframes:                           # notation: m minutes, h hours, D days, W weeks, M months
   swing:
@@ -82,15 +83,18 @@ terminology:
   I became the liquidity: "My stop sat in the liquidity that price swept before reversing (T-0004)."
   divergence: "Regular bullish: price LL, RSI HL. Regular bearish: price HH, RSI LH. Hidden bullish: price HL, RSI LL. Hidden bearish: price LH, RSI HH. Just a confluence; the higher the timeframe, the stronger."
   supply/demand level: "Drawn where price created a CH (bearish: supply, bullish: demand), stronger with an FVG: 'we draw supply demand levels which form a FVG +CH'."
-  mitigation: "Price returning into a supply/demand level. Unmitigated = high probability; the more it mitigates, the weaker it becomes."
+  mitigation: "Price returning into a supply/demand level. Unmitigated = high probability; the more it mitigates, the weaker it becomes. T-0007's supply is the example; a zone traded through and reclaimed with a CH is a reclaim level, not mitigation (T-0006)."
   FVG: "Fair value gap. Strengthens the supply/demand level whose move left it."
   inducement: "Equal highs/lows resting liquidity. 'AVOID Inducements at all costs'."
   level validity: "S/R levels and trendlines: at least 3 reactions preferred. Not for S/D levels (fewer mitigations = stronger)."
   reaction: "Not knowable in advance: a level is key if traders react to it. A touch that rejects, a break-retest-continue, or a deviation (break, retest, fail, level lost again). Mostly deviations, so the retest is traded for continuation."
   equal highs/lows: "No fixed tolerance; they may take longer to form. Still a liquidity level likely to be swept."
   potential CH (30m): "A 30m candle closes below the previous bullish 30m candle's low (bearish), or above the previous bearish 30m candle's high (bullish)."
-  S setup: "The trader's grade for a very solid setup (T-0007). The full scale is not yet stated."
-  counter-trend: "Trading against the HTF trend (T-0007: short at ATH levels). Risky; taken because the setup was very solid and paid 4.12R."
+  S setup: "Proper confluences, clear confirmations, a sniper entry that runs to TP, and a high R:R (3.5R or more) (trader, 2026-09-27). T-0007. Grades below S not stated."
+  4H candle range: "The range of the impulsive candle that made the high/low (cyan lines). Inside it = consolidation. A pullback must CLOSE beyond its opposite end."
+  NOT CH: "A break of a level inside a candle range. Consolidation, not a change of character (T-0008)."
+  pullback: "From a high, price must break and CLOSE below the low of the candle range; otherwise it is consolidation (trader, T-0008)."
+  counter-trend: "Trading against the HTF trend (T-0007: short at ATH levels). Graded like any other setup; just a bit riskier (trader, 2026-09-27)."
 
 # Where each resolved value came from: {path: "stated 2026-09-26 in T-0003 review"}
 sources:
@@ -108,6 +112,7 @@ sources:
   risk.fees_inside_risk: "Trader, 2026-09-27: 'Everything is inside them ... When we open the AI Bot we will count them separately.'"
   instruments.HYPEUSDT: "T-0006 chart (Bybit HYPEUSDT perpetual), 2026-09-27"
   instruments.SPX500: "T-0007 chart (Capital.com S&P 500 index CFD, 4h), 2026-09-27"
+  instruments.POLUSDT: "T-0008 charts (BloFin POLUSDT perpetual, 4h and 1h), 2026-09-27"
   leverage.margin_loss_tolerance_pct: "Trader, 2026-09-27: 'since margin call occurs on 80% i prefer to adjust it until 50%, it's okay if it goes to 55% or something'"
   leverage.margin_call_at_margin_loss_pct: "Trader, 2026-09-27: 'margin call occurs on 80%'"
   leverage.margin_mode: "Trader: 'which means I use an isolated margin', 2026-09-26"
