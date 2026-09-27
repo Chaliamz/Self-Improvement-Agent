@@ -57,7 +57,8 @@ addEventListener("load", () => {
     setTimeout(() => {
       const panel = document.getElementById("panel-" + id), de = document.documentElement;
       out.tabs[id] = { kids: panel.children.length, svg: panel.querySelectorAll("svg").length,
-                       rows: panel.querySelectorAll("tbody tr").length, overflow: de.scrollWidth - de.clientWidth };
+                       rows: panel.querySelectorAll("tbody tr").length, overflow: de.scrollWidth - de.clientWidth,
+                       connect: panel.querySelectorAll("path.connect").length };
       step();
     }, 300);
   };
@@ -110,6 +111,7 @@ class RenderTest(unittest.TestCase):
         tabs = self.results[1280]["out"]["tabs"]
         self.assertGreaterEqual(tabs["overview"]["svg"], 3, "overview: cumulative R, distribution, R per trade")
         self.assertGreaterEqual(tabs["performance"]["svg"], 3, "performance: group bars and two scatters")
+        self.assertEqual(tabs["performance"]["connect"], 1, "process score vs R: points joined by one zero-split line")
         self.assertGreaterEqual(tabs["journal"]["rows"], 1)
 
     def test_backgrounds_and_trade_dialogs(self):

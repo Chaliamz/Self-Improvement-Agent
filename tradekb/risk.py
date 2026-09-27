@@ -16,10 +16,16 @@ beyond liquidation.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from decimal import ROUND_FLOOR, Decimal
 
 CRITICAL, WARN, NOTE = "CRITICAL", "WARN", "NOTE"
+
+
+def fmt_cap(leverage: float) -> str:
+    """A leverage ceiling for display, floored to 0.01x: rounding up would print a value that breaks the rule."""
+    return f"{math.floor(leverage * 100 + 1e-9) / 100:.2f}x"
 
 
 @dataclass(frozen=True)
@@ -180,7 +186,7 @@ def size_position(inp: SizingInput) -> SizingResult:
     if margin_loss_pct is not None and inp.max_margin_loss_pct is not None \
             and margin_loss_pct > inp.max_margin_loss_pct + 1e-9:
         flags.append((CRITICAL, f"loss at stop is {margin_loss_pct:.1f}% of the posted margin, above your "
-                                f"{inp.max_margin_loss_pct:g}% limit: use {max_leverage_for_rule:.1f}x or less"))
+                                f"{inp.max_margin_loss_pct:g}% limit: use {fmt_cap(max_leverage_for_rule)} or less"))
 
     margin_required = None
     if inp.leverage:

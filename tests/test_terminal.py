@@ -11,7 +11,7 @@ import yaml
 
 from tradekb import analysis
 from tradekb.export import build_payload
-from tradekb.risk import SizingInput, exposure, size_position
+from tradekb.risk import SizingInput, exposure, fmt_cap, size_position
 from tradekb.store import load_kb
 from tradekb.validate import validate
 from tests.test_kb import REPO, KBTestCase
@@ -22,6 +22,16 @@ TEMPLATE = REPO / "templates" / "terminal.html"
 
 @unittest.skipUnless(NODE, "node not installed")
 class InlineScriptTest(unittest.TestCase):
+    def test_leverage_cap_never_rounds_up(self):
+        text = TEMPLATE.read_text(encoding="utf-8")
+        line = re.search(r"^const fmtCap = .*?;", text, re.M).group(0)
+        cases = [50 / (3.42 / 54.44 * 100), 50 / (0.498 / 12.98 * 100), 50 / 6.25, 50 / 3.14]
+        script = "const isNum = x => typeof x === 'number' && isFinite(x);\n" + line + f"\nconsole.log(JSON.stringify({json.dumps(cases)}.map(fmtCap)));"
+        out = subprocess.run([NODE, "-e", script], capture_output=True, text=True, timeout=30)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertEqual(json.loads(out.stdout), [fmt_cap(x) for x in cases])  # JS and Python agree
+        self.assertEqual(json.loads(out.stdout), ["7.95x", "13.03x", "8.00x", "15.92x"])
+
     def test_inline_script_parses(self):
         text = TEMPLATE.read_text(encoding="utf-8")
         scripts = re.findall(r"<script>(.*?)</script>", text, re.S)
@@ -56,6 +66,14 @@ class ExposureTest(unittest.TestCase):
         messages = " ".join(m for _, m in res.flags)
         self.assertIn("above your 50% limit", messages)
         self.assertIn("below your 5R minimum", messages)
+
+    def test_cap_display_is_floored_and_obeys_the_rule(self):
+        # T-0006: 6.282% stop, cap 7.959x. Printing "8.0x" would invite a 50.3% margin loss.
+        stop_pct = 3.42 / 54.44 * 100
+        self.assertEqual(fmt_cap(50 / stop_pct), "7.95x")
+        self.assertLessEqual(float(fmt_cap(50 / stop_pct)[:-1]) * stop_pct, 50)
+        res = size_position(SizingInput(entry=54.44, stop=51.02, risk_amount=100, leverage=8, max_margin_loss_pct=50))
+        self.assertTrue(any("use 7.95x or less" in m for _, m in res.flags))
 
     def test_cross_mode_has_no_isolated_liquidation(self):
         self.assertNotIn("liq_isolated", exposure(100, 98, 1.0, leverage=10, margin_mode="cross"))

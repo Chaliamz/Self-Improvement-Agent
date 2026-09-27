@@ -7,7 +7,7 @@ import sys
 
 from . import analysis, report
 from .model import num
-from .risk import CRITICAL, SizingInput, size_position
+from .risk import CRITICAL, SizingInput, fmt_cap, size_position
 from .stats import compare
 from .store import KB, KBError, create_trade, dig, load_kb
 from .validate import validate
@@ -130,7 +130,7 @@ def cmd_size(kb: KB, args) -> int:
     if res.margin_loss_pct is not None:
         print(f"| Loss on margin at stop (isolated) | {res.margin_loss_pct:.1f}% |")
     if res.max_leverage_for_rule is not None:
-        print(f"| Max leverage under your margin-loss rule | {res.max_leverage_for_rule:.1f}x |")
+        print(f"| Max leverage under your margin-loss rule | {fmt_cap(res.max_leverage_for_rule)} |")
     if res.liquidation is not None:
         print(f"| Liquidation, {margin_mode} (approx.) | {res.liquidation:,.6g} "
               f"({res.liq_to_stop_ratio:.2f}x stop distance) |")

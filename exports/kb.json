@@ -1,5 +1,5 @@
 {
-  "fingerprint": "09b084b422321157",
+  "fingerprint": "b90ad312b6c94fc6",
   "schema_version": 1,
   "tool_version": "1.0.0",
   "phase": {
@@ -3278,13 +3278,13 @@
     "unreviewed": []
   },
   "build": {
-    "fingerprint": "09b084b422321157",
-    "generated_at": "2026-09-26T20:32:24+00:00",
+    "fingerprint": "b90ad312b6c94fc6",
+    "generated_at": "2026-09-27T07:43:05+00:00",
     "validation": [
       {
         "level": "INFO",
         "where": "T-0004.yaml",
-        "msg": "RISK: stop distance x leverage = 76.7% of the posted margin, above your 50% limit (max 13.0x for this stop) (acknowledged: tagged excessive_leverage)"
+        "msg": "RISK: stop distance x leverage = 76.7% of the posted margin, above your 50% limit (max 13.03x for this stop) (acknowledged: tagged excessive_leverage)"
       },
       {
         "level": "INFO",

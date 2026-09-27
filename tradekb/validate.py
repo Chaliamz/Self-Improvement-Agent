@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 from . import model
 from .model import COUNTERFACTUAL, REALIZED, derive, num
-from .risk import liquidation_price
+from .risk import fmt_cap, liquidation_price
 from .store import KB, STATUSES, TRADE_ID_RE, Trade, as_date, dig, unresolved
 
 ERROR, WARN, INFO = "ERROR", "WARN", "INFO"
@@ -223,7 +223,7 @@ def _check_risk(t: dict, kb: KB, where: str, add: _Sink) -> None:
         margin_loss = abs(entry - stop) / entry * 100 * leverage
         if margin_loss > max_margin_loss + 1e-9:
             breach("excessive_leverage", f"RISK: stop distance x leverage = {margin_loss:.1f}% of the posted margin, above your "
-                                         f"{max_margin_loss:g}% limit (max {max_margin_loss / (abs(entry - stop) / entry * 100):.1f}x "
+                                         f"{max_margin_loss:g}% limit (max {fmt_cap(max_margin_loss / (abs(entry - stop) / entry * 100))} "
                                          f"for this stop)")
     min_rr = num(dig(kb.profile, "risk.min_rr"))
     rrs = [x for x in model.planned_rr(t) if x is not None]

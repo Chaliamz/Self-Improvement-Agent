@@ -335,6 +335,7 @@ const fmtPct = (x, d = 2) => !isNum(x) ? "—" : x.toFixed(d) + "%";
 const fmtNum = (x, d = 2) => !isNum(x) ? "—" : x.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmtPrice = x => !isNum(x) ? "—" : String(x);
 const fmtX = x => !isNum(x) ? "—" : x.toFixed(2) + "x";
+const fmtCap = x => !isNum(x) ? "—" : (Math.floor(x * 100 + 1e-9) / 100).toFixed(2) + "x";   // a ceiling: never round up
 const fmtCI = ci => !ci ? "—" : `[${fmtR(ci[0])}, ${fmtR(ci[1])}]`;
 const fmtTick = x => (x > 0 ? "+" : x < 0 ? MINUS : "") + (Number.isInteger(x) ? Math.abs(x) : Math.abs(x).toFixed(1)) + "R";
 const titleCase = str => String(str).replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase());
@@ -457,6 +458,18 @@ function responsive(host, draw) {
   host._observer.observe(host);
   render();
 }
+function zeroSplit(root, top, height, zeroY) {
+  const uid = "zs" + Math.random().toString(36).slice(2, 8), defs = s("defs");
+  const f = Math.max(0, Math.min(1, (zeroY - top) / height));
+  const grad = (id, a, b) => {
+    const g = s("linearGradient", { id, gradientUnits: "userSpaceOnUse", x1: 0, x2: 0, y1: top, y2: top + height });
+    g.append(s("stop", { offset: f, "stop-color": a }), s("stop", { offset: f, "stop-color": b }));
+    return g;
+  };
+  defs.append(grad(uid + "-l", "var(--up)", "var(--down)"), grad(uid + "-a", "var(--up-wash)", "var(--down-wash)"));
+  root.append(defs);
+  return { line: `url(#${uid}-l)`, area: `url(#${uid}-a)` };
+}
 function equityChart(host, curve) {
   const pts = [{ id: "Start", date: null, r: 0, cum_r: 0 }, ...curve];
   responsive(host, W => {
@@ -477,18 +490,9 @@ function equityChart(host, curve) {
         root.append(s("text", { x: X(i), y: H - 8, "text-anchor": i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle" }, p.id));
     });
     const d = pts.map((p, i) => `${i ? "L" : "M"}${X(i)},${Y(p.cum_r)}`).join("");
-    const zero = Y(0), uid = "eq" + Math.random().toString(36).slice(2, 8);
-    const defs = s("defs");
-    const split = (id, a, b) => {
-      const g = s("linearGradient", { id, gradientUnits: "userSpaceOnUse", x1: 0, x2: 0, y1: m.t, y2: m.t + ih });
-      const f = Math.max(0, Math.min(1, (zero - m.t) / ih));
-      g.append(s("stop", { offset: f, "stop-color": a }), s("stop", { offset: f, "stop-color": b }));
-      return g;
-    };
-    defs.append(split(uid + "-l", "var(--up)", "var(--down)"), split(uid + "-a", "var(--up-wash)", "var(--down-wash)"));
-    root.append(defs);
-    root.append(s("path", { d: `${d}L${X(pts.length - 1)},${zero}L${X(0)},${zero}Z`, class: "area draw", fill: `url(#${uid}-a)` }));
-    const line = s("path", { d, class: "line", stroke: `url(#${uid}-l)` });
+    const zero = Y(0), paint = zeroSplit(root, m.t, ih, zero);
+    root.append(s("path", { d: `${d}L${X(pts.length - 1)},${zero}L${X(0)},${zero}Z`, class: "area draw", fill: paint.area }));
+    const line = s("path", { d, class: "line", stroke: paint.line });
     root.append(line);
     pts.forEach((p, i) => { if (i > 0) root.append(s("circle", { cx: X(i), cy: Y(p.cum_r), r: 4, class: `dot draw ${p.cum_r >= 0 ? "up" : "down"}` })); });
     requestAnimationFrame(() => {
@@ -670,6 +674,15 @@ function scatterChart(host, points, o) {
       root.append(s("text", { x: X(v), y: m.t + ih + 16, "text-anchor": "middle" }, label));
     }
     root.append(s("text", { x: m.l + iw / 2, y: H - 6, "text-anchor": "middle", class: "axis-title" }, o.xLabel));
+    if (o.connect && points.length > 1) {
+      // joined in x order (ties by trade ID), painted like cumulative R: green above 0R, red below
+      const ordered = [...points].sort((a, b) => a.x - b.x || a.id.localeCompare(b.id));
+      const d = ordered.map((p, i) => `${i ? "L" : "M"}${X(p.x)},${Y(p.y)}`).join(""), zero = Y(0);
+      const paint = zeroSplit(root, m.t, ih, zero);
+      const first = X(ordered[0].x), last = X(ordered[ordered.length - 1].x);
+      root.append(s("path", { d: `${d}L${last},${zero}L${first},${zero}Z`, class: "area draw", fill: paint.area }),
+                  s("path", { d, class: "line connect draw", stroke: paint.line }));
+    }
     const labelAll = points.length <= 6;
     points.forEach(p => {
       const cx = X(p.x), cy = Y(p.y), up = p.y >= 0;
@@ -867,7 +880,7 @@ function renderPerformance() {
   const holdHost = h("div", { class: "chart-host" }), procHost = h("div", { class: "chart-host" });
   mount(() => {
     scatterChart(holdHost, holdPts, { log: true, xLabel: "Time in trade (log scale)", aria: "Holding time against R", empty: "No trades with a known duration yet." });
-    scatterChart(procHost, procPts, { domain: [1, 5], ticks: [1, 2, 3, 4, 5], xLabel: "Process score (mean of five dimensions)", aria: "Process score against R", empty: "No scored trades yet." });
+    scatterChart(procHost, procPts, { connect: true, domain: [1, 5], ticks: [1, 2, 3, 4, 5], xLabel: "Process score (mean of five dimensions)", aria: "Process score against R, trades joined in order of process score", empty: "No scored trades yet." });
   });
   const pointTable = pts => h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
     table([{ key: "id", label: "Trade" }, { key: "xText", label: "Value" }, { label: "R", num: true, render: r => rSpan(r.y) }], pts));
@@ -876,7 +889,7 @@ function renderPerformance() {
       h("div", { class: "filters" }, h("label", {}, "Group by", pick)), note, barHost, h("div", { style: "height:12px" }), host),
     h("div", { class: "grid2" },
       card("Time in trade vs R", "Scalps and swings on one axis (log scale). Duration uses your stated minutes when given, otherwise the dates.", holdHost, pointTable(holdPts)),
-      card("Process score vs R", "If process quality matters, better scores should sit higher over time. Correlation, not proof.", procHost, pointTable(procPts))),
+      card("Process score vs R", "Trades joined from the lowest process score to the highest: green above 0R, red below. If process quality matters, the line should rise to the right. Correlation, not proof.", procHost, pointTable(procPts))),
     h("div", { class: "grid2" },
       card("Process vs outcome", "Good outcome with poor process is luck, not a pattern to repeat.",
         table([{ key: "grade", label: "Process" }, { label: "Win", num: true, render: r => cell(r.grade, "win") },
@@ -898,7 +911,7 @@ const RULE_LABELS = {
   required_conditions: "Required conditions", confirmation: "Confirmations", confluences: "Confluences", zones: "Zones",
   entry_models: "Entry models", entry_model: "Entry model", stop_model: "Stop model", target_model: "Target model",
   risk_model: "Risk model", leverage_model: "Leverage model", management: "Management", do_not_trade_when: "Do not trade when",
-  common_mistakes: "Common mistakes", open_questions: "Open questions", timeframe_alignment: "Timeframe alignment",
+  common_mistakes: "Common mistakes", open_questions: "Open questions", timeframe_alignment: "Timeframe alignment", divergence: "Divergence",
   checklist: "Pre-entry checklist",
 };
 function ruleValue(v) {
@@ -978,7 +991,7 @@ function renderRisk() {
     { label: "Lev. setting", num: true, render: r => isNum(dig(r.t, "risk.leverage")) ? r.t.risk.leverage + "x" : "—" },
     { label: "Margin posted", num: true, render: r => isNum(r.e.margin_pct) ? fmtPct(r.e.margin_pct) + " of equity" : "—" },
     { label: "Margin loss at stop", num: true, render: r => isNum(r.e.margin_loss_pct) ? h("span", { class: r.e.margin_loss_breach ? "down" : "up", text: fmtPct(r.e.margin_loss_pct, 1) }) : "—" },
-    { label: "Max lev. (rule)", num: true, render: r => isNum(r.e.max_leverage_for_rule) ? r.e.max_leverage_for_rule.toFixed(1) + "x" : "—" },
+    { label: "Max lev. (rule)", num: true, render: r => fmtCap(r.e.max_leverage_for_rule) },
     { label: "Liquidation (isolated)", num: true, render: r => isNum(r.e.liq_isolated) ? fmtNum(r.e.liq_isolated) + (r.e.liq_mode_assumed ? " *" : "") : "—" },
     { label: "Liq. / stop distance", num: true, render: r => fmtX(r.e.liq_to_stop) },
     { label: "Check", render: r => r.e.liq_before_stop ? badge("loss", "▼ Liq. before stop") : r.e.margin_loss_breach ? badge("loss", "▼ Over margin rule") : isNum(r.e.liq_to_stop) ? badge("win", "▲ Within rules") : "—" },
@@ -1006,10 +1019,11 @@ function renderBehaviour() {
 
 function renderGaps() {
   const issues = (KB.build && KB.build.validation) || [];
-  const questions = KB.strategies.flatMap(st => ((st.versions[String(st.meta.current_version)] || {}).open_questions || []).map(q => ({ st: st.slug, q })));
+  const qGroups = KB.strategies.map(st => ({ st, qs: (st.versions[String(st.meta.current_version)] || {}).open_questions || [] })).filter(g => g.qs.length);
   return h("div", { class: "stack" },
     card("Open questions", "What the system still needs from the trader before these rules can be automated.",
-      questions.length ? list(questions.map(x => x.q)) : h("p", { class: "empty", text: "None open." })),
+      qGroups.length ? qGroups.flatMap(g => [h("h3", { text: `${g.st.meta.name || g.st.slug} · v${g.st.meta.current_version}` }), list(g.qs)])
+                     : h("p", { class: "empty", text: "None open." })),
     card("Unresolved profile parameters", "Never assumed. Each one is filled only when the trader states it.", list(KB.unresolved, "All resolved.")),
     card("Validation", "Integrity checks from the last build.",
       table([{ label: "Level", render: r => badge(r.level) }, { key: "where", label: "Where" }, { key: "msg", label: "Detail", wrap: true }], issues,
@@ -1086,7 +1100,7 @@ function openTrade(id) {
           ["Notional", isNum(e.notional_pct) ? fmtPct(e.notional_pct, 1) + " of equity" : null], ["Effective leverage", fmtX(e.effective_leverage)],
           ["Leverage setting", isNum(dig(t, "risk.leverage")) ? t.risk.leverage + "x" : null], ["Margin mode", dig(t, "risk.margin_mode") || unstated("Not recorded")],
           ["Margin posted", isNum(e.margin_pct) ? fmtPct(e.margin_pct) + " of equity" : null],
-          ["Margin loss at stop", isNum(e.margin_loss_pct) ? h("span", { class: e.margin_loss_breach ? "down" : "up", text: `${fmtPct(e.margin_loss_pct, 1)}${isNum(e.max_leverage_for_rule) ? " · max " + e.max_leverage_for_rule.toFixed(1) + "x under the 50% rule" : ""}` }) : null],
+          ["Margin loss at stop", isNum(e.margin_loss_pct) ? h("span", { class: e.margin_loss_breach ? "down" : "up", text: `${fmtPct(e.margin_loss_pct, 1)}${isNum(e.max_leverage_for_rule) ? ` · max ${fmtCap(e.max_leverage_for_rule)} under the ${dig(KB.profile, "leverage.max_margin_loss_at_stop_pct")}% rule` : ""}` }) : null],
           ["Liquidation", isNum(e.liq_isolated) ? `${fmtNum(e.liq_isolated)} (isolated${e.liq_mode_assumed ? ", assumed" : ""}), ${fmtPct(e.liq_distance_pct)} away, ${fmtX(e.liq_to_stop)} the stop distance` : null]])),
         card("Confluences and confirmations", null, h("h3", { text: "Confluences" }), list(dig(t, "plan.confluences")),
           h("h3", { text: "Confirmations" }), list(dig(t, "plan.confirmations")))),
