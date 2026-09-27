@@ -12,7 +12,7 @@ tier. Five trades cannot separate skill from luck. Nothing below is established.
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.6 | unvalidated | 4 (T-0001, T-0004, T-0006, T-0007) | n=4: +2.77R point estimate, no CI below n=5 (LOW) |
+| supply-demand-structure | 1.7 | unvalidated | 4 (T-0001, T-0004, T-0006, T-0007) | n=4: +2.77R point estimate, no CI below n=5 (LOW) |
 | key-level-sr | 1.2 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW) |
 
 ## Established rules
@@ -43,6 +43,9 @@ _None._
 - **Stop beyond the swing that created the confirmed CH.** Now a rule (v1.6 checklist item 5; trader: "yes
   exactly"). T-0006 and T-0007 kept it; T-0004's stop sat beyond a high whose CH was never confirmed and was
   swept. Status: rule (stated).
+- **Entry precision (heat on winners).** `./tj build` excursions: median MAE on winners 0.13R (worst 0.33R, n=4:
+  T-0001 0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R); the one loser (T-0004) ran +0.28R before its stop. This
+  measures the trader's "sniper entries" (S criterion). Descriptive only, n=5. Status: observation.
 - **Fees on tight-stop scalps.** T-0003's stop was 0.239%. With HYPOTHETICAL fees of 0.02-0.05% per side, 2.94R
   gross becomes 2.38-1.78R net, below the 2.5R minimum, and fee-free sizing would really risk 1.17-1.42%.
   Answered (trader, 2026-09-27): fees are inside the 1% risk and will be counted separately by the bot.
@@ -68,6 +71,11 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
 - A zone traded through and reclaimed with a CH is a reclaim level, not a mitigated zone (T-0006); T-0007's
   supply is the mitigation example (trader, 2026-09-27).
 - The zone is the level that created the reversal/CH, not a sweep candle (T-0005, T-0007).
+
+## Grading (trader-stated, 2026-09-27)
+- Scale S, A, B, C, D. S, A and B are tradeable, C maybe, D avoided.
+- S: proper confluences, clear confirmations, a sniper entry that runs to TP, and about 3.5R or more (a rough
+  guide; slightly less is fine). T-0007 is S. What separates A-D is not yet stated (v1.7 question 1).
 
 ## High-quality setups
 _None._
@@ -95,6 +103,8 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-09-27 | supply-demand-structure v1.7 clarification (CHG-007): grading scale S-D (3.5R S guide is rough; D avoided, C maybe); the candle range is read on the HTF (a 1h pullback inside a 4h candle range is not a 4h pullback). No rule changed | trader's answers; T-0008 |
+| 2026-09-27 | MAE / MFE recorded for every closed trade (fills.worst_price / best_price); the terminal shows heat and run per trade | T-0001, T-0003, T-0004, T-0006, T-0007 |
 | 2026-09-27 | supply-demand-structure v1.6 clarification (CHG-006): 4H candle range / NOT CH rule (item 3), stop beyond the swing that created the confirmed CH (item 5), S grading (3.5R+), counter-trend graded normally, reclaim is not mitigation, zones are reversal/CH origins, bearish continuation close rule. No rule changed | T-0008 (avoided); trader's answers |
 | 2026-09-27 | Records corrected: T-0004 stop/leverage confirmed and false_ch added; T-0006 not mitigated (setup 4 -> 5); T-0005 zone origin; T-0007 item 5 passes | trader's answers |
 | 2026-09-27 | supply-demand-structure v1.5 clarification (CHG-005): 30m potential CH (close beyond the previous opposite candle), strongest-level target preferred, divergence on wicks, no fixed tolerance for equal highs/lows, margin rule 50% target / 55% tolerance, entry models supply_level / demand_level, counter-trend context. No rule changed | trader's answers; T-0006, T-0007 |

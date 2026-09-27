@@ -140,3 +140,17 @@ changes:
       matching the trader's own "30M consolidation" diagnosis), T-0005 (zone origin), T-0006 (not mitigated; setup
       rescored 4 -> 5), T-0007 (item 5 passes). T-0001, T-0002, T-0004-T-0007 retagged 1.6; T-0008 recorded at 1.6.
     resulting_version: "1.6"
+  - id: CHG-007
+    kind: clarification
+    date: 2026-09-27
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-27: "its a rough guide, it doesnt matter if that's 3.5R it could be slightly less. And no we
+      can consider trading S,A,B,C trading setups. We would avoid D setups and maybe C ones as well." ... "we
+      identify HTF first (4h) and high-low was both cyan lines so during 4h price was inside this range, but on 1H
+      time frame it could definitely be a pullback. If there was a pullback on 4H that would be a different story
+      and maybe could execute a trade."
+    fields: [market_structure, grading, checklist, open_questions]
+    note: "Grades A-D are named but not yet defined (open question 1). All supply-demand trades retagged 1.7."
+    resulting_version: "1.7"

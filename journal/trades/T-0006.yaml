@@ -21,7 +21,7 @@ regime: [range, bullish]      # 4h: range about 51-77 since June; trader's bias 
 
 strategy:
   id: supply-demand-structure
-  version: "1.6"                # retagged by CHG-005, CHG-006 (clarifications)
+  version: "1.7"                # retagged by CHG-005..007 (clarifications)
   experiment: null
   variant: null
 
@@ -55,6 +55,8 @@ fills:
     - {price: 66.10, reason: "Target (position-tool label). Trader: won, 3.41RR."}
   fees: null                  # trader: fees are inside the 1% risk (2026-09-27)
   duration_minutes: 17460     # measured on the 1h chart: fill Aug 7 ~19:00 to target Aug 19 ~22:00 (about 12 days 3 h, +/- 1-2 h)
+  worst_price: 53.30           # about: the Aug 7 retest wick into the demand
+  best_price: 66.10            # the target filled
 
 result:
   pnl: null

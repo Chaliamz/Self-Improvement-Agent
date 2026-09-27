@@ -21,7 +21,7 @@ regime: [range, bullish]      # range = trader's "choppy conditions" during the 
 
 strategy:
   id: supply-demand-structure
-  version: "1.6"            # retagged by CHG-001..006 (clarifications)
+  version: "1.7"            # retagged by CHG-001..007 (clarifications)
   experiment: null
   variant: null
 
@@ -54,6 +54,8 @@ fills:
   exits:
     - {price: 103.30, reason: "TP at yellow line, touched 2026-05-10. Full exit assumed: partials not stated."}
   fees: null
+  worst_price: 89.9            # about: the Apr 22 wick after entry
+  best_price: 103.30           # the target filled (earlier run to about 100.71 on Apr 27)
 
 result:
   pnl: null

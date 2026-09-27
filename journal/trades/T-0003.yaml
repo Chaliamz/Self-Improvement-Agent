@@ -52,6 +52,8 @@ fills:
     - {price: 84.9409, reason: "Closed at profit, 2.94R (trader). Full exit at the target price assumed."}
   fees: null
   duration_minutes: 24        # measured: 20:40 fill to the first certain trade through the target (21:04); trader said 45 (approximate) and authorised the fix
+  worst_price: 85.5579         # about: the 20:40 fill candle's high; the stop was never approached
+  best_price: 84.9409          # the target filled
 
 result:
   pnl: null

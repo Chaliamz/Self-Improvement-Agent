@@ -21,7 +21,7 @@ regime: [bullish]             # 4h: higher highs; the Sep 23 drop stayed inside 
 
 strategy:
   id: supply-demand-structure
-  version: "1.6"
+  version: "1.7"                # retagged by CHG-007 (clarification)
   experiment: null
   variant: null
 
@@ -83,6 +83,7 @@ evidence:
   interpreted:
     - "The chart matches the trader's reading: the drop that broke the red line never closed below the Sep 18 candle range, so by the trader's rule it was consolidation inside a bullish structure, not a CH. The higher high that followed confirms it."
     - "Checklist v1.6: item 3 fails (no CH by close beyond the candle range), so the trade is invalid regardless of the other items. Items 1, 4, 5 and 6 would have passed (supply level, entry at its edge, stop above it, 3.40R)."
+    - "Trader (2026-09-27): the range is read on the 4h first; 'on 1H time frame it could definitely be a pullback', but the 4h never closed beyond the range, so there was no 4h pullback and no trade."
     - "This is the mirror image of T-0004: there a 5m break inside the 30m candle range was taken as a CH (-1R); here the same kind of break inside the 4h candle range was recognised as NOT CH and skipped. Had it been taken: -1R (counterfactual)."
   hypotheses:
     - "Breaks that stay inside the impulsive candle's range are consolidation; skipping them avoids losses like T-0004 (n=2: one taken -1R, one avoided with a -1R counterfactual)."
@@ -90,7 +91,7 @@ evidence:
 
 review:
   scores: {setup: null, context: null, execution: null, risk: null, management: null}
-  trader_grade: null          # "would be perfectly S" only if a true CH had formed; it did not
+  trader_grade: null          # "would be perfectly S" only if a true CH had formed; it did not (3.40R: the S guide is rough)
   setup_validity: invalid
   followed_plan: true         # the plan is the checklist: no CH, no trade
   loss_type: null

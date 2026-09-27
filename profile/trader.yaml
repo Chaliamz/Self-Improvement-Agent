@@ -55,6 +55,15 @@ timeframes:                           # notation: m minutes, h hours, D days, W 
     confirmation: "15m-30m"           # T-0004 lesson: the 30m must confirm a 5m CHoCH
     execution: "5m"
 
+# How the trader grades setups (2026-09-27).
+grading:
+  scale: [S, A, B, C, D]
+  tradeable: [S, A, B]                # "we can consider trading S,A,B,C trading setups"
+  maybe: [C]                          # "We would avoid D setups and maybe C ones as well"
+  avoid: [D]
+  s_rr_guide: 3.5                     # a rough guide, not a floor: "it could be slightly less"
+  s_criteria: "Proper confluences, clear confirmations, sniper entries leading to TP and a high RR (3.5RR and higher)."
+
 # How the trader analyses, in their words.
 process:
   top_down: >-
@@ -90,10 +99,11 @@ terminology:
   reaction: "Not knowable in advance: a level is key if traders react to it. A touch that rejects, a break-retest-continue, or a deviation (break, retest, fail, level lost again). Mostly deviations, so the retest is traded for continuation."
   equal highs/lows: "No fixed tolerance; they may take longer to form. Still a liquidity level likely to be swept."
   potential CH (30m): "A 30m candle closes below the previous bullish 30m candle's low (bearish), or above the previous bearish 30m candle's high (bullish)."
-  S setup: "Proper confluences, clear confirmations, a sniper entry that runs to TP, and a high R:R (3.5R or more) (trader, 2026-09-27). T-0007. Grades below S not stated."
+  S setup: "Proper confluences, clear confirmations, a sniper entry that runs to TP, and a high R:R (about 3.5R; a rough guide) (trader, 2026-09-27). T-0007."
+  grades: "S, A, B, C, D. S-B tradeable, C maybe, D avoided. A-D criteria not yet stated."
   4H candle range: "The range of the impulsive candle that made the high/low (cyan lines). Inside it = consolidation. A pullback must CLOSE beyond its opposite end."
   NOT CH: "A break of a level inside a candle range. Consolidation, not a change of character (T-0008)."
-  pullback: "From a high, price must break and CLOSE below the low of the candle range; otherwise it is consolidation (trader, T-0008)."
+  pullback: "From a high, price must break and CLOSE below the low of the candle range, read on the HTF (4h); otherwise it is consolidation. A 1h pullback inside a 4h candle range is not a 4h pullback (trader, T-0008)."
   counter-trend: "Trading against the HTF trend (T-0007: short at ATH levels). Graded like any other setup; just a bit riskier (trader, 2026-09-27)."
 
 # Where each resolved value came from: {path: "stated 2026-09-26 in T-0003 review"}
@@ -113,6 +123,7 @@ sources:
   instruments.HYPEUSDT: "T-0006 chart (Bybit HYPEUSDT perpetual), 2026-09-27"
   instruments.SPX500: "T-0007 chart (Capital.com S&P 500 index CFD, 4h), 2026-09-27"
   instruments.POLUSDT: "T-0008 charts (BloFin POLUSDT perpetual, 4h and 1h), 2026-09-27"
+  grading: "Trader, 2026-09-27: 'its a rough guide, it doesnt matter if that's 3.5R it could be slightly less. And no we can consider trading S,A,B,C trading setups. We would avoid D setups and maybe C ones as well.'"
   leverage.margin_loss_tolerance_pct: "Trader, 2026-09-27: 'since margin call occurs on 80% i prefer to adjust it until 50%, it's okay if it goes to 55% or something'"
   leverage.margin_call_at_margin_loss_pct: "Trader, 2026-09-27: 'margin call occurs on 80%'"
   leverage.margin_mode: "Trader: 'which means I use an isolated margin', 2026-09-26"

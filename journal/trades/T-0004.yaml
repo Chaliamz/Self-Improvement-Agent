@@ -21,7 +21,7 @@ regime: [bullish]             # 30m: rally from about 0.0106 (Jan 4) and a fresh
 
 strategy:
   id: supply-demand-structure
-  version: "1.6"                # retagged by CHG-004..006 (clarifications)
+  version: "1.7"                # retagged by CHG-004..007 (clarifications)
   experiment: null
   variant: null
 
@@ -52,6 +52,8 @@ fills:
     - {price: 0.013478, reason: "Stop hit (trader: -1R)"}
   fees: null
   duration_minutes: 270       # measured on the chart: entry 22:30, stop inside the 03:00 candle (+0 to 30 min)
+  worst_price: 0.013478        # the stop filled (price ran on to about 0.013595 after the exit)
+  best_price: 0.012842         # about: Jan 6 02:30 low, +0.28R
 
 result:
   pnl: null

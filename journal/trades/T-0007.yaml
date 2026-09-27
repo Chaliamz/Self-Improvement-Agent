@@ -21,7 +21,7 @@ regime: [bullish]             # trader: "Our bias over here was bullish since we
 
 strategy:
   id: supply-demand-structure
-  version: "1.6"                # retagged by CHG-006 (clarification)
+  version: "1.7"                # retagged by CHG-006, CHG-007 (clarifications)
   experiment: null
   variant: null
 
@@ -56,6 +56,8 @@ fills:
     - {price: 7573.9, reason: "Target (position-tool label). Trader: won, 4.12RR."}
   fees: null                  # inside the 1% risk (trader, 2026-09-27)
   duration_minutes: null      # stated as dates (Aug 28 - Sep 15); index CFD hours, weekends closed
+  worst_price: 7771.8          # about: the Aug 28 fill wick; price never came back above the entry
+  best_price: 7573.9           # the target filled
 
 result:
   pnl: null
