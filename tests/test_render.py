@@ -17,8 +17,9 @@ from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
 TABS = ["overview", "journal", "performance", "strategy", "risk", "behaviour", "readiness", "gaps"]
-BACKGROUNDS = ["aurora", "nebula", "constellation", "starfield", "synthwave", "matrix", "waves", "depth", "tape", "off"]
-CANVAS = {"constellation", "starfield", "matrix", "waves", "depth"}
+BACKGROUNDS = ["aurora", "nebula", "plasma", "constellation", "starfield", "waves", "tape", "depth", "heatmap", "bubbles", "radar",
+               "matrix", "ticker", "synthwave", "off"]
+CANVAS = {"constellation", "starfield", "matrix", "waves", "depth", "heatmap", "bubbles", "radar"}
 
 
 def chromium() -> str | None:
@@ -39,6 +40,7 @@ addEventListener("load", () => {
     const cv = document.getElementById("bg-canvas");
     const ink = () => { const d = cv.getContext("2d").getImageData(0, 0, cv.width, cv.height).data; let n = 0;
                         for (let p = 3; p < d.length; p += 64) if (d[p]) n++; return n; };
+    out.ticker_items = document.querySelectorAll("#bg-ticker .tk-item").length;
     for (const mode of bgs) {
       applyBackground(mode);
       const de = document.documentElement;
@@ -58,7 +60,8 @@ addEventListener("load", () => {
       const panel = document.getElementById("panel-" + id), de = document.documentElement;
       out.tabs[id] = { kids: panel.children.length, svg: panel.querySelectorAll("svg").length,
                        rows: panel.querySelectorAll("tbody tr").length, overflow: de.scrollWidth - de.clientWidth,
-                       connect: panel.querySelectorAll("path.connect").length };
+                       excursion: panel.querySelectorAll("svg[data-chart=excursion] .pin").length,
+                       ladder: panel.querySelectorAll("svg[data-chart=ladder] .pin").length };
       step();
     }, 300);
   };
@@ -83,6 +86,10 @@ class RenderTest(unittest.TestCase):
         html = (cls.tmp / "terminal.html").read_text(encoding="utf-8")
         probe = PROBE.replace("%TABS%", json.dumps(TABS)).replace("%BGS%", json.dumps(BACKGROUNDS))
         (cls.tmp / "probe.html").write_text(html.replace("<head>", "<head>" + TRAP, 1).replace("</body>", probe), encoding="utf-8")
+        kb = json.loads((cls.tmp / "exports" / "kb.json").read_text(encoding="utf-8"))
+        cls.want_excursion = sum(1 for t in kb["trades"] if t["status"] == "closed" and t["derived"]["r"] is not None
+                                 and (t["derived"].get("mae_r") is not None or t["derived"].get("mfe_r") is not None))
+        cls.want_ladder = sum(1 for t in kb["trades"] if any(x is not None for x in t["derived"].get("planned_rr") or []))
         cls.results = {}
         for width in (1280, 500):
             dom = subprocess.run([chromium(), "--headless=new", "--no-sandbox", "--disable-gpu", f"--window-size={width},900",
@@ -111,7 +118,8 @@ class RenderTest(unittest.TestCase):
         tabs = self.results[1280]["out"]["tabs"]
         self.assertGreaterEqual(tabs["overview"]["svg"], 3, "overview: cumulative R, distribution, R per trade")
         self.assertGreaterEqual(tabs["performance"]["svg"], 3, "performance: group bars and two scatters")
-        self.assertEqual(tabs["performance"]["connect"], 1, "process score vs R: points joined by one zero-split line")
+        self.assertEqual(tabs["performance"]["excursion"], self.want_excursion, "heat and run: one pin per trade with a worst/best price")
+        self.assertEqual(tabs["performance"]["ladder"], self.want_ladder, "planned R:R ladder: one pin per setup with a target")
         self.assertGreaterEqual(tabs["journal"]["rows"], 1)
 
     def test_backgrounds_and_trade_dialogs(self):
@@ -124,6 +132,7 @@ class RenderTest(unittest.TestCase):
             else:
                 self.assertEqual(out["ink_" + mode], 0, f"{mode}: a stopped scene left pixels on the canvas")
             self.assertGreaterEqual(out["shown_" + mode], 1, f"{mode}: no background layer visible")
+        self.assertGreater(out["ticker_items"], 0, "journal ticker: built from the trades")
         dialogs = {k: v for k, v in out.items() if k.startswith("dialog_")}
         self.assertTrue(dialogs)
         for key, cards in dialogs.items():

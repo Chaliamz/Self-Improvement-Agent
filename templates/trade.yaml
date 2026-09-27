@@ -49,6 +49,8 @@ fills:
   exits: []                   # - {price: 0, qty: 0, reason: "tp1"}   (or fraction: 0.5 instead of qty)
   fees: null                  # total fees paid
   duration_minutes: null      # time in the trade: stated, or measured on the chart (say which)
+  worst_price: null           # furthest price AGAINST the position between entry and exit (chart-measured): gives MAE in R
+  best_price: null            # furthest price IN FAVOUR between entry and exit (the TP price if the target filled): gives MFE
 
 result:
   pnl: null                   # realized NET PnL

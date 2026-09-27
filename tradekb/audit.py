@@ -96,6 +96,29 @@ def run(kb: KB, check_outputs: bool = True) -> Audit:
             if lev and "margin_loss_pct" in exp:
                 a.check(abs(exp["margin_loss_pct"] - exp["stop_pct"] * lev) < TOL, f"{t['id']}: margin loss at stop")
 
+    # excursions (MAE / MFE), recomputed from the raw prices
+    for t in realized:
+        fl, plan = t.get("fills") or {}, t.get("plan") or {}
+        entry = _num(fl.get("entry_avg")); entry = entry if entry is not None else _num(plan.get("entry"))
+        stop, sign = _num(plan.get("stop")), {"long": 1, "short": -1}.get(t.get("direction"))
+        for key, field_name, fav in (("mae_r", "worst_price", -1), ("mfe_r", "best_price", 1)):
+            px_, got = _num(fl.get(field_name)), t["derived"].get(key)
+            if None in (entry, stop, sign, px_) or entry == stop:
+                a.check(got is None, f"{t['id']}: {key} absent without {field_name}")
+            else:
+                want = max(0.0, fav * sign * (px_ - entry)) / abs(entry - stop)
+                a.check(got is not None and abs(got - want) < TOL, f"{t['id']}: {key} {got} equals independent recompute {want:.6f}")
+
+    ex = p["stats"]["excursions"]
+    wm = sorted(t["derived"]["mae_r"] for t in realized if t["derived"].get("outcome") == "win" and t["derived"].get("mae_r") is not None)
+    lm = sorted(t["derived"]["mfe_r"] for t in realized if t["derived"].get("outcome") == "loss" and t["derived"].get("mfe_r") is not None)
+    mid = lambda v: None if not v else (v[len(v) // 2] if len(v) % 2 else (v[len(v) // 2 - 1] + v[len(v) // 2]) / 2)
+    a.check(ex["winners"] == len(wm) and ex["losers"] == len(lm), "excursions: winner/loser counts")
+    for key, want in (("winner_mae_median", mid(wm)), ("loser_mfe_median", mid(lm)), ("winner_mae_max", wm[-1] if wm else None),
+                      ("loser_mfe_max", lm[-1] if lm else None)):
+        a.check((ex[key] is None and want is None) or (want is not None and ex[key] is not None and abs(ex[key] - want) < TOL),
+                f"excursions: {key} re-derived")
+
     # rule compliance: the numeric rules recomputed from raw fields, and the counts re-tallied
     prof = kb.profile or {}
     limit = _num((prof.get("leverage") or {}).get("max_margin_loss_at_stop_pct"))

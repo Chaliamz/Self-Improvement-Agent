@@ -53,7 +53,9 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
 3. Score the five dimensions (§42), set `setup_validity`, `followed_plan`, `loss_type`
    (losses), `mistakes`, `behaviors`, `lesson`, `strategy_change`. Set `plan.entry_model` to one
    of the strategy version's `entry_models`, and record the trader's confluences/confirmations.
-   Record the trader's own grade in `review.trader_grade` when they give one (e.g. "S setup").
+   Record the trader's own grade in `review.trader_grade` when they give one (scale S, A, B, C, D).
+   Record `fills.worst_price` and `fills.best_price` from the chart (furthest against / in favour between entry
+   and exit; the TP price when the target filled): `./tj` turns them into MAE / MFE in R.
    Record `timeframes.chain` (highest first) and `timeframes.top_down` (true/false); record
    `fills.duration_minutes` when the trader states a duration (dates alone cannot time a scalp).
    Timeframe notation is TradingView's: m minutes, h hours, D days, W weeks, M months. The trader

@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import yaml
@@ -245,6 +246,40 @@ class GradeAndTrendTest(KBTestCase):
         groups = analysis.group(analysis.realized(load_kb()), "trend")
         self.assertEqual({k: [r.trade.id for r in v] for k, v in groups.items()},
                          {"counter_trend": ["T-0001"], "with_trend": ["T-0002"], "(unknown)": ["T-0003"]})
+
+
+class ExcursionTest(KBTestCase):
+    def test_mae_mfe_in_r_for_both_sides(self):
+        # long 100 -> stop 98 (1R = 2): worst 99 = 0.5R heat, best 106 = 3R run
+        self.write_trade("T-0001", plan={"entry": 100, "stop": 98, "targets": [106]}, fills={"exits": [{"price": 106}], "worst_price": 99, "best_price": 106})
+        # short 50 -> stop 51 (1R = 1): stopped out, worst = stop = 1R, best 49.7 = 0.3R
+        self.write_trade("T-0002", direction="short", plan={"entry": 50, "stop": 51, "targets": [47]},
+                         fills={"exits": [{"price": 51}], "worst_price": 51, "best_price": 49.7})
+        rows = {r.trade.id: r.d for r in analysis.realized(load_kb())}
+        self.assertAlmostEqual(rows["T-0001"].mae_r, 0.5); self.assertAlmostEqual(rows["T-0001"].mfe_r, 3.0)
+        self.assertAlmostEqual(rows["T-0002"].mae_r, 1.0); self.assertAlmostEqual(rows["T-0002"].mfe_r, 0.3)
+        ex = build_payload(load_kb())["stats"]["excursions"]
+        self.assertEqual((ex["winners"], ex["losers"]), (1, 1))
+        self.assertAlmostEqual(ex["winner_mae_median"], 0.5); self.assertAlmostEqual(ex["loser_mfe_max"], 0.3)
+
+    def test_validator_catches_impossible_excursions(self):
+        self.write_trade("T-0001", plan={"entry": 100, "stop": 98, "targets": [106]}, fills={"exits": [{"price": 106}], "worst_price": 101, "best_price": 106})
+        self.write_trade("T-0002", plan={"entry": 100, "stop": 98, "targets": [106]}, fills={"exits": [{"price": 106}], "worst_price": 97, "best_price": 106})
+        self.write_trade("T-0003", plan={"entry": 100, "stop": 98, "targets": [106]}, fills={"exits": [{"price": 106}], "worst_price": 99.5, "best_price": 104})
+        errors = [(i.where, i.msg) for i in self.issues("ERROR")]
+        warns = [(i.where, i.msg) for i in self.issues("WARN")]
+        self.assertTrue(any(w == "T-0001.yaml" and "profitable side" in m for w, m in errors))
+        self.assertTrue(any(w == "T-0002.yaml" and "was the stop moved" in m for w, m in warns))
+        self.assertTrue(any(w == "T-0003.yaml" and "short of the exit" in m for w, m in warns))
+
+    def test_audit_recomputes_excursions(self):
+        from tradekb import model
+        from tradekb.audit import run as audit
+        self.write_trade("T-0001", plan={"entry": 100, "stop": 98, "targets": [106]}, fills={"exits": [{"price": 106}], "worst_price": 99, "best_price": 106})
+        real = model.excursions
+        with mock.patch.object(model, "excursions", lambda t: tuple(None if v is None else v + 0.01 for v in real(t))):
+            failures = audit(load_kb(), check_outputs=False).failures
+        self.assertTrue(any("mae_r" in f for f in failures))
 
 
 class AcknowledgedBreachTest(KBTestCase):

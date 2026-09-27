@@ -151,6 +151,7 @@ body { position: relative; isolation: isolate; }
 :root[data-bg-kind="canvas"] #bg #bg-canvas,
 :root[data-bg="starfield"] #bg .bg-static, :root[data-bg="waves"] #bg .bg-static, :root[data-bg="depth"] #bg .bg-static,
 :root[data-bg="nebula"] #bg .bg-nebula,
+:root[data-bg="plasma"] #bg .bg-plasma, :root[data-bg="radar"] #bg .bg-static, :root[data-bg="bubbles"] #bg .bg-static,
 :root[data-bg="synthwave"] #bg .bg-synth,
 :root[data-bg="tape"] #bg .bg-glow, :root[data-bg="tape"] #bg .bg-grid, :root[data-bg="tape"] #bg #bg-tape,
 :root[data-bg="off"] #bg .bg-static { display: block; }
@@ -200,6 +201,28 @@ body { position: relative; isolation: isolate; }
   background-size: 190px 190px; }
 @keyframes nebula-turn { from { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.12); } to { transform: rotate(360deg) scale(1); } }
 @keyframes twinkle { from { opacity: .25; } to { opacity: .6; } }
+/* plasma: a slow conic swirl of the brand, up and down hues under two drifting lights */
+.bg-plasma { filter: blur(56px) saturate(1.25); }
+.bg-plasma::before, .bg-plasma::after { content: ""; position: absolute; }
+.bg-plasma::before { inset: -50%; animation: plasma-spin 48s linear infinite;
+  background: conic-gradient(from 0deg at 50% 50%, color-mix(in srgb, var(--brand) 42%, transparent), color-mix(in srgb, var(--up) 30%, transparent),
+    color-mix(in srgb, var(--pos) 26%, transparent), color-mix(in srgb, var(--down) 26%, transparent), color-mix(in srgb, var(--brand) 42%, transparent)); }
+.bg-plasma::after { inset: -25%; animation: plasma-drift 17s ease-in-out infinite alternate;
+  background: radial-gradient(38% 38% at 30% 32%, color-mix(in srgb, var(--up) 28%, transparent), transparent 70%),
+    radial-gradient(34% 34% at 70% 66%, color-mix(in srgb, var(--brand) 34%, transparent), transparent 70%); }
+@keyframes plasma-spin { to { transform: rotate(360deg); } }
+@keyframes plasma-drift { from { transform: translate3d(-6%, -4%, 0) scale(1); } to { transform: translate3d(6%, 5%, 0) scale(1.15); } }
+/* journal ticker: the trader's own trades scrolling in large faint type */
+:root[data-bg="ticker"] #bg #bg-ticker { display: flex; }
+#bg-ticker { flex-direction: column; justify-content: space-around; padding: 4vh 0; }
+.tk-row { overflow: hidden; white-space: nowrap; opacity: .085; color: var(--ink); font: 800 clamp(26px, 5.5vw, 68px)/1.1 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: -.01em; }
+.tk-row:nth-child(even) { opacity: .055; font-size: clamp(18px, 3.6vw, 44px); }
+.tk-strip { display: inline-flex; gap: 2.5ch; padding-right: 2.5ch; animation: tape 110s linear infinite; }
+.tk-row:nth-child(2) .tk-strip { animation-duration: 150s; animation-direction: reverse; }
+.tk-row:nth-child(3) .tk-strip { animation-duration: 90s; }
+.tk-row:nth-child(4) .tk-strip { animation-duration: 170s; animation-direction: reverse; }
+.tk-row:nth-child(5) .tk-strip { animation-duration: 130s; }
+.tk-item .tk-up { color: var(--up); } .tk-item .tk-down { color: var(--down); } .tk-item .tk-hyp { color: var(--muted); }
 /* candle tape (the previous background) */
 .bg-glow { background:
     radial-gradient(40% 34% at 18% 22%, var(--glow-up), transparent 70%),
@@ -216,6 +239,12 @@ body { position: relative; isolation: isolate; }
 svg .bar-up { fill: var(--up); } svg .bar-down { fill: var(--down); }
 svg .grow-down { transform-box: fill-box; transform-origin: top; animation: grow .7s cubic-bezier(.2,.7,.2,1) both; }
 svg .whisker { stroke: var(--ink-2); stroke-width: 1.5; }
+svg .ref { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 4; }
+svg .ref.strong { stroke-dasharray: none; stroke: var(--axis); stroke-width: 1.5; }
+svg .ref-label { fill: var(--ink-2); font-size: 11px; }
+svg .stem { stroke: var(--axis); stroke-width: 2; stroke-linecap: round; }
+svg .pin { stroke: var(--surface); stroke-width: 2; } svg .pin.up { fill: var(--up); } svg .pin.down { fill: var(--down); }
+svg .pin.open { fill: var(--surface); stroke: var(--neutral); stroke-width: 2; }
 svg .axis-title { fill: var(--ink-2); font-size: 11.5px; }
 svg .row-label { fill: var(--ink); font-size: 12px; }
 svg .hit:hover + .mark, svg .hit:focus + .mark { opacity: .8; }
@@ -271,9 +300,12 @@ footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top:
       <div class="top-actions">
         <label class="sr" for="bg-select" style="position:absolute;left:-9999px">Background</label>
         <select id="bg-select" aria-label="Background animation">
-          <option value="aurora">Aurora</option><option value="nebula">Nebula</option><option value="constellation">Constellation</option>
-          <option value="starfield">Starfield</option><option value="synthwave">Synthwave</option><option value="matrix">Price rain</option>
-          <option value="waves">Waves</option><option value="depth">Order-book depth</option><option value="tape">Candle tape</option>
+          <optgroup label="Ambient"><option value="aurora">Aurora</option><option value="nebula">Nebula</option><option value="plasma">Plasma</option>
+            <option value="constellation">Constellation</option><option value="starfield">Starfield</option><option value="waves">Waves</option></optgroup>
+          <optgroup label="Market"><option value="tape">Candle tape</option><option value="depth">Order-book depth</option><option value="heatmap">Liquidity heatmap</option>
+            <option value="bubbles">Order-flow bubbles</option><option value="radar">Market radar</option><option value="matrix">Price rain</option>
+            <option value="ticker">Journal ticker</option></optgroup>
+          <optgroup label="Retro"><option value="synthwave">Synthwave</option></optgroup>
           <option value="off">No animation</option>
         </select>
         <button class="btn" id="theme-btn" type="button">Theme</button>
@@ -288,6 +320,8 @@ footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top:
   <div class="bg-static"></div>
   <div class="bg-aurora"><i></i><i></i><i></i></div>
   <div class="bg-nebula"></div>
+  <div class="bg-plasma"></div>
+  <div id="bg-ticker"></div>
   <canvas id="bg-canvas"></canvas>
   <div class="bg-synth"><div class="sun"></div><div class="floor"></div></div>
   <div class="bg-glow"></div>
@@ -648,6 +682,77 @@ function groupBarChart(host, groups, key) {
     return root;
   });
 }
+/* Heat and run: MAE (red, left of 0) and MFE (green, right of 0) per trade, in R, with the result as a pin. */
+function excursionChart(host, rows) {
+  if (!rows.length) { host.replaceChildren(h("p", { class: "empty", text: "No trades with a measured worst/best price yet." })); return; }
+  responsive(host, W => {
+    const rowH = 30, labelW = Math.min(150, W * 0.3), m = { t: 22, r: 56, b: 26, l: labelW + 12 };
+    const iw = W - m.l - m.r, H = m.t + rows.length * rowH + m.b;
+    const lo = Math.min(-1, ...rows.map(r => -(r.mae ?? 0))), hi = Math.max(1, ...rows.map(r => Math.max(r.mfe ?? 0, r.r)));
+    const xt = niceTicks(lo, hi), x0 = xt[0], x1 = xt[xt.length - 1], X = v => m.l + (v - x0) / (x1 - x0) * iw;
+    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "data-chart": "excursion",
+                            "aria-label": "Heat (MAE) and run (MFE) of each trade, in R" });
+    for (const v of xt) {
+      root.append(s("line", { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, class: v === 0 ? "axis" : "grid" }));
+      root.append(s("text", { x: X(v), y: H - 8, "text-anchor": "middle" }, fmtTick(v)));
+    }
+    root.append(s("line", { x1: X(-1), x2: X(-1), y1: m.t - 6, y2: H - m.b, class: "ref" }),
+                s("text", { x: X(-1), y: m.t - 10, "text-anchor": "middle", class: "ref-label" }, "stop −1R"));
+    rows.forEach((r, i) => {
+      const yc = m.t + i * rowH + rowH / 2, bh = 10, up = r.r >= 0;
+      root.append(s("text", { x: labelW, y: yc, "text-anchor": "end", "dominant-baseline": "middle", class: "row-label" }, `${r.id} · ${r.asset}`));
+      const hit = s("rect", { x: 0, y: yc - rowH / 2, width: W, height: rowH, fill: "transparent", tabindex: 0, class: "hit",
+                              "aria-label": `${r.id}: heat ${fmtR(r.mae)}, run ${fmtR(r.mfe)}, result ${fmtR(r.r)}` });
+      hitTip(hit, fmtR(r.r), [{ key: "var(--down)", text: `Heat (MAE) ${isNum(r.mae) ? r.mae.toFixed(2) + "R" : "—"}` },
+                              { key: "var(--up)", text: `Run (MFE) ${isNum(r.mfe) ? r.mfe.toFixed(2) + "R" : "—"}` }, { text: `${r.id} · ${r.asset}` }],
+             () => { const b = root.getBoundingClientRect(); return { x: b.left + X(r.r), y: b.top + yc }; });
+      root.append(hit);
+      if (isNum(r.mae) && r.mae > 0) root.append(s("path", { d: roundedLeft(X(-r.mae), yc - bh / 2, X(0) - X(-r.mae), bh), class: "mark bar-down draw" }));
+      if (isNum(r.mfe) && r.mfe > 0) root.append(s("path", { d: roundedRight(X(0), yc - bh / 2, X(r.mfe) - X(0), bh), class: "mark bar-up draw" }));
+      root.append(s("circle", { cx: X(r.r), cy: yc, r: 5, class: `pin ${up ? "up" : "down"}` }));
+      root.append(s("text", { x: X(Math.max(r.r, r.mfe ?? 0)) + 9, y: yc, "dominant-baseline": "middle", class: "cap-label" }, fmtR(r.r)));
+    });
+    return root;
+  });
+}
+/* Planned R:R ladder: the best target of every setup, taken or not, against the minimum and the S guide. */
+function rrLadderChart(host, rows, minRR, sGuide) {
+  if (!rows.length) { host.replaceChildren(h("p", { class: "empty", text: "No setups with an entry, stop and target yet." })); return; }
+  responsive(host, W => {
+    const rowH = 30, labelW = Math.min(150, W * 0.3), m = { t: 22, r: 70, b: 26, l: labelW + 12 };
+    const iw = W - m.l - m.r, H = m.t + rows.length * rowH + m.b;
+    const xt = niceTicks(0, Math.max(5, ...rows.map(r => r.rr))), x1 = xt[xt.length - 1], X = v => m.l + v / x1 * iw;
+    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "data-chart": "ladder",
+                            "aria-label": "Planned reward to risk of each setup against the minimum and the S guide" });
+    for (const v of xt) {
+      root.append(s("line", { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, class: v === 0 ? "axis" : "grid" }));
+      root.append(s("text", { x: X(v), y: H - 8, "text-anchor": "middle" }, `${v}R`));
+    }
+    const ref = (v, label, cls) => { if (!isNum(v)) return;
+      root.append(s("line", { x1: X(v), x2: X(v), y1: m.t - 6, y2: H - m.b, class: cls }),
+                  s("text", { x: X(v), y: m.t - 10, "text-anchor": "middle", class: "ref-label" }, label)); };
+    ref(minRR, `min ${minRR}R`, "ref strong"); ref(sGuide, `S ≈${sGuide}R`, "ref");
+    rows.forEach((r, i) => {
+      const yc = m.t + i * rowH + rowH / 2, taken = r.status === "closed";
+      const cls = !taken ? "open" : r.outcome === "win" ? "up" : r.outcome === "loss" ? "down" : "open";
+      root.append(s("text", { x: labelW, y: yc, "text-anchor": "end", "dominant-baseline": "middle", class: "row-label" }, `${r.id} · ${r.asset}`));
+      const result = taken ? `result ${fmtR(r.r)}` : `${titleCase(r.status)}${isNum(r.hyp) ? ", hypothetical " + fmtR(r.hyp) : ""}`;
+      const hit = s("rect", { x: 0, y: yc - rowH / 2, width: W, height: rowH, fill: "transparent", tabindex: 0, class: "hit",
+                              "aria-label": `${r.id}: planned ${r.rr.toFixed(2)}R, ${result}` });
+      hitTip(hit, `${r.rr.toFixed(2)}R planned`, [{ key: cls === "up" ? "var(--up)" : cls === "down" ? "var(--down)" : "var(--neutral)", text: `${r.id} · ${r.asset}` },
+                                                  { text: result }, { text: r.grade ? `Trader's grade: ${r.grade}` : "" }],
+             () => { const b = root.getBoundingClientRect(); return { x: b.left + X(r.rr), y: b.top + yc }; });
+      root.append(hit, s("line", { x1: X(0), x2: X(r.rr), y1: yc, y2: yc, class: "stem" }),
+                  s("circle", { cx: X(r.rr), cy: yc, r: 6, class: `pin ${cls}` }),
+                  s("text", { x: X(r.rr) + 11, y: yc, "dominant-baseline": "middle", class: "cap-label" }, `${r.rr.toFixed(2)}R${r.grade ? " · " + r.grade : ""}`));
+    });
+    return root;
+  });
+}
+function roundedRight(x, y, w, hgt, rad = 4) { const r = Math.min(rad, w / 2, hgt / 2);
+  return `M${x},${y}h${w - r}a${r},${r} 0 0 1 ${r},${r}v${hgt - 2 * r}a${r},${r} 0 0 1 ${-r},${r}h${-(w - r)}Z`; }
+function roundedLeft(x, y, w, hgt, rad = 4) { const r = Math.min(rad, w / 2, hgt / 2);
+  return `M${x + w},${y}v${hgt}h${-(w - r)}a${r},${r} 0 0 1 ${-r},${-r}v${-(hgt - 2 * r)}a${r},${r} 0 0 1 ${r},${-r}Z`; }
 const HOUR_TICKS = [[0.25, "15m"], [1, "1h"], [4, "4h"], [24, "1d"], [168, "1w"], [720, "1mo"], [2160, "3mo"]];
 function scatterChart(host, points, o) {
   if (!points.length) { host.replaceChildren(h("p", { class: "empty", text: o.empty || "No data yet." })); return; }
@@ -674,15 +779,6 @@ function scatterChart(host, points, o) {
       root.append(s("text", { x: X(v), y: m.t + ih + 16, "text-anchor": "middle" }, label));
     }
     root.append(s("text", { x: m.l + iw / 2, y: H - 6, "text-anchor": "middle", class: "axis-title" }, o.xLabel));
-    if (o.connect && points.length > 1) {
-      // joined in x order (ties by trade ID), painted like cumulative R: green above 0R, red below
-      const ordered = [...points].sort((a, b) => a.x - b.x || a.id.localeCompare(b.id));
-      const d = ordered.map((p, i) => `${i ? "L" : "M"}${X(p.x)},${Y(p.y)}`).join(""), zero = Y(0);
-      const paint = zeroSplit(root, m.t, ih, zero);
-      const first = X(ordered[0].x), last = X(ordered[ordered.length - 1].x);
-      root.append(s("path", { d: `${d}L${last},${zero}L${first},${zero}Z`, class: "area draw", fill: paint.area }),
-                  s("path", { d, class: "line connect draw", stroke: paint.line }));
-    }
     const labelAll = points.length <= 6;
     points.forEach(p => {
       const cx = X(p.x), cy = Y(p.y), up = p.y >= 0;
@@ -870,17 +966,23 @@ function renderPerformance() {
   pick.addEventListener("change", render); render();
   const matrix = KB.stats.process_outcome;
   const cell = (g, o) => (matrix.find(m => m.grade === g && m.outcome === o) || { n: 0 }).n;
-  const loss = Object.entries(KB.stats.loss_types).map(([k, v]) => ({ type: k, ...v }));
   const cf = KB.stats.counterfactual;
   const measuredTrades = trades.filter(t => t.status === "closed" && isNum(t.derived.r));
   const holdPts = measuredTrades.filter(t => isNum(t.derived.holding_hours) && t.derived.holding_hours > 0)
     .map(t => ({ id: t.id, x: t.derived.holding_hours, y: t.derived.r, xText: `Held ${fmtHours(t.derived.holding_hours)}` }));
-  const procPts = measuredTrades.filter(t => isNum(t.derived.process_mean))
-    .map(t => ({ id: t.id, x: t.derived.process_mean, y: t.derived.r, xText: `Process ${t.derived.process_mean.toFixed(2)} / 5 (${t.derived.grade})` }));
-  const holdHost = h("div", { class: "chart-host" }), procHost = h("div", { class: "chart-host" });
+  const chrono = arr => [...arr].sort((a, b) => String(a.derived.sort_date).localeCompare(String(b.derived.sort_date)) || a.id.localeCompare(b.id));
+  const excRows = chrono(measuredTrades.filter(t => isNum(t.derived.mae_r) || isNum(t.derived.mfe_r)))
+    .map(t => ({ id: t.id, asset: t.asset, mae: t.derived.mae_r, mfe: t.derived.mfe_r, r: t.derived.r }));
+  const ladderRows = chrono(trades.filter(t => (t.derived.planned_rr || []).some(isNum)))
+    .map(t => ({ id: t.id, asset: t.asset, status: t.status, outcome: t.derived.outcome, r: t.derived.r, hyp: t.derived.counterfactual_r,
+                 grade: dig(t, "review.trader_grade"), rr: Math.max(...t.derived.planned_rr.filter(isNum)) }));
+  const ex = KB.stats.excursions || {};
+  const minRR = dig(KB.profile, "risk.min_rr"), sGuide = dig(KB.profile, "grading.s_rr_guide");
+  const holdHost = h("div", { class: "chart-host" }), excHost = h("div", { class: "chart-host" }), ladderHost = h("div", { class: "chart-host" });
   mount(() => {
     scatterChart(holdHost, holdPts, { log: true, xLabel: "Time in trade (log scale)", aria: "Holding time against R", empty: "No trades with a known duration yet." });
-    scatterChart(procHost, procPts, { connect: true, domain: [1, 5], ticks: [1, 2, 3, 4, 5], xLabel: "Process score (mean of five dimensions)", aria: "Process score against R, trades joined in order of process score", empty: "No scored trades yet." });
+    excursionChart(excHost, excRows);
+    rrLadderChart(ladderHost, ladderRows, minRR, sGuide);
   });
   const pointTable = pts => h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
     table([{ key: "id", label: "Trade" }, { key: "xText", label: "Value" }, { label: "R", num: true, render: r => rSpan(r.y) }], pts));
@@ -889,15 +991,25 @@ function renderPerformance() {
       h("div", { class: "filters" }, h("label", {}, "Group by", pick)), note, barHost, h("div", { style: "height:12px" }), host),
     h("div", { class: "grid2" },
       card("Time in trade vs R", "Scalps and swings on one axis (log scale). Duration uses your stated minutes when given, otherwise the dates.", holdHost, pointTable(holdPts)),
-      card("Process score vs R", "Trades joined from the lowest process score to the highest: green above 0R, red below. If process quality matters, the line should rise to the right. Correlation, not proof.", procHost, pointTable(procPts))),
+      card("Heat and run (MAE / MFE)", "How far each trade went against you (red: heat) and in your favour (green: run) before it closed, in R. The pin is the result. Small heat on winners means sniper entries; a loser with a long green run was a winner that turned.",
+        h("div", { class: "tiles", style: "margin-bottom:10px" },
+          tile("Median heat on winners", isNum(ex.winner_mae_median) ? ex.winner_mae_median.toFixed(2) + "R" : "—", ex.winners ? `Worst ${ex.winner_mae_max.toFixed(2)}R · n=${ex.winners}` : "No measured winners"),
+          tile("Median run on losers", isNum(ex.loser_mfe_median) ? ex.loser_mfe_median.toFixed(2) + "R" : "—", ex.losers ? `Best ${ex.loser_mfe_max.toFixed(2)}R · n=${ex.losers}` : "No measured losers")),
+        excHost, h("div", { class: "legend" }, h("span", {}, h("i", { style: "background:var(--down)" }), "Heat (MAE)"),
+          h("span", {}, h("i", { style: "background:var(--up)" }), "Run (MFE)"), h("span", {}, h("i", { style: "background:var(--ink-2);border-radius:50%" }), "Result")),
+        h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
+          table([{ key: "id", label: "Trade" }, { key: "asset", label: "Asset" }, { label: "Heat (MAE)", num: true, render: r => isNum(r.mae) ? r.mae.toFixed(2) + "R" : "—" },
+                 { label: "Run (MFE)", num: true, render: r => isNum(r.mfe) ? r.mfe.toFixed(2) + "R" : "—" }, { label: "Result", num: true, render: r => rSpan(r.r) }], excRows)))),
     h("div", { class: "grid2" },
       card("Process vs outcome", "Good outcome with poor process is luck, not a pattern to repeat.",
         table([{ key: "grade", label: "Process" }, { label: "Win", num: true, render: r => cell(r.grade, "win") },
                { label: "Loss", num: true, render: r => cell(r.grade, "loss") }, { label: "Breakeven", num: true, render: r => cell(r.grade, "breakeven") }],
               ["good", "mixed", "poor", "unscored"].map(g => ({ grade: g })))),
-      card("Loss classification (A–E)", "A = good loss · B = strategy failure · C = execution error · D = invalid setup · E = information deficiency.",
-        table([{ key: "type", label: "Type" }, { key: "label", label: "Meaning" }, { key: "n", label: "n", num: true },
-               { label: "Total R", num: true, render: r => fmtR(r.total_r) }], loss, { empty: "No losses yet." }))),
+      card("Planned R:R against your rules", "The best target of every setup, taken or not, in R. Lines: your minimum and the rough S guide. Filled pin: taken (green win, red loss). Ring: missed or not taken.",
+        ladderHost, h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
+          table([{ key: "id", label: "Trade" }, { key: "asset", label: "Asset" }, { label: "Status", render: r => titleCase(r.status) },
+                 { label: "Planned R:R", num: true, render: r => r.rr.toFixed(2) + "R" }, { label: "Grade", render: r => r.grade || "—" },
+                 { label: "Result", num: true, render: r => r.status === "closed" ? rSpan(r.r) : isNum(r.hyp) ? fmtR(r.hyp) + " (hyp.)" : "—" }], ladderRows)))),
     card("Trades without vs with tagged mistakes", "The gap estimates what execution errors cost. It is confounded by anything else that differs between the two groups.",
       table(SUMMARY_COLS("Subset"), [{ label: "No mistakes", summary: KB.stats.mistake_free }, { label: "At least one mistake", summary: KB.stats.with_mistakes }])),
     card("Counterfactual: missed and not taken", "Hypothetical results only. Excluded from every statistic above.",
@@ -1166,6 +1278,7 @@ themeBtn.addEventListener("click", () => {
 applyTheme(store.get("tj-theme"));
 
 backgroundTape();
+backgroundTicker();
 const bgSelect = document.getElementById("bg-select");
 /* Canvas scenes share one engine: sizing, pointer, pause when hidden, one static frame under reduced motion.
    Colours are read from the theme tokens every frame, so a theme switch recolours a running scene. */
@@ -1293,6 +1406,106 @@ const SCENES = {
     },
   },
 };
+const rgbOf = (col, fb) => { const m = /^#([0-9a-f]{6})$/i.exec(String(col).trim());
+  return m ? [0, 2, 4].map(i => parseInt(m[1].slice(i, i + 2), 16)) : fb; };
+Object.assign(SCENES, {
+  heatmap: {
+    init(S) {
+      S.cell = 6; S.cols = Math.ceil(S.W / S.cell) + 1; S.rows = Math.ceil(S.H / S.cell) + 1; S.acc = 0;
+      S.off = document.createElement("canvas"); S.off.width = S.cols; S.off.height = S.rows; S.octx = S.off.getContext("2d");
+      S.img = S.octx.createImageData(S.cols, S.rows); S.col = [];
+      S.walls = Array.from({ length: S.rows }, () => (S.rnd() < 0.14 ? 0.55 + S.rnd() * 0.45 : S.rnd() * 0.22));
+      S.price = S.rows / 2; S.vel = 0; S.path = [];
+      for (let i = 0; i < S.cols; i++) SCENES.heatmap.step(S, true);
+    },
+    step(S) {
+      const d = S.img.data, w = S.cols, rgbA = S.rgbA || [165, 148, 249], rgbB = S.rgbB || [38, 166, 154];
+      d.copyWithin(0, 4, d.length);                                  // shift every row left by one column
+      S.vel = S.vel * 0.9 + (S.rnd() - 0.5) * 0.9 + (S.rows / 2 - S.price) * 0.004;
+      S.price = Math.max(3, Math.min(S.rows - 4, S.price + S.vel));
+      for (let y = 0; y < S.rows; y++) {
+        if (S.rnd() < 0.004) S.walls[y] = S.rnd() < 0.5 ? 0.55 + S.rnd() * 0.45 : S.rnd() * 0.2;       // walls appear and pull
+        const near = Math.abs(y - S.price);
+        if (near < 2.5) S.walls[y] *= 0.8;                                                             // traded through: consumed
+        const v = Math.min(1, S.walls[y] * (0.8 + 0.4 * S.rnd())), o = (y * w + (w - 1)) * 4;
+        for (let ch = 0; ch < 3; ch++) d[o + ch] = rgbA[ch] + (rgbB[ch] - rgbA[ch]) * v;
+        d[o + 3] = Math.pow(v, 1.35) * 235;
+      }
+      S.path.push(S.price); if (S.path.length > S.cols) S.path.shift();
+    },
+    draw(S, ctx, c, k) {
+      S.rgbA = rgbOf(c.brand, [165, 148, 249]); S.rgbB = rgbOf(c.up, [38, 166, 154]);
+      S.acc += k; while (S.acc >= 6) { SCENES.heatmap.step(S); S.acc -= 6; }
+      S.octx.putImageData(S.img, 0, 0);
+      ctx.clearRect(0, 0, S.W, S.H); ctx.imageSmoothingEnabled = true; ctx.globalAlpha = 0.55;
+      ctx.drawImage(S.off, 0, 0, S.cols, S.rows, 0, 0, S.cols * S.cell, S.rows * S.cell);
+      ctx.globalAlpha = 0.75; ctx.strokeStyle = c.ink; ctx.lineWidth = 1.5; ctx.beginPath();
+      const x0 = (S.cols - S.path.length) * S.cell;
+      S.path.forEach((p, i) => { const x = x0 + i * S.cell, y = p * S.cell; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      ctx.stroke();
+    },
+  },
+  bubbles: {
+    init(S) {
+      S.n = Math.max(24, Math.min(70, Math.round(S.W * S.H / 26000)));
+      S.spawn = first => { const r = 3 + Math.pow(S.rnd(), 3) * 40;
+        return { x: S.rnd() * S.W, y: first ? S.rnd() * S.H : S.H + r + S.rnd() * 60, r, vy: -(0.25 + S.rnd() * 0.8), vx: (S.rnd() - 0.5) * 0.25,
+                 buy: S.rnd() < 0.5, ph: S.rnd() * 6.28 }; };
+      S.b = Array.from({ length: S.n }, () => S.spawn(true)); S.t = 0;
+    },
+    draw(S, ctx, c, k) {
+      S.t += k; ctx.clearRect(0, 0, S.W, S.H); ctx.lineWidth = 1.5;
+      for (let i = 0; i < S.b.length; i++) {
+        const b = S.b[i]; b.y += b.vy * k; b.x += (b.vx + Math.sin(S.t * 0.01 + b.ph) * 0.15) * k;
+        if (b.y < -b.r - 4) { S.b[i] = S.spawn(false); continue; }
+        const col = b.buy ? c.up : c.down;
+        ctx.globalAlpha = 0.13; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.5; ctx.strokeStyle = col; ctx.stroke();
+      }
+    },
+  },
+  radar: {
+    init(S) {
+      S.a = 0; S.blips = Array.from({ length: 26 }, () => ({ ang: S.rnd() * Math.PI * 2, rad: 0.12 + S.rnd() * 0.85, up: S.rnd() < 0.5, lit: 0 }));
+    },
+    draw(S, ctx, c, k) {
+      const TAU = Math.PI * 2, cx = S.W / 2, cy = S.H / 2, R = Math.hypot(S.W, S.H) / 2;
+      const prev = S.a; S.a = (S.a + 0.011 * k) % TAU;
+      ctx.clearRect(0, 0, S.W, S.H); ctx.lineWidth = 1; ctx.strokeStyle = c.brand;
+      for (let i = 1; i <= 6; i++) { ctx.globalAlpha = 0.16; ctx.beginPath(); ctx.arc(cx, cy, R * i / 6, 0, TAU); ctx.stroke(); }
+      ctx.globalAlpha = 0.1; ctx.beginPath(); ctx.moveTo(cx - R, cy); ctx.lineTo(cx + R, cy); ctx.moveTo(cx, cy - R); ctx.lineTo(cx, cy + R); ctx.stroke();
+      for (let i = 0; i < 28; i++) {                                                   // the sweep: a fading wedge behind the beam
+        ctx.globalAlpha = 0.16 * (1 - i / 28); ctx.fillStyle = c.brand; ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R, S.a - (i + 1) * 0.018, S.a - i * 0.018); ctx.closePath(); ctx.fill();
+      }
+      const swept = ang => { const d = (S.a - ang + TAU) % TAU, span = (S.a - prev + TAU) % TAU; return d <= span + 1e-9; };
+      for (const b of S.blips) {
+        if (swept(b.ang)) b.lit = 1;
+        b.lit *= Math.pow(0.985, k);
+        if (b.lit < 0.02 && S.rnd() < 0.002 * k) Object.assign(b, { ang: S.rnd() * TAU, rad: 0.12 + S.rnd() * 0.85, up: S.rnd() < 0.5 });
+        const x = cx + Math.cos(b.ang) * b.rad * R * 0.8, y = cy + Math.sin(b.ang) * b.rad * R * 0.8, col = b.up ? c.up : c.down;
+        ctx.globalAlpha = 0.15 + 0.75 * b.lit; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 3, 0, TAU); ctx.fill();
+        ctx.globalAlpha = 0.4 * b.lit; ctx.strokeStyle = col; ctx.beginPath(); ctx.arc(x, y, 3 + 14 * (1 - b.lit), 0, TAU); ctx.stroke();
+      }
+    },
+  },
+});
+function backgroundTicker() {
+  const host = document.getElementById("bg-ticker");
+  const items = newestFirst(trades).map(t => {
+    const hyp = t.status !== "closed", r = hyp ? t.derived.counterfactual_r : t.derived.r;
+    if (!isNum(r)) return null;
+    const arrow = t.direction === "long" ? "▲" : t.direction === "short" ? "▼" : "●";
+    return h("span", { class: "tk-item" }, `${t.id} ${t.asset} ${arrow} `,
+             h("span", { class: hyp ? "tk-hyp" : r >= 0 ? "tk-up" : "tk-down", text: fmtR(r) + (hyp ? " hyp." : "") }));
+  }).filter(Boolean);
+  const base = items.length ? items : [h("span", { class: "tk-item", text: "TRADING TERMINAL" })];
+  for (let row = 0; row < 5; row++) {
+    const order = base.map((_, i) => base[(i + row * 2) % base.length]);
+    const strip = h("div", { class: "tk-strip" }, order.map(n => n.cloneNode(true)), order.map(n => n.cloneNode(true)));
+    host.append(h("div", { class: "tk-row" }, strip));
+  }
+}
 let scene = null;
 function startScene(name) {
   const def = SCENES[name], canvas = document.getElementById("bg-canvas"), ctx = canvas.getContext("2d");

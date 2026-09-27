@@ -279,6 +279,22 @@ def _check_review(t: dict, kb: KB, where: str, add: _Sink, outcome: str | None) 
         add(INFO, where, "reviewed loss without review.loss_type (A-E)")
 
 
+def _check_excursions(t: dict, where: str, add: _Sink, d) -> None:
+    """fills.worst_price / best_price must sit on the right side of the entry and agree with the outcome."""
+    entry, sign = model.entry_price(t), model.side_sign(t)
+    if entry is None or sign is None:
+        return
+    for path, favourable in (("fills.worst_price", False), ("fills.best_price", True)):
+        v = num(dig(t, path))
+        if v is not None and (sign * (v - entry) < -1e-12 if favourable else sign * (v - entry) > 1e-12):
+            add(ERROR, where, f"{path} {v:g} is on the {'losing' if favourable else 'profitable'} side of the entry {entry:g}")
+    if d.mae_r is not None and d.mae_r > 1 + 1e-6 and d.outcome != "loss":
+        add(WARN, where, f"worst price is {d.mae_r:.2f}R against the entry, beyond the initial stop, on a trade that did "
+                         f"not lose: was the stop moved?")
+    if d.mfe_r is not None and d.r is not None and d.r > 0 and d.mfe_r < d.r - 0.02:
+        add(WARN, where, f"best price reaches {d.mfe_r:.2f}R but the result is {d.r:.2f}R: best_price is short of the exit")
+
+
 def _check_trade(trade: Trade, kb: KB, add: _Sink) -> None:
     t, where = trade.data, trade.path.name
     tid = t.get("id")
@@ -317,6 +333,7 @@ def _check_trade(trade: Trade, kb: KB, add: _Sink) -> None:
 
     d = derive(t, kb.config)
     _check_review(t, kb, where, add, d.outcome)
+    _check_excursions(t, where, add, d)
 
     has_result = num(dig(t, "result.pnl")) is not None or num(dig(t, "result.r")) is not None
     if status == REALIZED:

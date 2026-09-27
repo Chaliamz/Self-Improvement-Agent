@@ -16,6 +16,7 @@ import hashlib
 import json
 import re
 from pathlib import Path
+from statistics import median
 from typing import Any
 
 from . import __version__, analysis, model, readiness
@@ -102,6 +103,16 @@ def _rules(kb: KB, rs: list) -> dict:
     return {"definitions": defs, "counts": counts, "none_broken": _summary(kept, kb), "any_broken": _summary(broken, kb)}
 
 
+def _excursions(rs: list) -> dict:
+    """Heat on winners (MAE) and run on losers (MFE), in R: how precise entries are and how often losers were winners first."""
+    win_mae = [row.d.mae_r for row in rs if row.d.outcome == "win" and row.d.mae_r is not None]
+    loss_mfe = [row.d.mfe_r for row in rs if row.d.outcome == "loss" and row.d.mfe_r is not None]
+    return {"winners": len(win_mae), "winner_mae_median": median(win_mae) if win_mae else None,
+            "winner_mae_max": max(win_mae) if win_mae else None,
+            "losers": len(loss_mfe), "loser_mfe_median": median(loss_mfe) if loss_mfe else None,
+            "loser_mfe_max": max(loss_mfe) if loss_mfe else None}
+
+
 def build_payload(kb: KB) -> dict:
     cfg = kb.config
     rs = analysis.realized(kb)
@@ -160,6 +171,7 @@ def build_payload(kb: KB) -> dict:
             "mistake_free": _summary(clean, kb),
             "with_mistakes": _summary(dirty, kb),
             "rules": _rules(kb, rs),
+            "excursions": _excursions(rs),
             "counterfactual": [{"id": row.trade.id, "hypothetical_r": row.d.counterfactual_r}
                                for row in analysis.counterfactuals(kb)],
         },

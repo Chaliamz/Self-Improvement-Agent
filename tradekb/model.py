@@ -185,6 +185,21 @@ class Derived:
     label: str | None
     counterfactual_r: float | None
     missing: list[str] = field(default_factory=list)
+    mae_r: float | None = None                  # heat: furthest move against the entry before the exit, in R
+    mfe_r: float | None = None                  # run: furthest move in favour before the exit, in R
+
+
+def excursions(t: dict) -> tuple[float | None, float | None]:
+    """MAE / MFE in R from the chart-measured fills.worst_price and fills.best_price (between entry and exit).
+    A price on the wrong side of the entry counts as 0 here; the validator reports it as an error."""
+    entry, stop, sign = entry_price(t), num(dig(t, "plan.stop")), side_sign(t)
+    if None in (entry, stop, sign) or entry == stop:
+        return None, None
+    risk = abs(entry - stop)
+    worst, best = num(dig(t, "fills.worst_price")), num(dig(t, "fills.best_price"))
+    mae = max(0.0, sign * (entry - worst)) / risk if worst is not None else None
+    mfe = max(0.0, sign * (best - entry)) / risk if best is not None else None
+    return mae, mfe
 
 
 def derive(t: dict, cfg: dict) -> Derived:
@@ -198,8 +213,9 @@ def derive(t: dict, cfg: dict) -> Derived:
     out = outcome(r, pnl, cfg["breakeven_band_r"]) if status == REALIZED else None
     grade, mean = process_grade(t, cfg)
     missing = missing_for_r(t) if status == REALIZED and r is None else []
+    mae, mfe = excursions(t) if status == REALIZED else (None, None)
     return Derived(r, r_src, risk, risk_src, pnl, out, grade, mean,
-                   outcome_process_label(grade, out), None, missing)
+                   outcome_process_label(grade, out), None, missing, mae, mfe)
 
 
 def planned_rr(t: dict) -> list[float | None]:

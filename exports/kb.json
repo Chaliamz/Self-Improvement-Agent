@@ -1,5 +1,5 @@
 {
-  "fingerprint": "ae284eca192a5942",
+  "fingerprint": "986da8006fc4dd41",
   "schema_version": 1,
   "tool_version": "1.0.0",
   "phase": {
@@ -1680,6 +1680,8 @@
         "label": "BAD OUTCOME / POOR PROCESS",
         "counterfactual_r": null,
         "missing": [],
+        "mae_r": null,
+        "mfe_r": null,
         "exposure": {
           "side": "short",
           "stop_pct": 3.8366718027734987,
@@ -1841,6 +1843,8 @@
         "label": null,
         "counterfactual_r": 3.0852,
         "missing": [],
+        "mae_r": null,
+        "mfe_r": null,
         "exposure": {
           "side": "short",
           "stop_pct": 2.6089534538986054,
@@ -2001,6 +2005,8 @@
         "label": "GOOD OUTCOME / MIXED PROCESS",
         "counterfactual_r": null,
         "missing": [],
+        "mae_r": null,
+        "mfe_r": null,
         "exposure": {
           "side": "short",
           "stop_pct": 0.23859847652358962,
@@ -2150,6 +2156,8 @@
         "label": null,
         "counterfactual_r": null,
         "missing": [],
+        "mae_r": null,
+        "mfe_r": null,
         "exposure": null,
         "planned_rr": [],
         "holding_hours": null,
@@ -2306,6 +2314,8 @@
         "label": "GOOD OUTCOME / GOOD PROCESS",
         "counterfactual_r": null,
         "missing": [],
+        "mae_r": null,
+        "mfe_r": null,
         "exposure": {
           "side": "long",
           "stop_pct": 3.119123990708985,
@@ -2493,6 +2503,8 @@
         "label": "GOOD OUTCOME / GOOD PROCESS",
         "counterfactual_r": null,
         "missing": [],
+        "mae_r": null,
+        "mfe_r": null,
         "exposure": {
           "side": "long",
           "stop_pct": 6.2821454812637665,
@@ -2662,6 +2674,8 @@
         "label": "GOOD OUTCOME / GOOD PROCESS",
         "counterfactual_r": null,
         "missing": [],
+        "mae_r": null,
+        "mfe_r": null,
         "exposure": {
           "side": "short",
           "stop_pct": 0.6151391140967142,
@@ -2826,6 +2840,8 @@
         "label": null,
         "counterfactual_r": -1.0,
         "missing": [],
+        "mae_r": null,
+        "mfe_r": null,
         "exposure": {
           "side": "short",
           "stop_pct": 2.56526059073254,
@@ -4633,6 +4649,14 @@
         "evidence": "LOW"
       }
     },
+    "excursions": {
+      "winners": 0,
+      "winner_mae_median": null,
+      "winner_mae_max": null,
+      "losers": 0,
+      "loser_mfe_median": null,
+      "loser_mfe_max": null
+    },
     "counterfactual": [
       {
         "id": "T-0005",
@@ -4910,8 +4934,8 @@
     "unreviewed": []
   },
   "build": {
-    "fingerprint": "ae284eca192a5942",
-    "generated_at": "2026-09-27T19:15:31+00:00",
+    "fingerprint": "986da8006fc4dd41",
+    "generated_at": "2026-09-27T19:52:29+00:00",
     "validation": [
       {
         "level": "INFO",
