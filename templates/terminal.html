@@ -151,7 +151,8 @@ body { position: relative; isolation: isolate; }
 :root[data-bg-kind="canvas"] #bg #bg-canvas,
 :root[data-bg="starfield"] #bg .bg-static, :root[data-bg="waves"] #bg .bg-static, :root[data-bg="depth"] #bg .bg-static,
 :root[data-bg="nebula"] #bg .bg-nebula,
-:root[data-bg="plasma"] #bg .bg-plasma, :root[data-bg="radar"] #bg .bg-static, :root[data-bg="bubbles"] #bg .bg-static,
+:root[data-bg="plasma"] #bg .bg-plasma, :root[data-bg="lava"] #bg .bg-lava,
+:root[data-bg="fireflies"] #bg .bg-static, :root[data-bg="silk"] #bg .bg-static, :root[data-bg="radar"] #bg .bg-static, :root[data-bg="bubbles"] #bg .bg-static,
 :root[data-bg="synthwave"] #bg .bg-synth,
 :root[data-bg="tape"] #bg .bg-glow, :root[data-bg="tape"] #bg .bg-grid, :root[data-bg="tape"] #bg #bg-tape,
 :root[data-bg="off"] #bg .bg-static { display: block; }
@@ -211,18 +212,16 @@ body { position: relative; isolation: isolate; }
   background: radial-gradient(38% 38% at 30% 32%, color-mix(in srgb, var(--up) 28%, transparent), transparent 70%),
     radial-gradient(34% 34% at 70% 66%, color-mix(in srgb, var(--brand) 34%, transparent), transparent 70%); }
 @keyframes plasma-spin { to { transform: rotate(360deg); } }
+/* lava lamp: soft blobs rising and sinking at their own pace */
+.bg-lava { filter: blur(34px) saturate(1.2); }
+.bg-lava i { position: absolute; border-radius: 50%; animation: lava-rise var(--dur) ease-in-out infinite alternate; }
+.bg-lava i:nth-child(1) { left: 8%;  width: 26vmax; height: 26vmax; --dur: 23s; background: radial-gradient(circle, color-mix(in srgb, var(--brand) 55%, transparent), transparent 68%); }
+.bg-lava i:nth-child(2) { left: 55%; width: 22vmax; height: 22vmax; --dur: 29s; animation-delay: -9s; background: radial-gradient(circle, color-mix(in srgb, var(--down) 42%, transparent), transparent 68%); }
+.bg-lava i:nth-child(3) { left: 30%; width: 18vmax; height: 18vmax; --dur: 19s; animation-delay: -5s; background: radial-gradient(circle, color-mix(in srgb, var(--up) 45%, transparent), transparent 68%); }
+.bg-lava i:nth-child(4) { left: 72%; width: 16vmax; height: 16vmax; --dur: 33s; animation-delay: -14s; background: radial-gradient(circle, color-mix(in srgb, var(--pos) 40%, transparent), transparent 68%); }
+.bg-lava i:nth-child(5) { left: 42%; width: 13vmax; height: 13vmax; --dur: 26s; animation-delay: -3s; background: radial-gradient(circle, color-mix(in srgb, var(--brand) 45%, transparent), transparent 68%); }
+@keyframes lava-rise { 0% { transform: translate3d(0, 105vh, 0) scale(.9); } 50% { transform: translate3d(4vw, 45vh, 0) scale(1.15); } 100% { transform: translate3d(-3vw, -30vh, 0) scale(.95); } }
 @keyframes plasma-drift { from { transform: translate3d(-6%, -4%, 0) scale(1); } to { transform: translate3d(6%, 5%, 0) scale(1.15); } }
-/* journal ticker: the trader's own trades scrolling in large faint type */
-:root[data-bg="ticker"] #bg #bg-ticker { display: flex; }
-#bg-ticker { flex-direction: column; justify-content: space-around; padding: 4vh 0; }
-.tk-row { overflow: hidden; white-space: nowrap; opacity: .085; color: var(--ink); font: 800 clamp(26px, 5.5vw, 68px)/1.1 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: -.01em; }
-.tk-row:nth-child(even) { opacity: .055; font-size: clamp(18px, 3.6vw, 44px); }
-.tk-strip { display: inline-flex; gap: 2.5ch; padding-right: 2.5ch; animation: tape 110s linear infinite; }
-.tk-row:nth-child(2) .tk-strip { animation-duration: 150s; animation-direction: reverse; }
-.tk-row:nth-child(3) .tk-strip { animation-duration: 90s; }
-.tk-row:nth-child(4) .tk-strip { animation-duration: 170s; animation-direction: reverse; }
-.tk-row:nth-child(5) .tk-strip { animation-duration: 130s; }
-.tk-item .tk-up { color: var(--up); } .tk-item .tk-down { color: var(--down); } .tk-item .tk-hyp { color: var(--muted); }
 /* candle tape (the previous background) */
 .bg-glow { background:
     radial-gradient(40% 34% at 18% 22%, var(--glow-up), transparent 70%),
@@ -242,6 +241,7 @@ svg .whisker { stroke: var(--ink-2); stroke-width: 1.5; }
 svg .ref { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 4; }
 svg .ref.strong { stroke-dasharray: none; stroke: var(--axis); stroke-width: 1.5; }
 svg .ref-label { fill: var(--ink-2); font-size: 11px; }
+svg .grade-letter { fill: var(--ink); font-size: 16px; font-weight: 750; }
 svg .stem { stroke: var(--axis); stroke-width: 2; stroke-linecap: round; }
 svg .pin { stroke: var(--surface); stroke-width: 2; } svg .pin.up { fill: var(--up); } svg .pin.down { fill: var(--down); }
 svg .pin.open { fill: var(--surface); stroke: var(--neutral); stroke-width: 2; }
@@ -300,11 +300,13 @@ footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top:
       <div class="top-actions">
         <label class="sr" for="bg-select" style="position:absolute;left:-9999px">Background</label>
         <select id="bg-select" aria-label="Background animation">
-          <optgroup label="Ambient"><option value="aurora">Aurora</option><option value="nebula">Nebula</option><option value="plasma">Plasma</option>
-            <option value="constellation">Constellation</option><option value="starfield">Starfield</option><option value="waves">Waves</option></optgroup>
+          <optgroup label="Ambient"><option value="aurora">Aurora</option><option value="borealis">Borealis</option><option value="nebula">Nebula</option>
+            <option value="plasma">Plasma</option><option value="lava">Lava lamp</option><option value="fireflies">Fireflies</option>
+            <option value="silk">Silk</option><option value="constellation">Constellation</option><option value="starfield">Starfield</option>
+            <option value="waves">Waves</option></optgroup>
           <optgroup label="Market"><option value="tape">Candle tape</option><option value="depth">Order-book depth</option><option value="heatmap">Liquidity heatmap</option>
             <option value="bubbles">Order-flow bubbles</option><option value="radar">Market radar</option><option value="matrix">Price rain</option>
-            <option value="ticker">Journal ticker</option></optgroup>
+</optgroup>
           <optgroup label="Retro"><option value="synthwave">Synthwave</option></optgroup>
           <option value="off">No animation</option>
         </select>
@@ -321,7 +323,7 @@ footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top:
   <div class="bg-aurora"><i></i><i></i><i></i></div>
   <div class="bg-nebula"></div>
   <div class="bg-plasma"></div>
-  <div id="bg-ticker"></div>
+  <div class="bg-lava"><i></i><i></i><i></i><i></i><i></i></div>
   <canvas id="bg-canvas"></canvas>
   <div class="bg-synth"><div class="sun"></div><div class="floor"></div></div>
   <div class="bg-glow"></div>
@@ -683,34 +685,32 @@ function groupBarChart(host, groups, key) {
   });
 }
 /* Heat and run: MAE (red, left of 0) and MFE (green, right of 0) per trade, in R, with the result as a pin. */
-function excursionChart(host, rows) {
-  if (!rows.length) { host.replaceChildren(h("p", { class: "empty", text: "No trades with a measured worst/best price yet." })); return; }
+/* Results by the trader's own grade, in the fixed order S to D, each with its trading policy. */
+function gradeChart(host, rows) {
   responsive(host, W => {
-    const rowH = 30, labelW = Math.min(150, W * 0.3), m = { t: 22, r: 56, b: 26, l: labelW + 12 };
-    const iw = W - m.l - m.r, H = m.t + rows.length * rowH + m.b;
-    const lo = Math.min(-1, ...rows.map(r => -(r.mae ?? 0))), hi = Math.max(1, ...rows.map(r => Math.max(r.mfe ?? 0, r.r)));
-    const xt = niceTicks(lo, hi), x0 = xt[0], x1 = xt[xt.length - 1], X = v => m.l + (v - x0) / (x1 - x0) * iw;
-    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "data-chart": "excursion",
-                            "aria-label": "Heat (MAE) and run (MFE) of each trade, in R" });
+    const rowH = 38, labelW = Math.min(118, W * 0.26), m = { t: 8, r: 118, b: 26, l: labelW + 12 };
+    const iw = W - m.l - m.r, H = m.t + rows.length * rowH + m.b, vals = rows.filter(r => r.sm).map(r => r.sm.expectancy);
+    const xt = niceTicks(Math.min(0, ...vals), Math.max(1, ...vals)), x0 = xt[0], x1 = xt[xt.length - 1], X = v => m.l + (v - x0) / (x1 - x0) * iw;
+    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "data-chart": "grades",
+                            "aria-label": "Expectancy by the trader's grade, S to D" });
     for (const v of xt) {
       root.append(s("line", { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, class: v === 0 ? "axis" : "grid" }));
       root.append(s("text", { x: X(v), y: H - 8, "text-anchor": "middle" }, fmtTick(v)));
     }
-    root.append(s("line", { x1: X(-1), x2: X(-1), y1: m.t - 6, y2: H - m.b, class: "ref" }),
-                s("text", { x: X(-1), y: m.t - 10, "text-anchor": "middle", class: "ref-label" }, "stop −1R"));
     rows.forEach((r, i) => {
-      const yc = m.t + i * rowH + rowH / 2, bh = 10, up = r.r >= 0;
-      root.append(s("text", { x: labelW, y: yc, "text-anchor": "end", "dominant-baseline": "middle", class: "row-label" }, `${r.id} · ${r.asset}`));
+      const yc = m.t + i * rowH + rowH / 2;
+      root.append(s("text", { x: 10, y: yc, "dominant-baseline": "middle", class: "grade-letter" }, r.grade),
+                  s("text", { x: 34, y: yc, "dominant-baseline": "middle", class: "row-label" }, r.policy));
+      if (!r.sm) { root.append(s("text", { x: X(0) + 8, y: yc, "dominant-baseline": "middle", class: "axis-title" }, "no trades yet")); return; }
+      const e = r.sm.expectancy, up = e >= 0, bh = 16;
       const hit = s("rect", { x: 0, y: yc - rowH / 2, width: W, height: rowH, fill: "transparent", tabindex: 0, class: "hit",
-                              "aria-label": `${r.id}: heat ${fmtR(r.mae)}, run ${fmtR(r.mfe)}, result ${fmtR(r.r)}` });
-      hitTip(hit, fmtR(r.r), [{ key: "var(--down)", text: `Heat (MAE) ${isNum(r.mae) ? r.mae.toFixed(2) + "R" : "—"}` },
-                              { key: "var(--up)", text: `Run (MFE) ${isNum(r.mfe) ? r.mfe.toFixed(2) + "R" : "—"}` }, { text: `${r.id} · ${r.asset}` }],
-             () => { const b = root.getBoundingClientRect(); return { x: b.left + X(r.r), y: b.top + yc }; });
-      root.append(hit);
-      if (isNum(r.mae) && r.mae > 0) root.append(s("path", { d: roundedLeft(X(-r.mae), yc - bh / 2, X(0) - X(-r.mae), bh), class: "mark bar-down draw" }));
-      if (isNum(r.mfe) && r.mfe > 0) root.append(s("path", { d: roundedRight(X(0), yc - bh / 2, X(r.mfe) - X(0), bh), class: "mark bar-up draw" }));
-      root.append(s("circle", { cx: X(r.r), cy: yc, r: 5, class: `pin ${up ? "up" : "down"}` }));
-      root.append(s("text", { x: X(Math.max(r.r, r.mfe ?? 0)) + 9, y: yc, "dominant-baseline": "middle", class: "cap-label" }, fmtR(r.r)));
+                              "aria-label": `Grade ${r.grade}: ${fmtR(e)} per trade, n=${r.sm.n}` });
+      hitTip(hit, fmtR(e), [{ key: up ? "var(--up)" : "var(--down)", text: `Grade ${r.grade} · ${r.policy}` },
+                            { text: `n=${r.sm.n} · ${r.sm.wins} W / ${r.sm.losses} L · total ${fmtR(r.sm.total)}` }, { text: r.ids.join(", ") }],
+             () => { const b = root.getBoundingClientRect(); return { x: b.left + X(e), y: b.top + yc }; });
+      root.append(hit, s("rect", { x: X(Math.min(0, e)), y: yc - bh / 2, width: Math.max(1, Math.abs(X(e) - X(0))), height: bh, rx: 4,
+                                   class: `mark ${up ? "bar-up" : "bar-down"} draw` }),
+                  s("text", { x: Math.max(X(e), X(0)) + 8, y: yc, "dominant-baseline": "middle", class: "cap-label" }, `${fmtR(e)} · n=${r.sm.n}`));
     });
     return root;
   });
@@ -749,10 +749,6 @@ function rrLadderChart(host, rows, minRR, sGuide) {
     return root;
   });
 }
-function roundedRight(x, y, w, hgt, rad = 4) { const r = Math.min(rad, w / 2, hgt / 2);
-  return `M${x},${y}h${w - r}a${r},${r} 0 0 1 ${r},${r}v${hgt - 2 * r}a${r},${r} 0 0 1 ${-r},${r}h${-(w - r)}Z`; }
-function roundedLeft(x, y, w, hgt, rad = 4) { const r = Math.min(rad, w / 2, hgt / 2);
-  return `M${x + w},${y}v${hgt}h${-(w - r)}a${r},${r} 0 0 1 ${-r},${-r}v${-(hgt - 2 * r)}a${r},${r} 0 0 1 ${r},${-r}Z`; }
 const HOUR_TICKS = [[0.25, "15m"], [1, "1h"], [4, "4h"], [24, "1d"], [168, "1w"], [720, "1mo"], [2160, "3mo"]];
 function scatterChart(host, points, o) {
   if (!points.length) { host.replaceChildren(h("p", { class: "empty", text: o.empty || "No data yet." })); return; }
@@ -971,17 +967,19 @@ function renderPerformance() {
   const holdPts = measuredTrades.filter(t => isNum(t.derived.holding_hours) && t.derived.holding_hours > 0)
     .map(t => ({ id: t.id, x: t.derived.holding_hours, y: t.derived.r, xText: `Held ${fmtHours(t.derived.holding_hours)}` }));
   const chrono = arr => [...arr].sort((a, b) => String(a.derived.sort_date).localeCompare(String(b.derived.sort_date)) || a.id.localeCompare(b.id));
-  const excRows = chrono(measuredTrades.filter(t => isNum(t.derived.mae_r) || isNum(t.derived.mfe_r)))
-    .map(t => ({ id: t.id, asset: t.asset, mae: t.derived.mae_r, mfe: t.derived.mfe_r, r: t.derived.r }));
   const ladderRows = chrono(trades.filter(t => (t.derived.planned_rr || []).some(isNum)))
     .map(t => ({ id: t.id, asset: t.asset, status: t.status, outcome: t.derived.outcome, r: t.derived.r, hyp: t.derived.counterfactual_r,
                  grade: dig(t, "review.trader_grade"), rr: Math.max(...t.derived.planned_rr.filter(isNum)) }));
-  const ex = KB.stats.excursions || {};
+  const gp = KB.profile.grading || {}, byGrade = KB.stats.by.trader_grade || [];
+  const policyOf = g => (gp.tradeable || []).includes(g) ? "trade" : (gp.maybe || []).includes(g) ? "maybe" : (gp.avoid || []).includes(g) ? "avoid" : "—";
+  const gradeRows = (gp.scale || ["S", "A", "B", "C", "D"]).map(g => { const grp = byGrade.find(x => x.label === g);
+    return { grade: g, policy: policyOf(g), sm: grp ? grp.summary : null, ids: grp ? grp.ids : [] }; });
+  const ungraded = (byGrade.find(x => x.label === "(unknown)") || { ids: [] }).ids;
   const minRR = dig(KB.profile, "risk.min_rr"), sGuide = dig(KB.profile, "grading.s_rr_guide");
-  const holdHost = h("div", { class: "chart-host" }), excHost = h("div", { class: "chart-host" }), ladderHost = h("div", { class: "chart-host" });
+  const holdHost = h("div", { class: "chart-host" }), gradeHost = h("div", { class: "chart-host" }), ladderHost = h("div", { class: "chart-host" });
   mount(() => {
     scatterChart(holdHost, holdPts, { log: true, xLabel: "Time in trade (log scale)", aria: "Holding time against R", empty: "No trades with a known duration yet." });
-    excursionChart(excHost, excRows);
+    gradeChart(gradeHost, gradeRows);
     rrLadderChart(ladderHost, ladderRows, minRR, sGuide);
   });
   const pointTable = pts => h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
@@ -991,15 +989,12 @@ function renderPerformance() {
       h("div", { class: "filters" }, h("label", {}, "Group by", pick)), note, barHost, h("div", { style: "height:12px" }), host),
     h("div", { class: "grid2" },
       card("Time in trade vs R", "Scalps and swings on one axis (log scale). Duration uses your stated minutes when given, otherwise the dates.", holdHost, pointTable(holdPts)),
-      card("Heat and run (MAE / MFE)", "How far each trade went against you (red: heat) and in your favour (green: run) before it closed, in R. The pin is the result. Small heat on winners means sniper entries; a loser with a long green run was a winner that turned.",
-        h("div", { class: "tiles", style: "margin-bottom:10px" },
-          tile("Median heat on winners", isNum(ex.winner_mae_median) ? ex.winner_mae_median.toFixed(2) + "R" : "—", ex.winners ? `Worst ${ex.winner_mae_max.toFixed(2)}R · n=${ex.winners}` : "No measured winners"),
-          tile("Median run on losers", isNum(ex.loser_mfe_median) ? ex.loser_mfe_median.toFixed(2) + "R" : "—", ex.losers ? `Best ${ex.loser_mfe_max.toFixed(2)}R · n=${ex.losers}` : "No measured losers")),
-        excHost, h("div", { class: "legend" }, h("span", {}, h("i", { style: "background:var(--down)" }), "Heat (MAE)"),
-          h("span", {}, h("i", { style: "background:var(--up)" }), "Run (MFE)"), h("span", {}, h("i", { style: "background:var(--ink-2);border-radius:50%" }), "Result")),
+      card("Results by your grade", "Does your grade predict the result? S should sit highest and D lowest. Grades come from you, trade by trade; policy from your scale (S-B trade, C maybe, D avoid). Descriptive until each grade has enough trades.",
+        gradeHost, h("p", { class: "note", style: "margin:6px 0 0", text: ungraded.length ? `Not graded yet: ${ungraded.join(", ")}` : "Every measured trade is graded." }),
         h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
-          table([{ key: "id", label: "Trade" }, { key: "asset", label: "Asset" }, { label: "Heat (MAE)", num: true, render: r => isNum(r.mae) ? r.mae.toFixed(2) + "R" : "—" },
-                 { label: "Run (MFE)", num: true, render: r => isNum(r.mfe) ? r.mfe.toFixed(2) + "R" : "—" }, { label: "Result", num: true, render: r => rSpan(r.r) }], excRows)))),
+          table([{ key: "grade", label: "Grade" }, { key: "policy", label: "Policy" }, { label: "n", num: true, render: r => r.sm ? r.sm.n : 0 },
+                 { label: "W/L", render: r => r.sm ? `${r.sm.wins}/${r.sm.losses}` : "—" }, { label: "Expectancy", num: true, render: r => r.sm ? rSpan(r.sm.expectancy) : "—" },
+                 { label: "Total", num: true, render: r => r.sm ? rSpan(r.sm.total) : "—" }, { label: "Trades", render: r => r.ids.join(", ") || "—" }], gradeRows)))),
     h("div", { class: "grid2" },
       card("Process vs outcome", "Good outcome with poor process is luck, not a pattern to repeat.",
         table([{ key: "grade", label: "Process" }, { label: "Win", num: true, render: r => cell(r.grade, "win") },
@@ -1090,9 +1085,13 @@ function renderRisk() {
     ["Maintenance margin rate", "leverage.maintenance_margin_rate", v => (v * 100).toFixed(2) + "%"],
     ["Maker fee", "fees.maker_rate", v => (v * 100).toFixed(3) + "%"], ["Taker fee", "fees.taker_rate", v => (v * 100).toFixed(3) + "%"],
     ["Account equity", "account.equity", v => fmtNum(v)],
-  ].map(([label, path, f]) => ({ label, value: dig(p, path), f, source: src[path] }));
+    ["News filter", "news_filter.no_new_entries_before_minutes", v => `No new entries ${v} min before red ${(dig(p, "news_filter.currencies") || []).join("/")} events (ForexFactory); open trades kept`],
+    ["Entries resume after news", "news_filter.resume_after_minutes", v => `${v} min after the release`],
+    ["Bot exchange", "execution_venue.exchange", v => String(v)],
+  ].map(([label, path, f]) => ({ label, value: dig(p, path), f, source: src[path] || src[path.split(".")[0]] }));
   const profileTable = table([{ key: "label", label: "Rule" },
-    { label: "Value", render: r => r.value === null || r.value === undefined ? unstated("Unresolved") : r.f(r.value) },
+    { label: "Value", render: r => r.value === null || r.value === undefined ? unstated("Unresolved")
+                                  : r.value === "none" ? h("span", { text: "None (your rule)" }) : r.f(r.value) },
     { label: "Source", wrap: true, render: r => r.source || "—" }], rows);
 
   const expRows = trades.filter(t => t.derived.exposure).map(t => ({ t, e: t.derived.exposure }));
@@ -1138,6 +1137,8 @@ function renderGaps() {
     card("Open questions", "What the system still needs from the trader before these rules can be automated.",
       qGroups.length ? qGroups.flatMap(g => [h("h3", { text: `${g.st.meta.name || g.st.slug} · v${g.st.meta.current_version}` }), list(g.qs)])
                      : h("p", { class: "empty", text: "None open." })),
+    card("Bot specification", `Questions the trading bot${dig(KB.readiness, "venue.exchange") ? " (" + KB.readiness.venue.exchange + ")" : ""} still needs answered.`,
+      list((KB.readiness || {}).open_questions, "None open.")),
     card("Unresolved profile parameters", "Never assumed. Each one is filled only when the trader states it.", list(KB.unresolved, "All resolved.")),
     card("Validation", "Integrity checks from the last build.",
       table([{ label: "Level", render: r => badge(r.level) }, { key: "where", label: "Where" }, { key: "msg", label: "Detail", wrap: true }], issues,
@@ -1164,7 +1165,7 @@ function renderReadiness() {
   const active = rd.stages.find(x => x.status === "active");
   return h("div", { class: "stack" },
     card("From journal to bot", "Each stage unlocks only when the previous one is complete. The journal feeds stage 1; stages 2 to 6 build and prove the bot before it touches capital.",
-      h("p", { class: "prose", text: `Active stage: ${active ? active.name : "all complete"}` })),
+      h("p", { class: "prose", text: `Active stage: ${active ? active.name : "all complete"}${dig(rd, "venue.exchange") ? " · Exchange: " + rd.venue.exchange : ""}` })),
     ...stages,
     card("How many trades prove an edge", ss.note,
       table([{ label: "Win rate", num: true, render: r => fmtFrac(r.win_rate) }, { label: "Avg win", num: true, render: r => fmtR(r.avg_win) },
@@ -1214,6 +1215,7 @@ function openTrade(id) {
           ["Notional", isNum(e.notional_pct) ? fmtPct(e.notional_pct, 1) + " of equity" : null], ["Effective leverage", fmtX(e.effective_leverage)],
           ["Leverage setting", isNum(dig(t, "risk.leverage")) ? t.risk.leverage + "x" : null], ["Margin mode", dig(t, "risk.margin_mode") || unstated("Not recorded")],
           ["Margin posted", isNum(e.margin_pct) ? fmtPct(e.margin_pct) + " of equity" : null],
+          ["Heat / run (MAE / MFE)", isNum(d.mae_r) || isNum(d.mfe_r) ? `${isNum(d.mae_r) ? d.mae_r.toFixed(2) + "R against" : "—"} · ${isNum(d.mfe_r) ? d.mfe_r.toFixed(2) + "R in favour" : "—"}` : null],
           ["Margin loss at stop", isNum(e.margin_loss_pct) ? h("span", { class: e.margin_loss_breach ? "down" : e.margin_loss_over_target ? null : "up", text: `${fmtPct(e.margin_loss_pct, 1)}${isNum(e.max_leverage_for_rule) ? ` · max ${fmtCap(e.max_leverage_for_rule)} for the ${dig(KB.profile, "leverage.max_margin_loss_at_stop_pct")}% target` : ""}${isNum(e.max_leverage_for_tolerance) ? `, ${fmtCap(e.max_leverage_for_tolerance)} within the ${dig(KB.profile, "leverage.margin_loss_tolerance_pct")}% tolerance` : ""}` }) : null],
           ["Liquidation", isNum(e.liq_isolated) ? `${fmtNum(e.liq_isolated)} (isolated${e.liq_mode_assumed ? ", assumed" : ""}), ${fmtPct(e.liq_distance_pct)} away, ${fmtX(e.liq_to_stop)} the stop distance` : null]])),
         card("Confluences and confirmations", null, h("h3", { text: "Confluences" }), list(dig(t, "plan.confluences")),
@@ -1278,7 +1280,6 @@ themeBtn.addEventListener("click", () => {
 applyTheme(store.get("tj-theme"));
 
 backgroundTape();
-backgroundTicker();
 const bgSelect = document.getElementById("bg-select");
 /* Canvas scenes share one engine: sizing, pointer, pause when hidden, one static frame under reduced motion.
    Colours are read from the theme tokens every frame, so a theme switch recolours a running scene. */
@@ -1490,23 +1491,73 @@ Object.assign(SCENES, {
     },
   },
 });
-function backgroundTicker() {
-  const host = document.getElementById("bg-ticker");
-  const items = newestFirst(trades).map(t => {
-    const hyp = t.status !== "closed", r = hyp ? t.derived.counterfactual_r : t.derived.r;
-    if (!isNum(r)) return null;
-    const arrow = t.direction === "long" ? "▲" : t.direction === "short" ? "▼" : "●";
-    return h("span", { class: "tk-item" }, `${t.id} ${t.asset} ${arrow} `,
-             h("span", { class: hyp ? "tk-hyp" : r >= 0 ? "tk-up" : "tk-down", text: fmtR(r) + (hyp ? " hyp." : "") }));
-  }).filter(Boolean);
-  const base = items.length ? items : [h("span", { class: "tk-item", text: "TRADING TERMINAL" })];
-  for (let row = 0; row < 5; row++) {
-    const order = base.map((_, i) => base[(i + row * 2) % base.length]);
-    const strip = h("div", { class: "tk-strip" }, order.map(n => n.cloneNode(true)), order.map(n => n.cloneNode(true)));
-    host.append(h("div", { class: "tk-row" }, strip));
-  }
-}
 let scene = null;
+Object.assign(SCENES, {
+  fireflies: {
+    init(S) {
+      S.n = Math.max(30, Math.min(90, Math.round(S.W * S.H / 18000))); S.t = 0;
+      S.f = Array.from({ length: S.n }, () => ({ x: S.rnd() * S.W, y: S.rnd() * S.H, a: S.rnd() * 6.28, sp: 0.2 + S.rnd() * 0.45,
+                                                  r: 1.5 + S.rnd() * 2.5, ph: S.rnd() * 6.28, hue: S.rnd() }));
+    },
+    draw(S, ctx, c, k) {
+      S.t += k; ctx.clearRect(0, 0, S.W, S.H);
+      for (const f of S.f) {
+        f.a += (S.rnd() - 0.5) * 0.25 * k; f.x += Math.cos(f.a) * f.sp * k; f.y += Math.sin(f.a) * f.sp * k;
+        if (f.x < -10) f.x = S.W + 10; if (f.x > S.W + 10) f.x = -10; if (f.y < -10) f.y = S.H + 10; if (f.y > S.H + 10) f.y = -10;
+        const glow = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(S.t * 0.03 + f.ph)), col = f.hue < 0.45 ? c.up : f.hue < 0.8 ? c.brand : c.pos;
+        const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 7);
+        g.addColorStop(0, col); g.addColorStop(1, "transparent");
+        ctx.globalAlpha = 0.28 * glow; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 7, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.9 * glow; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 0.6, 0, Math.PI * 2); ctx.fill();
+      }
+    },
+  },
+  borealis: {
+    init(S) {
+      S.t = 0;
+      S.ribbons = [["up", 0.22, 0.0032, 0.9], ["brand", 0.3, 0.0024, -0.7], ["pos", 0.38, 0.0041, 0.5]]
+        .map(([key, base, freq, speed]) => ({ key, base, freq, speed, ph: S.rnd() * 6.28 }));
+    },
+    draw(S, ctx, c, k) {
+      S.t += k * 0.01; ctx.clearRect(0, 0, S.W, S.H); ctx.globalCompositeOperation = "lighter";
+      for (const rb of S.ribbons) {
+        ctx.fillStyle = c[rb.key];
+        for (let x = 0; x <= S.W; x += 3) {
+          const p = x * rb.freq + rb.ph + S.t * rb.speed;
+          const y = S.H * rb.base + Math.sin(p) * S.H * 0.06 + Math.sin(p * 2.3 + S.t) * S.H * 0.025;
+          const len = S.H * (0.16 + 0.1 * (0.5 + 0.5 * Math.sin(p * 1.7 - S.t * 1.3)));
+          ctx.globalAlpha = 0.14 + 0.14 * (0.5 + 0.5 * Math.sin(p * 3.1 + S.t * 2));
+          ctx.fillRect(x, y, 3, len);
+        }
+      }
+      ctx.globalCompositeOperation = "destination-in";                      // fade the curtains downwards
+      const g = ctx.createLinearGradient(0, 0, 0, S.H);
+      g.addColorStop(0, "rgba(0,0,0,0.2)"); g.addColorStop(0.3, "rgba(0,0,0,1)"); g.addColorStop(0.75, "rgba(0,0,0,0)");
+      ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(0, 0, S.W, S.H);
+      ctx.globalCompositeOperation = "source-over";
+    },
+  },
+  silk: {
+    warm: 60,
+    init(S) {
+      S.t = S.rnd() * 100; S.n = Math.max(160, Math.min(520, Math.round(S.W * S.H / 3200)));
+      S.p = Array.from({ length: S.n }, () => ({ x: S.rnd() * S.W, y: S.rnd() * S.H, up: S.rnd() < 0.5, life: S.rnd() * 300 }));
+    },
+    draw(S, ctx, c, k) {
+      S.t += k * 0.002;
+      ctx.globalCompositeOperation = "destination-out"; ctx.globalAlpha = 1; ctx.fillStyle = "rgba(0,0,0,0.05)"; ctx.fillRect(0, 0, S.W, S.H);
+      ctx.globalCompositeOperation = "source-over"; ctx.lineWidth = 1.3;
+      for (const q of S.p) {
+        const ang = Math.sin(q.x * 0.0035 + S.t) * 1.6 + Math.cos(q.y * 0.004 - S.t * 0.8) * 1.6;
+        const nx = q.x + Math.cos(ang) * 1.3 * k, ny = q.y + Math.sin(ang) * 1.3 * k;
+        ctx.globalAlpha = 0.55; ctx.strokeStyle = q.up ? c.up : c.brand;
+        ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(nx, ny); ctx.stroke();
+        q.x = nx; q.y = ny; q.life -= k;
+        if (q.life < 0 || q.x < -5 || q.x > S.W + 5 || q.y < -5 || q.y > S.H + 5) Object.assign(q, { x: S.rnd() * S.W, y: S.rnd() * S.H, life: 150 + S.rnd() * 250 });
+      }
+    },
+  },
+});
 function startScene(name) {
   const def = SCENES[name], canvas = document.getElementById("bg-canvas"), ctx = canvas.getContext("2d");
   const css = getComputedStyle(document.documentElement);

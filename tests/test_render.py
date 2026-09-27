@@ -17,9 +17,9 @@ from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
 TABS = ["overview", "journal", "performance", "strategy", "risk", "behaviour", "readiness", "gaps"]
-BACKGROUNDS = ["aurora", "nebula", "plasma", "constellation", "starfield", "waves", "tape", "depth", "heatmap", "bubbles", "radar",
-               "matrix", "ticker", "synthwave", "off"]
-CANVAS = {"constellation", "starfield", "matrix", "waves", "depth", "heatmap", "bubbles", "radar"}
+BACKGROUNDS = ["aurora", "borealis", "nebula", "plasma", "lava", "fireflies", "silk", "constellation", "starfield", "waves",
+               "tape", "depth", "heatmap", "bubbles", "radar", "matrix", "synthwave", "off"]
+CANVAS = {"borealis", "fireflies", "silk", "constellation", "starfield", "matrix", "waves", "depth", "heatmap", "bubbles", "radar"}
 
 
 def chromium() -> str | None:
@@ -40,7 +40,6 @@ addEventListener("load", () => {
     const cv = document.getElementById("bg-canvas");
     const ink = () => { const d = cv.getContext("2d").getImageData(0, 0, cv.width, cv.height).data; let n = 0;
                         for (let p = 3; p < d.length; p += 64) if (d[p]) n++; return n; };
-    out.ticker_items = document.querySelectorAll("#bg-ticker .tk-item").length;
     for (const mode of bgs) {
       applyBackground(mode);
       const de = document.documentElement;
@@ -60,7 +59,8 @@ addEventListener("load", () => {
       const panel = document.getElementById("panel-" + id), de = document.documentElement;
       out.tabs[id] = { kids: panel.children.length, svg: panel.querySelectorAll("svg").length,
                        rows: panel.querySelectorAll("tbody tr").length, overflow: de.scrollWidth - de.clientWidth,
-                       excursion: panel.querySelectorAll("svg[data-chart=excursion] .pin").length,
+                       grades: panel.querySelectorAll("svg[data-chart=grades] .grade-letter").length,
+                       items: panel.querySelectorAll("li").length,
                        ladder: panel.querySelectorAll("svg[data-chart=ladder] .pin").length };
       step();
     }, 300);
@@ -87,8 +87,8 @@ class RenderTest(unittest.TestCase):
         probe = PROBE.replace("%TABS%", json.dumps(TABS)).replace("%BGS%", json.dumps(BACKGROUNDS))
         (cls.tmp / "probe.html").write_text(html.replace("<head>", "<head>" + TRAP, 1).replace("</body>", probe), encoding="utf-8")
         kb = json.loads((cls.tmp / "exports" / "kb.json").read_text(encoding="utf-8"))
-        cls.want_excursion = sum(1 for t in kb["trades"] if t["status"] == "closed" and t["derived"]["r"] is not None
-                                 and (t["derived"].get("mae_r") is not None or t["derived"].get("mfe_r") is not None))
+        cls.want_grades = len((kb["profile"].get("grading") or {}).get("scale") or ["S", "A", "B", "C", "D"])
+        cls.want_bot_questions = len(kb["readiness"].get("open_questions") or [])
         cls.want_ladder = sum(1 for t in kb["trades"] if any(x is not None for x in t["derived"].get("planned_rr") or []))
         cls.results = {}
         for width in (1280, 500):
@@ -118,7 +118,8 @@ class RenderTest(unittest.TestCase):
         tabs = self.results[1280]["out"]["tabs"]
         self.assertGreaterEqual(tabs["overview"]["svg"], 3, "overview: cumulative R, distribution, R per trade")
         self.assertGreaterEqual(tabs["performance"]["svg"], 3, "performance: group bars and two scatters")
-        self.assertEqual(tabs["performance"]["excursion"], self.want_excursion, "heat and run: one pin per trade with a worst/best price")
+        self.assertEqual(tabs["performance"]["grades"], self.want_grades, "results by grade: one row per grade, S to D")
+        self.assertGreaterEqual(tabs["gaps"]["items"], self.want_bot_questions, "data gaps list the bot questions")
         self.assertEqual(tabs["performance"]["ladder"], self.want_ladder, "planned R:R ladder: one pin per setup with a target")
         self.assertGreaterEqual(tabs["journal"]["rows"], 1)
 
@@ -132,7 +133,6 @@ class RenderTest(unittest.TestCase):
             else:
                 self.assertEqual(out["ink_" + mode], 0, f"{mode}: a stopped scene left pixels on the canvas")
             self.assertGreaterEqual(out["shown_" + mode], 1, f"{mode}: no background layer visible")
-        self.assertGreater(out["ticker_items"], 0, "journal ticker: built from the trades")
         dialogs = {k: v for k, v in out.items() if k.startswith("dialog_")}
         self.assertTrue(dialogs)
         for key, cards in dialogs.items():

@@ -1,5 +1,5 @@
 {
-  "fingerprint": "4b8a2640e4f22ea4",
+  "fingerprint": "285877c3d0fd9ca6",
   "schema_version": 1,
   "tool_version": "1.0.0",
   "phase": {
@@ -5116,15 +5116,17 @@
       "Every order is placed with its exchange-side stop, sized by the 1% rule, with leverage capped by the 50% margin-loss rule.",
       "Kill switches halt trading after a daily loss limit or a run of consecutive losses, and alert the trader.",
       "Execution is deterministic code, not a language model: the same market data always produces the same orders, and every decision is logged."
-    ]
+    ],
+    "venue": {},
+    "open_questions": []
   },
   "gaps": {
     "unmeasurable": [],
     "unreviewed": []
   },
   "build": {
-    "fingerprint": "4b8a2640e4f22ea4",
-    "generated_at": "2026-09-27T19:52:38+00:00",
+    "fingerprint": "285877c3d0fd9ca6",
+    "generated_at": "2026-09-27T20:43:03+00:00",
     "validation": [
       {
         "level": "INFO",

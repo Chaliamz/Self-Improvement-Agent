@@ -76,6 +76,8 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
 3. Run the strategy version's `checklist` item by item and report each as pass / fail / unknown with
    the evidence. T-0004 is the reference failure: a 5m CHoCH the 30m had not confirmed (item 3), entry
    below the zone (item 4), stop just beyond the obvious swing (item 5), 20x on a 3.84% stop (item 6).
+   Check the news filter (profile `news_filter`): no new entry within 1 hour before a red (high-impact) USD event on
+   ForexFactory. If today's calendar is unknown, say so and ask the trader.
 4. Reply in the §18 structure. Do not tell the trader whether to take it.
 5. Later: update the same record to `open`, then `closed` (workflow A from step 2).
 

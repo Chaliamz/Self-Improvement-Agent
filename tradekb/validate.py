@@ -493,6 +493,9 @@ def _check_automation(kb: KB, add: _Sink) -> None:
     doc, where = kb.automation, "playbook/automation.yaml"
     if not doc:
         return
+    questions = doc.get("open_questions")
+    if questions is not None and (not isinstance(questions, list) or not all(isinstance(q, str) for q in questions)):
+        add(ERROR, where, "open_questions must be a list of questions (text)")
     for i, st in enumerate(doc.get("stages") or []):
         for j, c in enumerate((st or {}).get("criteria") or []):
             cw = f"{where}: stages[{i}].criteria[{j}]"

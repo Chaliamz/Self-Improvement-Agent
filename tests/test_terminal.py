@@ -230,6 +230,26 @@ class MarginToleranceRecordsTest(KBTestCase):
         self.assertEqual(checks, {"T-0001": True, "T-0002": False})
 
 
+class BotSpecTest(KBTestCase):
+    def test_venue_and_questions_reach_the_export(self):
+        import yaml as _yaml
+        (self.tmp / "playbook" / "automation.yaml").write_text(_yaml.safe_dump({
+            "venue": {"exchange": "MEXC"}, "open_questions": ["1. Scan list?"],
+            "stages": [{"id": "a", "criteria": [{"label": "trades", "metric": "measured_trades", "min": 1}]}]}))
+        rd = build_payload(load_kb())["readiness"]
+        self.assertEqual(rd["venue"], {"exchange": "MEXC"})
+        self.assertEqual(rd["open_questions"], ["1. Scan list?"])
+
+    def test_bot_questions_must_be_text(self):
+        import yaml as _yaml
+        (self.tmp / "playbook" / "automation.yaml").write_text(_yaml.safe_dump({"open_questions": [{"q": 1}], "stages": []}))
+        self.assertTrue(any("open_questions must be a list" in i.msg for i in self.issues("ERROR")))
+
+    def test_explicit_none_is_resolved_not_a_gap(self):
+        from tradekb.store import unresolved
+        self.assertEqual(unresolved({"risk": {"max_daily_loss_r": "none", "max_open_risk_pct": None}}), ["risk.max_open_risk_pct"])
+
+
 class GradeAndTrendTest(KBTestCase):
     def test_trader_grade_is_text_and_groups(self):
         self.write_trade("T-0001", result={"r": 4.12}, review={"mistakes": [], "behaviors": [], "trader_grade": "S"})
