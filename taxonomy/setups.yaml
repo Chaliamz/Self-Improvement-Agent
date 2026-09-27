@@ -29,7 +29,7 @@ tags:
     introduced_in: T-0001
   inducement:
     label: Inducement
-    definition: "Equal lows = liquidity resting below."
+    definition: "Equal lows = liquidity resting below (equal highs: above). A confluence only when price sweeps it into the zone. 'AVOID Inducements at all costs': never enter at one (trader, 2026-09-27)."
     introduced_in: T-0001
   extreme_demand:
     label: Extreme demand level
@@ -45,7 +45,7 @@ tags:
     introduced_in: "trader statement 2026-09-26 (rules mirror for shorts)"
   key_level:
     label: Key level (S/R)
-    definition: "Support/resistance level drawn from a wick. It is valid once price has reacted to it multiple times (trader, T-0003)."
+    definition: "Support/resistance level (or trendline) drawn from a wick. Valid after multiple reactions, at least 3 preferred (trader, T-0003 and 2026-09-27)."
     introduced_in: T-0003
   deviation:
     label: Deviation (fakeout)
@@ -57,5 +57,17 @@ tags:
     introduced_in: T-0003
   divergence:
     label: RSI divergence
-    definition: "Price makes a higher high while RSI makes a lower high (bearish), or the mirror (bullish). Trader's confluence in T-0004."
+    definition: "Regular bullish: price lower low, RSI higher low. Regular bearish: price higher high, RSI lower high. Hidden bullish: price higher low, RSI lower low. Hidden bearish: price lower high, RSI higher high. A confluence only; any timeframe, the higher the stronger (trader, 2026-09-27)."
     introduced_in: T-0004
+  demand_level:
+    label: Demand level (S/D)
+    definition: "Drawn where price created a bullish CH; stronger with an FVG; high probability when not retested (mitigated), weaker with every mitigation (trader, 2026-09-27)."
+    introduced_in: T-0006
+  supply_level:
+    label: Supply level (S/D)
+    definition: "Drawn where price created a bearish CH; stronger with an FVG; high probability when not retested (mitigated). T-0005 is the trader's example."
+    introduced_in: "trader statement 2026-09-27 (T-0005)"
+  fvg:
+    label: Fair value gap (FVG)
+    definition: "A gap left by an impulsive move. A supply/demand level that formed an FVG with its CH is stronger; T-0001's demand kept an unfilled FVG (trader, 2026-09-27)."
+    introduced_in: "trader statement 2026-09-27"

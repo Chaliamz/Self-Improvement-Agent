@@ -67,3 +67,26 @@ changes:
       The trader frames T-0004 as a violation of their own top-down method, not as a new rule. T-0001,
       T-0002, T-0004 and T-0005 are tagged 1.3.
     resulting_version: "1.3"
+  - id: CHG-004
+    kind: clarification
+    date: 2026-09-27
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-27, answering open questions 7-8: "that new supply level drawn because it created a
+      new CH (bearish one in this example that's why its supply level) so we placed short on supply level
+      (retest). it makes it stronger when it creates a FVG too. we draw supply demand levels which form a FVG
+      +CH. Don't forget! A supply/demand level is high probability when it's not retested(mitigated). AVOID
+      Inducements at all costs (AAVE example on liquidity resting-equal lows --> This is an Inducement)."
+      On divergence: "most of timeframes can work but it's just a confluence. the higher time frame the
+      stronger", with a reference chart of regular and hidden divergences. On S/D levels: "the more a
+      supply/demand level mitigates the weaker it becomes." On fees: "Everything is inside them." T-0006:
+      "You can watch (2) which is on 1H to understand more how we execute on lower time frames."
+    fields: [timeframes, timeframe_alignment, confirmation, confluences, zones, inducements, divergence,
+             entry_models.extreme_supply, entry_models.reclaim, stop_model, target_model, risk_model,
+             leverage_model, do_not_trade_when, checklist, open_questions]
+    note: >-
+      Rules already in force, now written down: how zones are drawn (CH + FVG) and graded (fresh beats
+      mitigated), inducements avoided, divergence types, the 1h execution of a 4h zone. The T-0006 target
+      reflection stays a hypothesis (n=1). T-0001, T-0002, T-0004, T-0005 retagged 1.4; T-0006 recorded at 1.4.
+    resulting_version: "1.4"

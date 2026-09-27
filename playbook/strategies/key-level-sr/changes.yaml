@@ -9,7 +9,23 @@
 #     no evidence gate: status must be `adopted`, rule_changed must be false, and the trader's
 #     statement is quoted.
 
-changes: []
+changes:
+  - id: CHG-001
+    kind: clarification
+    date: 2026-09-27
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-27, answering open questions 1-5: "on resistance/support level or even a trendline. to
+      be valid it's more preferable to have at least 3 reactions" ... "I chose is because of the lower wick it
+      created and closed bullish so it was a ltf point of interest, there wasnt proper data there" ... "We
+      prefer starting 30M-1H time frame to identify bias and structure then we go to 15M to identify key
+      levels+liquidity and we can find confirmations on 1M-5M" ... fees: "Everything is inside them" ...
+      T-0003 duration: "I measured it approximately, if anything goes wrong you can fix it."
+    fields: [timeframes, top_down, level_definition, required_conditions, target_model, risk_model, context,
+             open_questions]
+    note: "T-0003 retagged 1.1; its duration corrected to the chart measurement (24 minutes)."
+    resulting_version: "1.1"
 #  - id: CHG-001
 #    date: 2026-01-01
 #    current_rule: "Enter after liquidity sweep."

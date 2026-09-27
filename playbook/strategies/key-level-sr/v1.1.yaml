@@ -1,0 +1,80 @@
+# Strategy version file (§5, §21). IMMUTABLE once committed.
+#
+# v1.1 is a CLARIFICATION of v1.0 (CHG-001): the trader's answers to open questions 1-5 (2026-09-27).
+# Level validity, the scalp top-down timeframes, the T-0003 target, fees. No rule changed.
+
+version: "1.1"
+date: 2026-09-27
+source: "Trader's answers to open questions 1-5, 2026-09-27. Clarifies v1.0 (CHG-001)."
+supersedes: "1.0"
+
+direction: "Both. Long on reclaim-retest-accept; short when the level is lost again (deviation) and retested."
+
+timeframes:
+  structure: ["30m", "1h"]    # bias and structure
+  key_levels: "15m"           # key levels and liquidity
+  execution: ["1m", "5m"]     # confirmations and entry
+top_down: >-
+  "We prefer starting 30M-1H time frame to identify bias and structure then we go to 15M to identify key
+  levels+liquidity and we can find confirmations on 1M-5M" (trader, 2026-09-27; M = minutes here).
+
+level_definition: >-
+  Key support/resistance level drawn from a wick. It is valid once price has reacted to it multiple
+  times: at least 3 reactions preferred, and the same holds for trendlines (trader, 2026-09-27). T-0003:
+  tapped, lost, reclaimed and lost again. Supply/demand zones work the other way: the fewer mitigations,
+  the stronger (see supply-demand-structure).
+
+market_conditions: []         # not stated
+
+required_conditions:
+  - "A key level validated by multiple reactions: at least 3 preferred."
+  - "Long: the level is reclaimed, retested from above, and accepted."
+  - "Short: the level is lost again (the reclaim was a deviation), then retested from below."
+
+confirmation:
+  - "Multiple reactions at the level"
+  - "Retest of the level from the other side"
+
+confluences:
+  - "Red line: key level drawn from a wick, tapped multiple times"
+
+entry_models:
+  reclaim_retest_accept: "Long: on the retest after the level is reclaimed and accepted."
+  deviation_retest: "Short: on the retest from below after the level is lost again (T-0003)."
+
+stop_model: >-
+  Beyond the latest swing before price broke the level, in case it reclaims the level. For a short,
+  the latest high before the break (T-0003: 85.7453, the 20:32 high before the 20:33 break).
+target_model: >-
+  An LTF point of interest when no better level data exists. T-0003: "I chose is because of the lower
+  wick it created and closed bullish so it was a ltf point of interest, there wasnt proper data there"
+  (trader, 2026-09-27).
+filters:
+  min_rr: 2.5                 # the trader's general rule (profile)
+  preferred_rr: 3.0
+risk_model: "1% of equity per trade. Fees are inside the 1% (trader, 2026-09-27); the bot will count them separately."
+leverage_model: >-
+  Isolated margin, within the 50% margin-loss rule. Higher leverage when the invalidation % is small
+  (T-0003: 0.24% stop, 20x).
+context: >-
+  The trader called T-0003 risky because no top-down analysis was done: only the 1m chart was used,
+  so higher-timeframe levels that could invalidate the setup were not checked. The top-down for scalps
+  is 30m-1h, then 15m, then 1m-5m (see top_down).
+
+management:
+  default: "Hold until TP hits."
+  breakeven: "Barely used."
+  partials: "Barely used."
+  trailing: null
+  reentry: null
+  max_hold: null
+  early_exit: null
+  invalidation: "Stop beyond the latest swing before the break (see stop_model)."
+
+do_not_trade_when:
+  - "Best target gives less than 2.5R (the trader's general rule)."
+
+common_mistakes: [skipped_top_down]
+
+open_questions:
+  - "1. What counts as one reaction: a wick touching the level and rejecting (by how much), or a close back on the other side?"

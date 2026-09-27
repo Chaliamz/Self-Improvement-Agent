@@ -21,7 +21,7 @@ regime: [bullish]             # 30m: rally from about 0.0106 (Jan 4) and a fresh
 
 strategy:
   id: supply-demand-structure
-  version: "1.3"
+  version: "1.4"                # retagged by CHG-004 (clarification)
   experiment: null
   variant: null
 

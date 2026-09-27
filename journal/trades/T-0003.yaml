@@ -21,7 +21,7 @@ regime: [bearish]             # 1m structure: lower highs and lower lows through
 
 strategy:
   id: key-level-sr
-  version: "1.0"
+  version: "1.1"            # retagged by CHG-001 (clarification)
   experiment: null
   variant: null
 
@@ -51,7 +51,7 @@ fills:
   exits:
     - {price: 84.9409, reason: "Closed at profit, 2.94R (trader). Full exit at the target price assumed."}
   fees: null
-  duration_minutes: 45        # trader-stated; conflicts with the chart timing, see evidence
+  duration_minutes: 24        # measured: 20:40 fill to the first certain trade through the target (21:04); trader said 45 (approximate) and authorised the fix
 
 result:
   pnl: null
@@ -66,7 +66,7 @@ journal:
     Stop: the latest high before price broke below the level, in case it reclaims the level. Leverage 20x
     because the invalidation % was low. Risk 1%.
   during: |
-    Held about 45 minutes (trader).
+    Held about 24 minutes (chart measurement; the trader's 45 was an approximation, corrected with their approval on 2026-09-27).
   after: |
     Closed in profit at 2.94R. Trader: "It was a risky trade however because there wasn't any Top Down
     Analysis while I was focused only at a LTF chart so the setup would get invalidated."
@@ -90,9 +90,10 @@ evidence:
     - "The chart matches the trader's account: level from a wick, lost, reclaimed, lost again, retested from below, short."
     - "The 1m structure was bearish (lower highs from about 86.9 to about 85.74), which supports the short bias on this timeframe alone."
     - "Risk decomposition (tj size, fees excluded): stop 0.239%, effective leverage 4.19x, margin 4.8% lost at the stop at 20x, max 209.6x under the 50% rule, isolated liquidation about 89.37."
-    - "The 45-minute duration conflicts with the chart: a resting TP at 84.9409 would have filled at about 21:01-21:04. Either the TP was not resting or the exit was manual at about 21:25. R is the same either way."
+    - "Duration: the first certain trade through 84.9409 is the 21:04 candle (low about 84.916, about 7x the read accuracy below the target): 24 minutes after the 20:40 fill. Lows at 20:52 and 21:01 (about 84.9386) touch the target within read accuracy, so the fill could have been as early as 12 minutes. The trader's 45 was an approximation (2026-09-27)."
+    - "Target (trader, 2026-09-27): an LTF point of interest, the lower wick of a candle that closed bullish, chosen because there was no better level data. That candle is not among the visible candles below 85.0 before entry (the screenshot starts at 17:32)."
   hypotheses:
-    - "Fees may matter most on tight-stop scalps. HYPOTHETICAL fees (BTCC's actual fees unknown), via tj: 0.02%/side turns 2.94R gross into 2.38R net; 0.05%/side turns it into 1.78R and fees are 30% of 1R. Both fall below the 2.5R minimum. Sizing 1% on price distance alone would really risk 1.17% or 1.42% of equity."
+    - "Fees may matter most on tight-stop scalps. HYPOTHETICAL fees (BTCC's actual fees unknown), via tj: 0.02%/side turns 2.94R gross into 2.38R net; 0.05%/side turns it into 1.78R and fees are 30% of 1R. Trader (2026-09-27): fees are inside the 1% risk and will be counted separately once the bot runs; not tracked per trade until then."
     - "Trades with top-down analysis may perform differently from LTF-only trades. Compare with ./tj compare top_down yes no once there is enough data."
   charts: [journal/charts/T-0003-sol-1m.webp]
 

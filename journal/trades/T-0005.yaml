@@ -16,12 +16,12 @@ timeframes:
   chain: ["4h", "30m"]
   top_down: true
 
-setups: [key_level, liquidity_sweep, choch, extreme_supply, divergence]
+setups: [key_level, liquidity_sweep, choch, extreme_supply, supply_level, divergence]
 regime: [bullish]             # the 30m trend was still up into the sweep; the CHoCH turned it
 
 strategy:
   id: supply-demand-structure
-  version: "1.3"
+  version: "1.4"                # retagged by CHG-004 (clarification)
   experiment: null
   variant: null
 
@@ -78,7 +78,8 @@ evidence:
     - "Target: the 19:30 candle closed about 0.012383 and the 20:00 candle's low was about 0.012326, below 0.012406. Target hit about 4-4.5 hours after entry."
   interpreted:
     - "Every item of strategy v1.3's checklist passes here, where T-0004 failed items 3, 5 and 6."
-    - "The zone the trader drew (0.013492-0.013844) is not the sweep candle's wick-to-wick range (0.013412-0.013813); see strategy v1.3 open question 8."
+    - "The zone the trader drew (0.013492-0.013844) is not the sweep candle's wick-to-wick range (0.013412-0.013813); see strategy v1.4 open question 8."
+    - "Trader, 2026-09-27: the new supply is drawn there because the sweep printed a bearish CH; the short is its retest. An FVG would make it stronger."
   hypotheses: []
   charts: [journal/charts/T-0005-pengu-30m-proper.png]
 
