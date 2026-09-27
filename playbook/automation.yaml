@@ -6,6 +6,18 @@
 #
 # Thresholds are deliberate assumptions, explained in `goal`. Change them only with a reason.
 
+venue:
+  exchange: "MEXC"                    # trader, 2026-09-27: "I'm expecting to use MEXC as an exchange to use the bot placing orders"
+
+# Questions the bot's specification still needs answered (shown in the terminal's Data gaps).
+open_questions:
+  - "1. Scan list: which MEXC pairs should the bot watch, and on which timeframes (4h zones, then 1h / 30m / 5m execution as in your trades)?"
+  - "2. News: after a red USD release, when may new entries resume (straight away, after 15 minutes, after the next candle closes)? And is a resting limit order cancelled 1 hour before the event, or left in place because it is not a trade until it fills?"
+  - "3. Leverage for the bot: aim for 50% of margin at the stop (7x on a 7% stop), or allow your example of 8x on a 7% stop (56%, just past the 55% tolerance)?"
+  - "4. Correlation: with 1% per trade and no cap on open trades, several same-direction positions in correlated coins act as one bigger bet (5 alt longs is about 5% on one market move). Should the bot limit that, or take every valid setup?"
+  - "5. Malfunction guard: separate from your trading rules (no daily stop, no pause), should the bot halt itself and alert you on behaviour that can only be a bug: an order without a stop, a position sized above 1%, or a burst of orders?"
+  - "6. Weekends and hours: besides red USD news, are there days or hours you avoid (weekends, the daily open, low-liquidity hours)?"
+
 stages:
   - id: specify
     name: "1. Specify the rules"
@@ -92,6 +104,7 @@ safety:
   - "API keys never go into chat, the repository or kb.json. They live only in the bot server's secret store or environment."
   - "Keys have trade permission only: withdrawals disabled, IP-whitelisted to the bot's server."
   - "The bot trades a dedicated sub-account funded with only the capital it may risk."
-  - "Every order is placed with its exchange-side stop, sized by the 1% rule, with leverage capped by the 50% margin-loss rule."
-  - "Kill switches halt trading after a daily loss limit or a run of consecutive losses, and alert the trader."
+  - "Every order is placed with its exchange-side stop, sized by the 1% rule, with leverage set from the stop distance by the margin rule (50% target, 55% tolerance, margin call at 80%)."
+  - "Trading rules have no daily stop and no pause after losses (trader, 2026-09-27). A malfunction guard is separate: it halts on behaviour only a bug produces (orders without stops, oversized positions, order bursts) and alerts the trader. Its triggers are open question 5."
+  - "No new entries within 1 hour before a red (high-impact) USD event on ForexFactory; open trades are kept (trader, 2026-09-27)."
   - "Execution is deterministic code, not a language model: the same market data always produces the same orders, and every decision is logged."

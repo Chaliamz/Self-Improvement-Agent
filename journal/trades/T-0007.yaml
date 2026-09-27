@@ -21,7 +21,7 @@ regime: [bullish]             # trader: "Our bias over here was bullish since we
 
 strategy:
   id: supply-demand-structure
-  version: "1.7"                # retagged by CHG-006, CHG-007 (clarifications)
+  version: "1.8"                # retagged through CHG-008 (clarifications)
   experiment: null
   variant: null
 

@@ -154,3 +154,19 @@ changes:
     fields: [market_structure, grading, checklist, open_questions]
     note: "Grades A-D are named but not yet defined (open question 1). All supply-demand trades retagged 1.7."
     resulting_version: "1.7"
+  - id: CHG-008
+    kind: clarification
+    date: 2026-09-27
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-27: "the quality of setup separates S,A,B,C and D. D would definitely be a poor trade+mistake.
+      T-0001 would be A ... T-0003 would be C ... T-0006 would be A" ... "Since a CH forms I wait few candles too see if
+      they recover strong, if candles are small and weak I would place limit order right away. I cancel limit when
+      hasnt filled when price reaches TP level." ... "there's no stopping we stick to the plan. only 1% risk we ignore
+      frequency. there's no pause and leverage can be depending on invalidation" ... "we avoid macroeconomic data 1
+      Hour before event occurs. Forexfactory.com ... USD and red symbols (high impact). This is true only if we
+      didn't enter the trade yet."
+    fields: [grading, entry_timing, risk_model, leverage_model, do_not_trade_when, checklist, open_questions]
+    note: "Grades recorded on T-0001 (A), T-0003 (C), T-0006 (A). All supply-demand trades retagged 1.8."
+    resulting_version: "1.8"

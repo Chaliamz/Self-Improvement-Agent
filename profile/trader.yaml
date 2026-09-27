@@ -14,15 +14,15 @@ account:
 risk:
   risk_per_trade_pct: 1.0             # normal risk per trade
   max_risk_per_trade_pct: 1.0         # hard ceiling; validator and `tj size` flag breaches
-  max_daily_loss_r: null
-  max_open_risk_pct: null             # aggregate risk across open positions
-  max_consecutive_losses_before_pause: null
+  max_daily_loss_r: "none"            # trader: "there's no stopping we stick to the plan"
+  max_open_risk_pct: "none"           # trader: "only 1% risk we ignore frequency" (1% per trade, no cap on open trades)
+  max_consecutive_losses_before_pause: "none"   # trader: "there's no pause"
   min_rr: 2.5                         # hard floor for the best target (trader: '1:2,5RR as well')
   preferred_rr: 3.0                   # 'I prefer hunting 1:3RR minimum'
   fees_inside_risk: true              # 'Everything is inside them' (fees within the 1%); the bot counts them separately
 
 leverage:
-  max_leverage: null
+  max_leverage: "none"                # no fixed cap: leverage is set from the stop distance by the margin rule below
   margin_mode: isolated               # isolated | cross
   max_margin_loss_at_stop_pct: 50     # TARGET: stop distance % x leverage (isolated margin)
   margin_loss_tolerance_pct: 55       # accepted above the target: "it's okay if it goes to 55% or something"
@@ -63,6 +63,25 @@ grading:
   avoid: [D]
   s_rr_guide: 3.5                     # a rough guide, not a floor: "it could be slightly less"
   s_criteria: "Proper confluences, clear confirmations, sniper entries leading to TP and a high RR (3.5RR and higher)."
+  separated_by: "The quality of the setup (trader, 2026-09-27)."
+  a_criteria: "A good setup executed well, one step short of S: a better entry or a stronger target would have made it S (T-0001, T-0006)."
+  b_criteria: null                    # not yet stated
+  c_criteria: "A setup taken without the full process, 'regardless of win' (T-0003: only the 1m timeframe)."
+  d_criteria: "A poor trade plus a mistake: 'D would definitely be a poor trade+mistake'."
+  examples: {T-0001: A, T-0003: C, T-0006: A, T-0007: S}
+
+# News filter (trader, 2026-09-27). Applies to NEW entries only: open trades are kept.
+news_filter:
+  source: "ForexFactory economic calendar (forexfactory.com)"
+  currencies: [USD]
+  impact: high                        # the red symbols only
+  no_new_entries_before_minutes: 60   # "we avoid macroeconomic data 1 Hour before event occurs"
+  applies_to_open_trades: false       # "This is true only if we didn't enter the trade yet"
+  resume_after_minutes: null          # not yet stated
+
+# Automation venue (trader, 2026-09-27).
+execution_venue:
+  exchange: "MEXC"                    # "I'm expecting to use MEXC as an exchange to use the bot placing orders"
 
 # How the trader analyses, in their words.
 process:
@@ -123,6 +142,13 @@ sources:
   instruments.HYPEUSDT: "T-0006 chart (Bybit HYPEUSDT perpetual), 2026-09-27"
   instruments.SPX500: "T-0007 chart (Capital.com S&P 500 index CFD, 4h), 2026-09-27"
   instruments.POLUSDT: "T-0008 charts (BloFin POLUSDT perpetual, 4h and 1h), 2026-09-27"
+  risk.max_daily_loss_r: "Trader, 2026-09-27: 'there's no stopping we stick to the plan. only 1% risk we ignore frequency. there's no pause'"
+  risk.max_open_risk_pct: "Trader, 2026-09-27: 'only 1% risk we ignore frequency'"
+  risk.max_consecutive_losses_before_pause: "Trader, 2026-09-27: 'there's no pause'"
+  leverage.max_leverage: "Trader, 2026-09-27: 'leverage can be depending on invalidation ... so we won't be close to margin call (80%). for example having 7% invalidation we can use until 7-8X'"
+  news_filter: "Trader, 2026-09-27: 'we avoid macroeconomic data 1 Hour before event occurs. Forexfactory.com ... we focus only on USD and red symbols (high impact). This is true only if we didn't enter the trade yet.'"
+  execution_venue: "Trader, 2026-09-27: 'I'm expecting to use MEXC as an exchange to use the bot placing orders.'"
+  grading.examples: "Trader, 2026-09-27: T-0001 'would be A ... it would be S if I would get extreme demand and get higher RR'; T-0003 'would be C because I focused only on 1M time frame regardless of win'; T-0006 'would be A because I executed well but had to let it reach supply level so it would be an S'"
   grading: "Trader, 2026-09-27: 'its a rough guide, it doesnt matter if that's 3.5R it could be slightly less. And no we can consider trading S,A,B,C trading setups. We would avoid D setups and maybe C ones as well.'"
   leverage.margin_loss_tolerance_pct: "Trader, 2026-09-27: 'since margin call occurs on 80% i prefer to adjust it until 50%, it's okay if it goes to 55% or something'"
   leverage.margin_call_at_margin_loss_pct: "Trader, 2026-09-27: 'margin call occurs on 80%'"

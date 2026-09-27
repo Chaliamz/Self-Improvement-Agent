@@ -106,6 +106,7 @@ review:
     execution: 4              # limit at the level on the retest; filled on the 20:40 wick
     risk: 4                   # 1% risk, stop at the stated invalidation, 20x within the 50% rule; fees unknown
     management: 4             # held to the planned target
+  trader_grade: "C"           # trader: 'would be C because I focused only on 1M time frame regardless of win'
   setup_validity: valid
   followed_plan: true
   loss_type: null

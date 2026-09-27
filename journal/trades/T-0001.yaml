@@ -21,7 +21,7 @@ regime: [range, bullish]      # range = trader's "choppy conditions" during the 
 
 strategy:
   id: supply-demand-structure
-  version: "1.7"            # retagged by CHG-001..007 (clarifications)
+  version: "1.8"                # retagged through CHG-008 (clarifications)
   experiment: null
   variant: null
 
@@ -116,6 +116,7 @@ review:
     execution: 4              # clean confirmation entry one candle after the reclaim close
     risk: 4                   # 1% risk, stop at the stated invalidation, 10x with liquidation about 3x the stop distance (if isolated)
     management: 4             # held to the planned TP through chop; no management rules stated to test against
+  trader_grade: "A"           # trader: 'would be A because I missed extreme demand level but I got the reclaim support level ... it would be S if I would get extreme demand and get higher RR'
   setup_validity: valid
   followed_plan: null         # planned entry (extreme demand) missed; executed a secondary entry not in the original plan
   loss_type: null

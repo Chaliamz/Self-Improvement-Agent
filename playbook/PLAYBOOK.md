@@ -12,7 +12,7 @@ tier. Five trades cannot separate skill from luck. Nothing below is established.
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.7 | unvalidated | 4 (T-0001, T-0004, T-0006, T-0007) | n=4: +2.77R point estimate, no CI below n=5 (LOW) |
+| supply-demand-structure | 1.8 | unvalidated | 4 (T-0001, T-0004, T-0006, T-0007) | n=4: +2.77R point estimate, no CI below n=5 (LOW) |
 | key-level-sr | 1.2 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW) |
 
 ## Established rules
@@ -75,7 +75,12 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
 ## Grading (trader-stated, 2026-09-27)
 - Scale S, A, B, C, D. S, A and B are tradeable, C maybe, D avoided.
 - S: proper confluences, clear confirmations, a sniper entry that runs to TP, and about 3.5R or more (a rough
-  guide; slightly less is fine). T-0007 is S. What separates A-D is not yet stated (v1.7 question 1).
+  guide; slightly less is fine). T-0007 is S.
+- A: a good setup executed well, one step short of S (T-0001: missed the extreme demand, took the reclaim;
+  T-0006: TP short of the strongest level). C: taken without the full process, whatever the result (T-0003,
+  1m only). D: "a poor trade + mistake". B not yet defined; T-0004 not yet graded.
+- `./tj stats --by trader_grade`: S n=1 (+4.12R), A n=2 (+3.99R), C n=1 (+2.94R). Far too few to say whether
+  the grade predicts the result. Status: observation.
 
 ## High-quality setups
 _None._
@@ -95,6 +100,14 @@ Stated by the trader (2026-09-26). These are the trader's rules, not performance
 - Fees are inside the 1% risk; the bot will count them separately (trader, 2026-09-27).
 - Isolated margin: aim for 50% of margin lost at the stop, up to about 55% is fine, margin call at 80% (trader,
   2026-09-27). `./tj` flags a breach only beyond 55%. Leverage caps are always shown rounded down.
+- No daily stop, no pause after losses, no cap on open trades: "there's no stopping we stick to the plan. only
+  1% risk we ignore frequency. there's no pause" (trader, 2026-09-27). No fixed leverage cap: leverage follows the
+  stop distance (7% stop: up to 7-8x).
+- News: no new entries within 1 hour before a red (high-impact) USD event on ForexFactory; open trades are kept.
+- Entries after a CH: small, weak candles mean a limit at the zone right away; a strong recovery means wait. An
+  unfilled limit is cancelled when price reaches the TP first.
+- Bot venue: MEXC. Open bot questions (scan list, news resumption, leverage choice, correlation, malfunction guard,
+  weekends) are in `playbook/automation.yaml` and the terminal's Data gaps.
 - Unresolved: max leverage, daily loss limit, max open risk, fee rates (see `profile/trader.yaml`).
 
 ## Behavioural rules
@@ -103,6 +116,8 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-09-27 | supply-demand-structure v1.8 clarification (CHG-008): grades A, C, D with the trader's examples; entry timing after a CH and the limit-cancel rule; no daily stop / pause / open-trade cap; news filter (checklist item 8). No rule changed | trader's answers; T-0001, T-0003, T-0006 graded |
+| 2026-09-27 | Automation plan: venue MEXC; the safety list no longer assumes a daily kill switch (the trader has none); a malfunction guard is proposed as open question 5 | trader's answers |
 | 2026-09-27 | supply-demand-structure v1.7 clarification (CHG-007): grading scale S-D (3.5R S guide is rough; D avoided, C maybe); the candle range is read on the HTF (a 1h pullback inside a 4h candle range is not a 4h pullback). No rule changed | trader's answers; T-0008 |
 | 2026-09-27 | MAE / MFE recorded for every closed trade (fills.worst_price / best_price); the terminal shows heat and run per trade | T-0001, T-0003, T-0004, T-0006, T-0007 |
 | 2026-09-27 | supply-demand-structure v1.6 clarification (CHG-006): 4H candle range / NOT CH rule (item 3), stop beyond the swing that created the confirmed CH (item 5), S grading (3.5R+), counter-trend graded normally, reclaim is not mitigation, zones are reversal/CH origins, bearish continuation close rule. No rule changed | T-0008 (avoided); trader's answers |

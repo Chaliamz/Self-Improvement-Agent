@@ -21,7 +21,7 @@ regime: [range, bullish]      # 4h: range about 51-77 since June; trader's bias 
 
 strategy:
   id: supply-demand-structure
-  version: "1.7"                # retagged by CHG-005..007 (clarifications)
+  version: "1.8"                # retagged through CHG-008 (clarifications)
   experiment: null
   variant: null
 
@@ -114,6 +114,7 @@ review:
     execution: 5              # limit at the demand on the retest, as planned
     risk: 5                   # 1% risk, stop at the structural invalidation, 7-8x within the 55% tolerance (rescored 2026-09-27 after the trader's clarification)
     management: 5             # held to the target, no interference
+  trader_grade: "A"           # trader: 'would be A because I executed well but had to let it reach supply level so it would be an S'
   setup_validity: valid
   followed_plan: true
   loss_type: null
