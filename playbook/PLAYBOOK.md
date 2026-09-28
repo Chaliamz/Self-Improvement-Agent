@@ -4,15 +4,16 @@ Consolidated knowledge (system prompt §27). Every entry must cite the evidence 
 trade IDs, n, and the `./tj` output it rests on. An entry without evidence does not belong
 here; it belongs in a trade record's `evidence.hypotheses`.
 
-Status: **INITIALIZATION.** 6 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009), 1 missed (T-0002), 2
-not taken (T-0005, T-0008; counterfactual only). Overall (`./tj stats`): +2.17R expectancy, 95% CI [+0.39, +3.91], n=6,
-LOW tier. Six trades cannot separate skill from luck. Nothing below is established.
+Status: **INITIALIZATION.** 7 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009, T-0010), 1 missed
+(T-0002), 2 not taken (T-0005, T-0008; counterfactual only). Overall (`./tj stats`): +1.72R expectancy, 95% CI [-0.20,
++3.38], n=7, LOW tier: the interval now includes zero. Seven trades cannot separate skill from luck. Nothing below is
+established.
 
 ## Strategies
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.12 | unvalidated | 5 (T-0001, T-0004, T-0006, T-0007, T-0009) | n=5: +2.02R, 95% CI [-0.12, +4.16] (LOW) |
+| supply-demand-structure | 1.13 | unvalidated | 6 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010) | n=6: +1.52R, 95% CI [-0.27, +3.41] (LOW) |
 | key-level-sr | 1.5 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -46,8 +47,12 @@ _None._
   so far (T-0007, T-0009, T-0006). T-0009 shows its limit: a correct stop does not rescue a wrong location.
   Status: rule (stated).
 - **Entry precision (heat on winners).** `./tj build` excursions: median MAE on winners 0.13R (worst 0.33R, n=4:
-  T-0001 0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R); the losers ran +0.28R (T-0004) and +0.63R (T-0009) before
-  their stops. This measures the trader's "sniper entries" (S criterion). Descriptive only, n=6. Status: observation.
+  T-0001 0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R); the losers ran +0.28R (T-0004), +0.63R (T-0009) and +1.65R
+  (T-0010) before their stops (median 0.63R). This measures the trader's "sniper entries" (S criterion). The trader's
+  management is hold to TP; no break-even rule is proposed from n=3 losers. Descriptive only, n=7. Status: observation.
+- **Valid setups still lose.** T-0010 (NEAR short, graded A, process 4.20/5) lost -1.00R to NEAR-specific bullish news
+  after the entry, having run +1.65R first: loss type E, BAD OUTCOME / GOOD PROCESS. Keep the process. Status:
+  observation (n=1).
 - **Location before confirmation.** Both losses were "executed early" by the trader's own review: T-0004 before the
   30m confirmed, T-0009 before price reached a 4h zone ("price was in the middle of nowhere"). T-0009 had a real
   CH by close on the 1h and 4h, a structural stop and 2.99R, and still failed as a deviation above unmitigated 4h
@@ -95,8 +100,8 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
   "Setup B because of FVG ignorance but decent confirmations" (-1.00R).
 - D vs B (2026-09-28): T-0004 is a D because it was executed on a 5m CH when the 30m showed no CH ("Poorly
   executed"); T-0009's CH was real, so the early execution made it a risky B, not a D.
-- `./tj stats --by trader_grade`: S n=1 (+4.12R), A n=2 (+3.99R), B n=1 (-1.00R), C n=1 (+2.94R), D n=1 (-1.00R). Far
-  too few to say whether the grade predicts the result. Status: observation.
+- `./tj stats --by trader_grade`: S n=1 (+4.12R), A n=3 (+2.33R; T-0010 lost), B n=1 (-1.00R), C n=1 (+2.94R), D n=1
+  (-1.00R). Far too few to say whether the grade predicts the result. Status: observation.
 
 ## High-quality setups
 _None._
@@ -146,6 +151,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-09-28 | T-0010 NEARUSD short -1.00R (supply_level, 1h, grade A, loss type E: NEAR news). supply-demand-structure v1.13 (CHG-013): macro news in the trade's direction as a confluence; T-0010 is an A that lost. Bot question on reading release results | T-0010 chart; trader's review |
 | 2026-09-28 | supply-demand-structure v1.12 (CHG-012): the 50-60% aim is a preference; split entries take the first order's leverage (at most 60% on its stop) for every order. key-level-sr v1.5 (CHG-005): day/swing target at least 2.5R, further when possible. Bot: alerts by Telegram and email, errors reported with an explanation, no halts. No strategy questions open | trader's answers |
 | 2026-09-28 | supply-demand-structure v1.11 (CHG-011): why T-0004 is D; no trade in the middle of nowhere; split fills, R unit (+0.9R for 1 of 3 at 3R) and leverage policy. key-level-sr v1.4 (CHG-004): scoped to day trading and swings (no scalps for now); one open question on its targets there | trader's answers |
 | 2026-09-28 | Bot spec: USDT perpetuals on MEXC, trade alerts on entry and exit, no halts (the guard blocks or repairs the faulty action). Split-entry sizing corrected: the margin rule applies to the full position (INC-019); journal R for split trades in the trader's unit | trader's answers; tests |

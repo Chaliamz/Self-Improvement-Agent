@@ -1,10 +1,10 @@
 {
-  "fingerprint": "6d51333637200689",
+  "fingerprint": "89766deae26075b7",
   "schema_version": 1,
   "tool_version": "1.0.0",
   "phase": {
     "name": "INITIALIZATION",
-    "measured": 6,
+    "measured": 7,
     "target": 20
   },
   "profile": {
@@ -59,7 +59,9 @@
       "PENGUUSDT perpetual (BloFin)",
       "HYPEUSDT perpetual (Bybit)",
       "S&P 500 index CFD, SPX500 (Capital.com)",
-      "POLUSDT perpetual (BloFin)"
+      "POLUSDT perpetual (BloFin)",
+      "TIAUSDT perpetual (BloFin)",
+      "NEAR (chart: TradingView CRYPTO NEARUSD index; exchange not stated)"
     ],
     "sessions": "24/7",
     "timeframes": {
@@ -199,6 +201,8 @@
       "instruments.HYPEUSDT": "T-0006 chart (Bybit HYPEUSDT perpetual), 2026-09-27",
       "instruments.SPX500": "T-0007 chart (Capital.com S&P 500 index CFD, 4h), 2026-09-27",
       "instruments.POLUSDT": "T-0008 charts (BloFin POLUSDT perpetual, 4h and 1h), 2026-09-27",
+      "instruments.TIAUSDT": "T-0009 charts (BloFin TIAUSDT perpetual, 4h and 1h), 2026-09-28",
+      "instruments.NEAR": "T-0010 chart (TradingView CRYPTO NEARUSD index, 1h), 2026-09-28",
       "risk.max_daily_loss_r": "Trader, 2026-09-27: 'there's no stopping we stick to the plan. only 1% risk we ignore frequency. there's no pause'",
       "risk.max_open_risk_pct": "Trader, 2026-09-27: 'only 1% risk we ignore frequency'",
       "risk.max_consecutive_losses_before_pause": "Trader, 2026-09-27: 'there's no pause'",
@@ -1127,7 +1131,7 @@
         "id": "supply-demand-structure",
         "name": "Supply/Demand + Price Action / Market Structure (liquidity confluences)",
         "status": "unvalidated",
-        "current_version": "1.12",
+        "current_version": "1.13",
         "created": "2026-09-26",
         "summary": "Trader's main strategy, in their words: \"supply/demand level and price action/market structure, adding few confluences with liquidity levels\". The long-side sequence was demonstrated in T-0001. The trader confirmed that every rule mirrors for shorts from supply (2026-09-26)."
       },
@@ -1628,6 +1632,163 @@
             "Divergence at the swing (see divergence). A confluence only.",
             "Fair value gap (FVG) left by the move that created the zone (trader, 2026-09-27).",
             "Key S/R level with many reactions as the target (T-0007: the red ray at 7,574)"
+          ],
+          "zones": {
+            "definition": "A supply/demand level is drawn where price created a CH: a bearish CH leaves a supply, a bullish CH leaves a demand. It is stronger when the move also left an FVG. Trader, 2026-09-27: \"we draw supply demand levels which form a FVG +CH\". The zone is the level that created the reversal, not a sweep candle (trader, 2026-09-27). T-0005: the level that created the reversal left the new supply; the short was its retest. T-0007: the level that created the CH, close to the swing high, so it could also act as an inducement: that is why the stop went above the swing high.",
+            "freshness": "\"A supply/demand level is high probability when it's not retested (mitigated).\" \"The more a supply/demand level mitigates the weaker it becomes.\" T-0001's demand kept an FVG that was not filled (trader, 2026-09-27). Unlike support/resistance, where more reactions make a level stronger. A zone that price trades through and then reclaims with a CH is a reclaim level, not a mitigated zone (T-0006: \"there wasn't any mitigation, it was a reclaim level + CH\"). T-0007's supply is the trader's mitigation example.",
+            "extreme_demand": "The full wick-to-wick range of the candle at the lower low that formed massive volume and a point of interest (trader, 2026-09-26). T-0001: 85.61 to 88.05. Massive volume: the volume bar \"exploded\", much more than 2x; the trader asks not to focus on this (2026-09-27).",
+            "extreme_supply": "Mirror: the full wick-to-wick range of the high-volume candle at the higher high."
+          },
+          "inducements": "\"AVOID Inducements at all costs\" (trader, 2026-09-27). Equal lows/highs are resting liquidity (AAVE, T-0001: the equal lows were the inducement). There is no fixed tolerance for \"equal\": they may take longer to form and still count as a liquidity level likely to be swept (trader, 2026-09-27). Price is expected to sweep them into the zone: do not enter at them, and do not leave the stop just beyond them (T-0004: \"I became the liquidity\").",
+          "divergence": {
+            "regular_bullish": "Price lower low, indicator higher low: buy.",
+            "regular_bearish": "Price higher high, indicator lower high: sell (T-0007: 7,793.9 -> 7,817.6 with RSI 81.1 -> 70.5).",
+            "hidden_bullish": "Price higher low, indicator lower low: buy.",
+            "hidden_bearish": "Price lower high, indicator higher high: sell.",
+            "timeframe": "Most timeframes work; the higher the timeframe, the stronger (trader, 2026-09-27).",
+            "reading": "Swings on the RSI and on the chart are read on wicks. The RSI length is irrelevant (trader, 2026-09-27).",
+            "role": "Just a confluence (trader). Never required.",
+            "source": "Reference chart the trader supplied to memorize, 2026-09-27 (four panels: regular and hidden, bullish and bearish)."
+          },
+          "entry_timing": "After a CH, the limit goes at the zone on the timeframe the setup is read on, the longer the better: \"the longer time frame the better, the best example is T-0007\" (\"In that case, entry was on 4H chart\"). Candle size after the CH is not a criterion: \"Ignore small and weak candles\" (trader, 2026-09-28). T-0006: the green box (demand) + the bullish CH were enough, \"so I didn't have to jump to LTF\". An unfilled limit is cancelled when price reaches the TP level first (\"I cancel limit when hasnt filled when price reaches TP level\", 2026-09-27).",
+          "split_entries": "Optional. On the 1h or 30m, find extra unmitigated demand levels + FVGs and split the size across limit orders: \"Usually it's going to be until 3 limit orders. 1 order only = 1% (Full size), 2 orders= 0,5% each, 3 orders= 0,3% (it's okay if it's 0.9% total risk) and yes SL and TP are the same for all orders\" (trader, 2026-09-28). Supply mirrors. An unfilled order is cancelled like any limit when price reaches the TP first. T-0006: an order at the unmitigated 1h FVG under the green box \"wouldnt be wrong if I did\"; the trader's reason for skipping it (that losing the green box would weaken and invalidate the setup) is NOT a rule: \"Don't copy me on last sentence\". Sizing: tj size --add-entry. Fills: the stop sits beyond every order, so it is reached only after all of them fill: \"it's impossible to hit SL when only 1 of 3 orders filled\". R is counted on the full 1R: \"if 1 order of 3 fills and reaches TP, for example 3RR it's going to be a profit of 0.9R (On trading we will count $ not only RR)\" (trader, 2026-09-28). Leverage: one setting for every order, from the first order's stop: \"our first limit order must not exceed 60%. if invalidation is 6% we can get 10X leverage. since we used 10X leverage on first order, we are going to use the same leverage on the rest\" (trader, 2026-09-28).",
+          "entry_models": {
+            "extreme_demand": "Primary (long): at the extreme demand level.",
+            "extreme_supply": "Primary (short): at the extreme supply level (mirror).",
+            "supply_level": "Short at a supply level created by a bearish CH: sell limit at the unretested supply (T-0007), or the short on its first retest (T-0005, the level that created the reversal).",
+            "demand_level": "Mirror of supply_level: long at a demand level created by a bullish CH, on its first retest.",
+            "reclaim": "Longs when price reclaims a swept level or a demand it traded through and retests it as support; shorts mirror. T-0001: a swept level, used when the primary entry was missed. T-0006: a reclaim level + CH (the 4h demand traded through, reclaimed, and the long taken on its retest)."
+          },
+          "stop_model": "Placed where the setup is invalidated. Longs: below the demand zone, the swing low, or a liquidity level. Shorts: above the supply zone, the swing high, or a liquidity level (trader, 2026-09-26). T-0001: at a liquidity level from the left that had been reclaimed as support. A return there means price reverses lower or goes into consolidation, and the setup is invalid. Not just beyond an obvious swing high/low: that is liquidity price sweeps before reversing, and the valid entry forms exactly there (trader, T-0004: \"valid short position would be exactly on where I put my SL\"). The stop goes beyond the zone that forms from the sweep (T-0005: above the new supply). T-0006: \"placed SL on the last swing low it created\" (51.02, under the Aug 2 sweep low of about 51.12). T-0007: \"Our SL would obviously be our latest swing high in case level gets invalidated\" (7,818.4, about 0.8 above the ATH that created the bearish CH). How close: \"just very close to that swing point or demand/supply level\" (trader, 2026-09-28): no fixed buffer. T-0006 about 0.10 under the low (0.18% of price), T-0007 about 0.8 over the high (0.01%), T-0009 about 0.0005 under the higher low (0.14%). The rule (trader, 2026-09-27: \"yes exactly\"): the stop goes a bit beyond the swing that created the confirmed CH: a bit lower than the swing low for longs, a bit higher than the lower high / swing high for shorts. T-0006 and T-0007 are the examples. T-0004's stop sat beyond a high whose 5m CH the 30m never confirmed, so that high was liquidity. At liquidity levels (equal highs/lows, trendlines) wait for the break-sweep and the reclaim, then take the retest (T-0001, AAVE).",
+          "target_model": "Opposing levels. \"Both are ideal but it's more preferable to hunt strongest levels\" (trader, 2026-09-27): the strongest opposing level (e.g. the next supply/demand zone; T-0006: the 70.70 supply) is preferred over the first level that gives at least 2.5R, which is acceptable. High R:R is hunted: 1:3 minimum preferred, 1:2.5 accepted. T-0006's order was 66.10 (3.41R): \"I was happy with RR\". T-0007: the key S/R level at 7,574 (4.12R).",
+          "filters": {
+            "min_rr": 2.5,
+            "preferred_rr": 3.0
+          },
+          "risk_model": "1% of equity per trade, always. Fees are inside the 1% (trader, 2026-09-27); the bot will count them separately. No daily stop, no pause after losses, no cap on the number of open trades: \"there's no stopping we stick to the plan. only 1% risk we ignore frequency. there's no pause\" (trader, 2026-09-27).",
+          "leverage_model": "Isolated margin. Leverage is chosen from the stop distance so that the loss on the posted margin at the stop (stop distance % x leverage) is 50-60%: \"always aim for 50-60% at the stop\" (trader, 2026-09-28), because \"margin call occurs on 80%\" (2026-09-27). Above 60% is a breach; below 50% is only short of the aim (the loss at the stop is still 1%). The aim is a preference, not a requirement: \"its not necessary, the bot can use 20X leverage if invalidation is 0,6% for example (so total loss would be -12% it's absolutely fine with that, we don't have to reach it to -60% at all costs)\" (trader, 2026-09-28). Liquidation must also sit beyond the stop: on tight stops the aim's top can liquidate first (0.6% stop: 100x is 60%, but a 0.5% maintenance rate liquidates first above about 91x; tj size prints the cap). T-0001: 3.14% x 10x = 31.4%. T-0006: 6.28% x 7-8x = 44-50.3%. T-0007: 0.615% x 20x = 12.3%. No fixed leverage cap: \"with invalidation we can adjust leverage so we won't be close to margin call (80%). for example having 7% invalidation we can use until 7-8X\" (trader, 2026-09-27). Leverage never changes the 1% risk.",
+          "management": {
+            "default": "Hold until TP hits.",
+            "breakeven": "Barely used.",
+            "partials": "Barely used.",
+            "trailing": null,
+            "reentry": null,
+            "max_hold": null,
+            "early_exit": null,
+            "invalidation": "Stop at the invalidation level (see stop_model)."
+          },
+          "do_not_trade_when": [
+            "Best target gives less than 2.5R.",
+            "The lower-timeframe CHoCH is not confirmed on 15m-30m (T-0004).",
+            "The entry would be at an inducement ('AVOID Inducements at all costs').",
+            "Price is in the middle of nowhere: no demand/supply level or key level at the entry, whatever the confluences. 'when we are in a middle of nowhere, it's more preferable not to execute. there wasn't any demand there or key level, even though there were confluences later on' (trader, 2026-09-28; T-0009).",
+            "A high-impact (red) USD event on ForexFactory is due within the next hour: no new entry, and resting orders are cancelled. Entries resume 1 hour after the release: 'they can resume after 1H after manipulation could stop. anything resting gets cancelled too' (trader, 2026-09-28). Open trades are kept (2026-09-27)."
+          ],
+          "checklist": [
+            "1. HTF key level or supply/demand zone identified (4h): drawn from a CH, stronger with an FVG, fresh (unmitigated) preferred.",
+            "2. Liquidity swept into the zone (equal highs/lows or an obvious swing).",
+            "3. CHoCH by candle close, beyond the range of the impulsive candle that made the swing, read on the HTF (4H candle range): a break inside that range is NOT a CH, even if the 1h shows a pullback (T-0008). On the 30m: a close below the previous bullish 30m candle's low (shorts) / above the previous bearish 30m candle's high (longs); a 5m CHoCH alone does not count.",
+            "4. Entry at the zone (supply for shorts, demand for longs), not at a lower-timeframe CHoCH below/above it.",
+            "5. Stop a bit beyond the swing that created the confirmed CH (beyond the zone too); never beyond a swing whose CH is unconfirmed, which is liquidity (T-0004).",
+            "6. Margin loss at the stop never above 60% of isolated margin (50-60% is the aim, lower is fine; split entries: the first order's stop sets the leverage for every order), liquidation beyond the stop, and best target >= 2.5R (3R preferred; the strongest level preferred).",
+            "7. No entry at an inducement: equal highs/lows are liquidity to be swept into the zone.",
+            "8. No red USD event on ForexFactory within the next hour or released within the last hour (new entries; resting orders are cancelled for that window)."
+          ],
+          "common_mistakes": [
+            "ignored_htf",
+            "stop_in_liquidity",
+            "excessive_leverage",
+            "false_ch",
+            "early_execution",
+            "ignored_fvg"
+          ],
+          "open_questions": []
+        },
+        "1.13": {
+          "version": "1.13",
+          "date": "2026-09-28",
+          "source": "Trader's T-0010 (NEAR) review, 2026-09-28. Clarifies v1.12 (CHG-013).",
+          "supersedes": "1.12",
+          "direction": "Both. Longs from demand, shorts from supply. Every rule mirrors (trader: '6) yes').",
+          "timeframes": {
+            "statement": "\"We start from 1D-4H for bias (we can execute on 4H as well only if setups are great \"T-0006+T-0007 are great examples), we can jump to 1H-30M for levels + confirmations as long as we focus on swing trades and day trading\" (trader, 2026-09-28).",
+            "bias": [
+              "1D",
+              "4h"
+            ],
+            "levels_and_confirmations": [
+              "1h",
+              "30m"
+            ],
+            "execution_4h": "Only when the setup is great (T-0006, T-0007).",
+            "detail": "\"1H is shown more detailed data if there's any demand level or FVG that didn't get mitigated. When we get confirmation we execute hunting extreme demand levels or FVGs\" (trader, 2026-09-28). T-0006's entry was decided on the 4h (the green box + the bullish CH); the 1h showed the detail.",
+            "key_levels": "4h",
+            "structure_confirmation": [
+              "15m",
+              "30m",
+              "1h"
+            ],
+            "execution": [
+              "4h",
+              "1h",
+              "30m",
+              "5m"
+            ],
+            "combinations": [
+              "4h zone, 4h execution with a limit at the zone (T-0001, T-0007)",
+              "4h zone, divergence and 4h CH; the 1h shows unmitigated demand levels and FVGs for the limits; entry at the zone (T-0006)",
+              "4h bias, 1h S/R reclaim with a CH, away from any 4h zone (T-0009: graded B, -1R, 'early execution')",
+              "4h key level, 15m-30m confirmation, 5m execution (T-0004 lesson)",
+              "Swing and day trading: 1D-4h bias, 1h-30m levels and confirmations; 4h execution only for great setups (trader, 2026-09-28)"
+            ]
+          },
+          "timeframe_alignment": "A lower-timeframe CHoCH counts only when the 15m-30m structure confirms it. On the 30m, a potential CH is a 30m candle that closes below the previous bullish 30m candle's low (bearish) or above the previous bearish 30m candle's high (bullish) (trader, 2026-09-27). Until then a 5m CHoCH is only 30m consolidation (T-0004: \"the 5M CH was a 30M consolidation\"). This is the candle-range rule (see market_structure) applied on the 30m. For a 4h zone executed on the 1h, the CH line is drawn on both charts (T-0006: about 56.00); the 1h is used only after the 4h shows a true CH (T-0008: \"If there was a pullback and would see a true CH for potential short, we could jump to (2) 1H time frame\").",
+          "market_structure": [
+            "Lower low: a candle must CLOSE below the previous low (its wick). A wick below without a close is not a lower low.",
+            "Higher high: a candle must CLOSE above the previous high (its wick).",
+            "Bullish CHoCH: a candle CLOSE above the last lower high.",
+            "Bearish CHoCH: a candle CLOSE below the last higher low (mirror, confirmed). T-0007: after a new higher high, a lower low broke the previous higher low.",
+            "Candle range (4H candle range): price inside the range of the impulsive candle that made the high is consolidation. A pullback needs a CLOSE below that candle's low (above a bearish candle's high for the mirror). A break of a level inside the range is NOT a CH (trader, T-0008: 'to form a pull back from that price it had to break the lowest line and close below').",
+            "The candle range is read on the HTF first (4h): its high and low are the cyan lines. A lower-timeframe move inside it can be a 1h pullback, but it is not a 4h pullback; only a 4h close beyond the range changes the story, and only then may a trade be considered (trader, 2026-09-27).",
+            "Continuation in a bearish environment (lower highs, lower lows): after a pullback, a new lower low must CLOSE below the previous low including its wick; mirror for bullish (trader, 2026-09-27).",
+            "T-0001: the market was bearish; the 4H reversal (bullish CHoCH) was the confirmation, with confluences (trader, 2026-09-27)."
+          ],
+          "market_conditions": [],
+          "trend_context": "Counter-trend trades are graded like any other setup; they are just a bit riskier (trader, 2026-09-27). T-0007: short at ATH levels while the bias was bullish, \"definitely worth the risk\" at 4.12R. An FVG in the trend's direction between entry and target is a warning: price may close the gap or continue (T-0007).",
+          "grading": {
+            "scale": [
+              "S",
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "trade": "S, A and B are tradeable; C maybe; D avoided: 'we can consider trading S,A,B,C trading setups. We would avoid D setups and maybe C ones as well' (trader, 2026-09-27).",
+            "S": "\"Having proper confluences, clear confirmations, sniper entries leading to TP and a high RR (3.5RR and higher)\". The 3.5R is a rough guide: \"it doesnt matter if that's 3.5R it could be slightly less\" (trader, 2026-09-27). T-0007 (4.12R) was graded S; the avoided POL short (T-0008, 3.40R) \"would be perfectly S\" had a true CH formed.",
+            "separated_by": "The quality of the setup (trader, 2026-09-27).",
+            "A": "A good setup executed well, one step short of S. T-0001: \"would be A because I missed extreme demand level but I got the reclaim support level ... it would be S if I would get extreme demand and get higher RR\". T-0006: \"would be A because I executed well but had to let it reach supply level so it would be an S\". T-0010 (NEAR short, -1R): \"setup was A even though it was lost\": an A can lose.",
+            "B": "\"B setup would be anything with decent RR but few confluences, which means it could be a risky execution\" (trader, 2026-09-28). T-0009: \"Setup B because of FVG ignorance but decent confirmations where could lead to good RR\" (-1R).",
+            "C": "A setup taken without the full process, whatever the result. T-0003: \"would be C because I focused only on 1M time frame regardless of win\".",
+            "D": "\"D would definitely be a poor trade+mistake\" (trader, 2026-09-27). T-0004: \"it's D setup because it executed poorly (mistake) setup was good but executed early\" (trader, 2026-09-28): a good setup can be a D when the execution is the mistake. What made it D rather than B: \"T-0004 execution was on 5M when on 30M there wasn't any CH (On T-0004 leverage was 20X invalidation was low) that was the reason why it was a D setup. Poorly executed.\" The confirmation itself was missing on the confirming timeframe; T-0009 (B) had a real CH."
+          },
+          "required_conditions": [
+            "CHoCH on the 4H in the trade's direction, close-based (see market_structure)."
+          ],
+          "confirmation": [
+            "Reversal on the 4H (bullish for longs, bearish for shorts)",
+            "Extreme demand level (longs) / extreme supply level (shorts)",
+            "Demand reclaimed after being traded through, then retested (T-0006)",
+            "Supply/demand level not yet retested: limit order placed at it (T-0007)"
+          ],
+          "confluences": [
+            "Liquidity sweep",
+            "Strong momentum + volume in the trade's direction",
+            "Inducement swept into the zone (equal lows below for longs, equal highs above for shorts). Never trade the inducement itself (see inducements).",
+            "Potential opposing level (used for the target)",
+            "Divergence at the swing (see divergence). A confluence only.",
+            "Fair value gap (FVG) left by the move that created the zone (trader, 2026-09-27).",
+            "Key S/R level with many reactions as the target (T-0007: the red ray at 7,574)",
+            "Macro news in the trade's direction: a red USD release that surprised against the asset (T-0010: 'CPI was higher than expected and it's bearish news'). The news rule still applies: no entry from 1 hour before to 1 hour after the release."
           ],
           "zones": {
             "definition": "A supply/demand level is drawn where price created a CH: a bearish CH leaves a supply, a bullish CH leaves a demand. It is stronger when the move also left an FVG. Trader, 2026-09-27: \"we draw supply demand levels which form a FVG +CH\". The zone is the level that created the reversal, not a sweep candle (trader, 2026-09-27). T-0005: the level that created the reversal left the new supply; the short was its retest. T-0007: the level that created the CH, close to the swing high, so it could also act as an inducement: that is why the stop went above the swing high.",
@@ -2929,12 +3090,27 @@
           ],
           "note": "The 60% limit and the 50-60% aim are unchanged; the aim is stated to be optional. All supply-demand trades retagged \"1.12\".",
           "resulting_version": "1.12"
+        },
+        {
+          "id": "CHG-013",
+          "kind": "clarification",
+          "date": "2026-09-28",
+          "status": "adopted",
+          "rule_changed": false,
+          "statement": "Trader, 2026-09-28 (T-0010): \"c) we had macroeconomic data back in a day with CPI was higher than expected and it's bearish news\" (a confluence) ... \"We couldn't do anything in this case, setup was A even though it was lost\".",
+          "fields": [
+            "confluences",
+            "grading"
+          ],
+          "note": "Whether the bot should read release results is a bot question. All supply-demand trades retagged \"1.13\".",
+          "resulting_version": "1.13"
         }
       ],
       "measured_trades": [
         "T-0004",
         "T-0009",
         "T-0001",
+        "T-0010",
         "T-0006",
         "T-0007"
       ],
@@ -2974,7 +3150,7 @@
       ],
       "strategy": {
         "id": "supply-demand-structure",
-        "version": "1.12",
+        "version": "1.13",
         "experiment": null,
         "variant": null
       },
@@ -3163,7 +3339,7 @@
       ],
       "strategy": {
         "id": "supply-demand-structure",
-        "version": "1.12",
+        "version": "1.13",
         "experiment": null,
         "variant": null
       },
@@ -3494,7 +3670,7 @@
       ],
       "strategy": {
         "id": "supply-demand-structure",
-        "version": "1.12",
+        "version": "1.13",
         "experiment": null,
         "variant": null
       },
@@ -3623,7 +3799,7 @@
       ],
       "strategy": {
         "id": "supply-demand-structure",
-        "version": "1.12",
+        "version": "1.13",
         "experiment": null,
         "variant": null
       },
@@ -3817,7 +3993,7 @@
       ],
       "strategy": {
         "id": "supply-demand-structure",
-        "version": "1.12",
+        "version": "1.13",
         "experiment": null,
         "variant": null
       },
@@ -3977,6 +4153,205 @@
       }
     },
     {
+      "id": "T-0010",
+      "status": "closed",
+      "opened": "2026-05-12",
+      "closed": "2026-05-12",
+      "asset": "NEARUSD",
+      "market": "crypto (chart: TradingView CRYPTO NEARUSD index; exchange not stated)",
+      "direction": "short",
+      "session": null,
+      "timeframes": {
+        "htf": "4h",
+        "execution": "1h",
+        "chain": [
+          "4h",
+          "2h",
+          "1h"
+        ],
+        "detail": [],
+        "top_down": true
+      },
+      "setups": [
+        "supply_level",
+        "choch",
+        "divergence",
+        "key_level",
+        "deviation"
+      ],
+      "regime": [
+        "bearish",
+        "news_driven"
+      ],
+      "strategy": {
+        "id": "supply-demand-structure",
+        "version": "1.13",
+        "experiment": null,
+        "variant": null
+      },
+      "plan": {
+        "entry": 1.5944,
+        "stop": 1.6354,
+        "targets": [
+          1.4876
+        ],
+        "invalidation": "Price back above the supply and the swing high that created the bearish CH.",
+        "entry_model": "supply_level",
+        "split_entries": [],
+        "split_share": null,
+        "confluences": [
+          "Bearish divergence 1H-2H-4H",
+          "Supply level (from the entry point to the high) that formed the bearish CH",
+          "Macroeconomic data: CPI higher than expected, bearish news"
+        ],
+        "confirmations": [
+          "Bearish CH",
+          "Supply level not tested: sell limit placed there"
+        ]
+      },
+      "risk": {
+        "account_equity": null,
+        "risk_amount": null,
+        "risk_pct": 1.0,
+        "leverage": 20,
+        "margin_mode": "isolated",
+        "size": null,
+        "notional": null
+      },
+      "fills": {
+        "entry_avg": null,
+        "exits": [
+          {
+            "price": 1.6354,
+            "reason": "Stop hit (trader: LOSS)"
+          }
+        ],
+        "fees": null,
+        "duration_minutes": 540,
+        "orders_filled": null,
+        "worst_price": 1.6354,
+        "best_price": 1.5269
+      },
+      "result": {
+        "pnl": null,
+        "r": null,
+        "hypothetical_r": null
+      },
+      "journal": {
+        "before": "Reconstructed from the trader's account on 2026-09-28 (after the outcome, so not hindsight-proof).\nBias bearish (on a higher timeframe, not visible at this zoom). Price reached the resistance level (yellow line)\nafter creating a Higher Low. When it broke the resistance level, sellers were aggressive and brought price down,\nforming a bearish CH. Confluences: bearish divergence 1H-2H-4H; the supply level from the entry point to the high,\nwhich formed the bearish CH; CPI higher than expected, bearish news (\"we had macroeconomic data back in a day\").\nConfirmations: the bearish CH, and the supply level not tested. Sell limit at the supply with 2.57% invalidation,\n20x, risk 1%. Target: the mini demand level below (red box), 2.57RR.\n",
+        "during": "The limit filled on the May 12 13:00 bar and price fell to about 1.5269 by 19:00 (+1.65R), then rallied through\nthe stop in the 22:00 bar. Trader: \"our setup got invalidated and they pushed NEAR higher because of bullish news\nof NEAR.\"\n",
+        "after": "Trader: \"We couldn't do anything in this case, setup was A even though it was lost.\"\n"
+      },
+      "evidence": {
+        "observed": [
+          "TradingView NEARUSD (CRYPTO index), 1h, chart time UTC+3, May 6-13 2026; screenshot May 13 00:02. Position tool: entry 1.5944, stop 1.6354, target 1.4876 (tj: 2.60R planned, stop distance 2.572%; trader: 2.57% and 2.57RR). The chart is an index, not the exchange where the trade was placed.",
+          "Prices read from chart pixels, calibrated on 18 axis ticks (max residual 0.00018, about half a pixel); times from 17 axis labels (max residual 0.18 h). The image is compressed, so candle colours were matched with a tolerance; the CH label was masked.",
+          "Structure: impulse from about 1.4552 (May 8 00:00) to about 1.6175 (May 9 05:00). Higher low about 1.5458 (May 10 04:00); the red dashed CH line is drawn at about 1.5466 from about May 10 03:00 to May 11 00:00. Yellow resistance about 1.6205.",
+          "The May 10 23:00 bar spiked to about 1.6304, above the yellow resistance and the May 9 high, and traded down to about 1.5373 within the hour: the close under the 1.5466 higher low is the bearish CH. The May 12 04:00 low was about 1.5040.",
+          "Supply untested: the highest high from May 11 00:00 until the fill was about 1.5835 (May 11 02:00). Fill: the first bar to reach 1.5944 is the May 12 13:00 bar (high about 1.6049).",
+          "After the fill: lows about 1.5399 (14:00), 1.5284 (16:00-17:00), 1.5269 (19:00); then about 1.5824 (20:00), 1.6238 (21:00) and 1.6400 (22:00), through the 1.6354 stop. The last bar (May 13 00:00) closed about 1.6390.",
+          "The stop sat about 0.0050 above the 1.6304 swing high (about 0.31% of price).",
+          "Red box (mini demand) about 1.4804-1.4944, drawn from about May 8 08:30 (the base of the impulse); the 1.4876 target sits inside it. It was not approached during the trade.",
+          "RSI (1h pane, calibrated on the 80/60/40 labels): at the price highs 1.5824 (May 8 18:00), 1.6175 (May 9 05:00) and 1.6304 (May 10 23:00), the RSI peaks were about 73.9, 70.2 and 71.9. The 2h and 4h are not shown.",
+          "The chart's US economic-event markers sit at about 14:40 on May 13 and 14:55 on May 14 (UTC+3); none is shown on May 11-12.",
+          "tj size: 20x = 51.4% of the margin at the stop (inside the 50-60% aim); isolated liquidation about 1.6658 (1.74x the stop distance).",
+          "Trader: NEAR was pushed higher by bullish NEAR news (not visible on the chart)."
+        ],
+        "interpreted": [
+          "The chart matches the trader's sequence: a higher low, a push through the yellow resistance that failed within the hour (a deviation above the May 9 high), and a close under the higher low (bearish CH). The supply from the entry to the 1.6304 high stayed untested until the limit filled.",
+          "Divergence on the 1h holds against the May 8 swing (price 1.5824 -> 1.6304, RSI about 73.9 -> 71.9). Between the last two highs (May 9 and May 10) the RSI rose (70.2 -> 71.9): not a divergence on that pair. The 2h and 4h divergences are the trader's reading and not visible here.",
+          "Checklist v1.12: 1 pass (the supply that formed the CH, at the resistance; a 1h zone, the 4h not visible); 2 pass (the push above the resistance took the May 9 high); 3 pass on the 1h (a close under the 1.5466 higher low), the 4h candle range not visible; 4 pass (sell limit at the untested supply); 5 pass (about 0.0050 above the swing high that created the CH); 6 pass (51.4% of margin, liquidation 1.74x the stop distance, 2.60R: above the 2.5R minimum, below the 3R preference); 7 pass (no entry at equal highs); 8 unknown (see the CPI note).",
+          "News: the trader used a CPI print as a confluence. The chart's event markers are on May 13 and 14, after the trade, and none is on May 12; when the CPI was released relative to the entry is not established. The news rule allows an entry more than 1 hour before a red USD release and keeps open trades.",
+          "The trade ran +1.65R in favour before reversing to the stop within about 3 hours (19:00 -> 22:00). Under the trader's management (hold to TP, break-even barely used) that is a normal outcome, not an error.",
+          "Loss type E (information deficiency): the setup was valid and executed as planned; per the trader, NEAR-specific bullish news after the entry invalidated the thesis. No filter can know coin-specific news in advance, so no rule change follows from one trade."
+        ],
+        "hypotheses": [
+          "Losers that ran well in favour before the stop (T-0010: +1.65R) may say something about management; n=1, and the trader's rule is hold to TP.",
+          "News-driven reversals on single coins break otherwise valid supply shorts (n=1)."
+        ],
+        "charts": [
+          "journal/charts/T-0010-near-1h.png"
+        ]
+      },
+      "review": {
+        "scores": {
+          "setup": 4,
+          "context": 3,
+          "execution": 5,
+          "risk": 5,
+          "management": 4
+        },
+        "trader_grade": "A",
+        "setup_validity": "valid",
+        "followed_plan": true,
+        "loss_type": "E",
+        "mistakes": [],
+        "behaviors": [
+          "waited_for_confirmation",
+          "followed_setup",
+          "respected_invalidation",
+          "correct_sizing",
+          "did_top_down"
+        ],
+        "outside_control": [
+          "Bullish NEAR news after the entry (trader)"
+        ],
+        "lesson": "A valid, well-executed supply short can lose to coin-specific news: the process held (untested CH supply, stop above the swing, 51.4% of margin, -1R exactly). Keep the process; one news-driven loss is not evidence against the setup.",
+        "actionable_change": null,
+        "strategy_change": "no",
+        "evidence_strength": "low"
+      },
+      "derived": {
+        "r": -1.0,
+        "r_source": "price-based from exits (gross of fees)",
+        "risk": null,
+        "risk_source": null,
+        "pnl": null,
+        "outcome": "loss",
+        "grade": "good",
+        "process_mean": 4.2,
+        "label": "BAD OUTCOME / GOOD PROCESS",
+        "counterfactual_r": null,
+        "missing": [],
+        "mae_r": 1.0,
+        "mfe_r": 1.64634146341464,
+        "exposure": {
+          "side": "short",
+          "stop_pct": 2.5715002508780684,
+          "max_leverage_for_rule": 23.33268292682931,
+          "min_leverage_for_aim": 19.443902439024427,
+          "max_leverage_liq": 32.42166053236274,
+          "max_leverage_safe": 23.33268292682931,
+          "liq_binds": false,
+          "notional_pct": 38.887804878048854,
+          "effective_leverage": 0.38887804878048854,
+          "margin_loss_pct": 51.43000501756137,
+          "margin_loss_breach": false,
+          "margin_loss_below_aim": false,
+          "margin_pct": 1.9443902439024427,
+          "liq_mode_assumed": false,
+          "liq_isolated": 1.6657910447761197,
+          "liq_distance_pct": 4.477611940298525,
+          "liq_to_stop": 1.7412449945395077,
+          "liq_before_stop": false
+        },
+        "planned_rr": [
+          2.604878048780493
+        ],
+        "holding_hours": 9.0,
+        "top_down": true,
+        "rule_checks": {
+          "top_down": true,
+          "setup_valid": true,
+          "risk_pct": true,
+          "leverage": true,
+          "min_rr": true,
+          "stop": true
+        },
+        "sort_date": "2026-05-12"
+      }
+    },
+    {
       "id": "T-0006",
       "status": "closed",
       "opened": "2026-08-07",
@@ -4010,7 +4385,7 @@
       ],
       "strategy": {
         "id": "supply-demand-structure",
-        "version": "1.12",
+        "version": "1.13",
         "experiment": null,
         "variant": null
       },
@@ -4193,7 +4568,7 @@
       ],
       "strategy": {
         "id": "supply-demand-structure",
-        "version": "1.12",
+        "version": "1.13",
         "experiment": null,
         "variant": null
       },
@@ -4377,7 +4752,7 @@
       ],
       "strategy": {
         "id": "supply-demand-structure",
-        "version": "1.12",
+        "version": "1.13",
         "experiment": null,
         "variant": null
       },
@@ -4507,24 +4882,24 @@
   ],
   "stats": {
     "overall": {
-      "n": 6,
+      "n": 7,
       "wins": 4,
-      "losses": 2,
+      "losses": 3,
       "breakevens": 0,
-      "win_rate": 0.6666666666666666,
+      "win_rate": 0.5714285714285714,
       "avg_win": 3.759136690998,
       "avg_loss": -1.0,
       "payoff": null,
-      "expectancy": 2.1727577939986666,
-      "median": 3.1752810083350163,
-      "total": 13.036546763992,
+      "expectancy": 1.7195066805702857,
+      "median": 2.941205291523829,
+      "total": 12.036546763992,
       "profit_factor": null,
-      "max_win_streak": 3,
+      "max_win_streak": 2,
       "max_loss_streak": 1,
       "max_drawdown": 1.0,
       "ci": [
-        0.3917603361116721,
-        3.9141628180960324
+        -0.20415400202634082,
+        3.378077452749372
       ],
       "evidence": "LOW"
     },
@@ -4535,7 +4910,7 @@
       },
       {
         "label": "-1.1R to BE",
-        "count": 2
+        "count": 3
       },
       {
         "label": "breakeven",
@@ -4584,16 +4959,22 @@
         "cum_r": 5.512127277339443
       },
       {
+        "id": "T-0010",
+        "date": "2026-05-12",
+        "r": -1.0,
+        "cum_r": 4.512127277339443
+      },
+      {
         "id": "T-0006",
         "date": "2026-08-19",
         "r": 3.4093567251462034,
-        "cum_r": 8.921484002485647
+        "cum_r": 7.921484002485647
       },
       {
         "id": "T-0007",
         "date": "2026-09-15",
         "r": 4.115062761506354,
-        "cum_r": 13.036546763992
+        "cum_r": 12.036546763992
       }
     ],
     "by": {
@@ -4604,28 +4985,29 @@
             "T-0004",
             "T-0009",
             "T-0001",
+            "T-0010",
             "T-0006",
             "T-0007"
           ],
           "summary": {
-            "n": 5,
+            "n": 6,
             "wins": 3,
-            "losses": 2,
+            "losses": 3,
             "breakevens": 0,
-            "win_rate": 0.6,
+            "win_rate": 0.5,
             "avg_win": 4.031780490822723,
             "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 2.0190682944936342,
-            "median": 3.4093567251462034,
-            "total": 10.09534147246817,
+            "expectancy": 1.5158902454113619,
+            "median": 1.2046783625731017,
+            "total": 9.09534147246817,
             "profit_factor": null,
-            "max_win_streak": 3,
+            "max_win_streak": 2,
             "max_loss_streak": 2,
             "max_drawdown": 2.0,
             "ci": [
-              -0.11812865497075933,
-              4.156265243958027
+              -0.2651072124756328,
+              3.414505376025048
             ],
             "evidence": "LOW"
           }
@@ -4636,6 +5018,38 @@
             "T-0004",
             "T-0003",
             "T-0009",
+            "T-0010",
+            "T-0007"
+          ],
+          "summary": {
+            "n": 5,
+            "wins": 2,
+            "losses": 3,
+            "breakevens": 0,
+            "win_rate": 0.4,
+            "avg_win": 3.5281340265150916,
+            "avg_loss": -1.0,
+            "payoff": null,
+            "expectancy": 0.8112536106060366,
+            "median": -1.0,
+            "total": 4.056268053030183,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 2,
+            "max_drawdown": 2.0,
+            "ci": [
+              -1.0,
+              2.857278715208578
+            ],
+            "evidence": "LOW"
+          }
+        },
+        {
+          "label": "divergence",
+          "ids": [
+            "T-0004",
+            "T-0010",
+            "T-0006",
             "T-0007"
           ],
           "summary": {
@@ -4644,43 +5058,16 @@
             "losses": 2,
             "breakevens": 0,
             "win_rate": 0.5,
-            "avg_win": 3.5281340265150916,
-            "avg_loss": -1.0,
-            "payoff": null,
-            "expectancy": 1.2640670132575458,
-            "median": 0.9706026457619146,
-            "total": 5.056268053030183,
-            "profit_factor": null,
-            "max_win_streak": 1,
-            "max_loss_streak": 1,
-            "max_drawdown": 1.0,
-            "ci": null,
-            "evidence": "LOW"
-          }
-        },
-        {
-          "label": "divergence",
-          "ids": [
-            "T-0004",
-            "T-0006",
-            "T-0007"
-          ],
-          "summary": {
-            "n": 3,
-            "wins": 2,
-            "losses": 1,
-            "breakevens": 0,
-            "win_rate": 0.6666666666666666,
             "avg_win": 3.7622097433262787,
             "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 2.1748064955508526,
-            "median": 3.4093567251462034,
-            "total": 6.524419486652557,
+            "expectancy": 1.3811048716631393,
+            "median": 1.2046783625731017,
+            "total": 5.524419486652557,
             "profit_factor": null,
             "max_win_streak": 2,
-            "max_loss_streak": 1,
-            "max_drawdown": 1.0,
+            "max_loss_streak": 2,
+            "max_drawdown": 2.0,
             "ci": null,
             "evidence": "LOW"
           }
@@ -4740,6 +5127,32 @@
           }
         },
         {
+          "label": "deviation",
+          "ids": [
+            "T-0003",
+            "T-0010"
+          ],
+          "summary": {
+            "n": 2,
+            "wins": 1,
+            "losses": 1,
+            "breakevens": 0,
+            "win_rate": 0.5,
+            "avg_win": 2.941205291523829,
+            "avg_loss": -1.0,
+            "payoff": null,
+            "expectancy": 0.9706026457619146,
+            "median": 0.9706026457619146,
+            "total": 1.9412052915238291,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 1,
+            "max_drawdown": 1.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
           "label": "liquidity_sweep",
           "ids": [
             "T-0001",
@@ -4766,6 +5179,32 @@
           }
         },
         {
+          "label": "supply_level",
+          "ids": [
+            "T-0010",
+            "T-0007"
+          ],
+          "summary": {
+            "n": 2,
+            "wins": 1,
+            "losses": 1,
+            "breakevens": 0,
+            "win_rate": 0.5,
+            "avg_win": 4.115062761506354,
+            "avg_loss": -1.0,
+            "payoff": null,
+            "expectancy": 1.557531380753177,
+            "median": 1.557531380753177,
+            "total": 3.115062761506354,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 1,
+            "max_drawdown": 1.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
           "label": "demand_level",
           "ids": [
             "T-0006"
@@ -4782,31 +5221,6 @@
             "expectancy": 3.4093567251462034,
             "median": 3.4093567251462034,
             "total": 3.4093567251462034,
-            "profit_factor": null,
-            "max_win_streak": 1,
-            "max_loss_streak": 0,
-            "max_drawdown": 0.0,
-            "ci": null,
-            "evidence": "LOW"
-          }
-        },
-        {
-          "label": "deviation",
-          "ids": [
-            "T-0003"
-          ],
-          "summary": {
-            "n": 1,
-            "wins": 1,
-            "losses": 0,
-            "breakevens": 0,
-            "win_rate": 1.0,
-            "avg_win": 2.941205291523829,
-            "avg_loss": null,
-            "payoff": null,
-            "expectancy": 2.941205291523829,
-            "median": 2.941205291523829,
-            "total": 2.941205291523829,
             "profit_factor": null,
             "max_win_streak": 1,
             "max_loss_streak": 0,
@@ -4864,31 +5278,6 @@
             "ci": null,
             "evidence": "LOW"
           }
-        },
-        {
-          "label": "supply_level",
-          "ids": [
-            "T-0007"
-          ],
-          "summary": {
-            "n": 1,
-            "wins": 1,
-            "losses": 0,
-            "breakevens": 0,
-            "win_rate": 1.0,
-            "avg_win": 4.115062761506354,
-            "avg_loss": null,
-            "payoff": null,
-            "expectancy": 4.115062761506354,
-            "median": 4.115062761506354,
-            "total": 4.115062761506354,
-            "profit_factor": null,
-            "max_win_streak": 1,
-            "max_loss_streak": 0,
-            "max_drawdown": 0.0,
-            "ci": null,
-            "evidence": "LOW"
-          }
         }
       ],
       "entry_model": [
@@ -4913,6 +5302,32 @@
             "total": 6.980278710961818,
             "profit_factor": null,
             "max_win_streak": 2,
+            "max_loss_streak": 1,
+            "max_drawdown": 1.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
+          "label": "supply_level",
+          "ids": [
+            "T-0010",
+            "T-0007"
+          ],
+          "summary": {
+            "n": 2,
+            "wins": 1,
+            "losses": 1,
+            "breakevens": 0,
+            "win_rate": 0.5,
+            "avg_win": 4.115062761506354,
+            "avg_loss": -1.0,
+            "payoff": null,
+            "expectancy": 1.557531380753177,
+            "median": 1.557531380753177,
+            "total": 3.115062761506354,
+            "profit_factor": null,
+            "max_win_streak": 1,
             "max_loss_streak": 1,
             "max_drawdown": 1.0,
             "ci": null,
@@ -4968,31 +5383,6 @@
             "ci": null,
             "evidence": "LOW"
           }
-        },
-        {
-          "label": "supply_level",
-          "ids": [
-            "T-0007"
-          ],
-          "summary": {
-            "n": 1,
-            "wins": 1,
-            "losses": 0,
-            "breakevens": 0,
-            "win_rate": 1.0,
-            "avg_win": 4.115062761506354,
-            "avg_loss": null,
-            "payoff": null,
-            "expectancy": 4.115062761506354,
-            "median": 4.115062761506354,
-            "total": 4.115062761506354,
-            "profit_factor": null,
-            "max_win_streak": 1,
-            "max_loss_streak": 0,
-            "max_drawdown": 0.0,
-            "ci": null,
-            "evidence": "LOW"
-          }
         }
       ],
       "strategy": [
@@ -5002,28 +5392,29 @@
             "T-0004",
             "T-0009",
             "T-0001",
+            "T-0010",
             "T-0006",
             "T-0007"
           ],
           "summary": {
-            "n": 5,
+            "n": 6,
             "wins": 3,
-            "losses": 2,
+            "losses": 3,
             "breakevens": 0,
-            "win_rate": 0.6,
+            "win_rate": 0.5,
             "avg_win": 4.031780490822723,
             "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 2.0190682944936342,
-            "median": 3.4093567251462034,
-            "total": 10.09534147246817,
+            "expectancy": 1.5158902454113619,
+            "median": 1.2046783625731017,
+            "total": 9.09534147246817,
             "profit_factor": null,
-            "max_win_streak": 3,
+            "max_win_streak": 2,
             "max_loss_streak": 2,
             "max_drawdown": 2.0,
             "ci": [
-              -0.11812865497075933,
-              4.156265243958027
+              -0.2651072124756328,
+              3.414505376025048
             ],
             "evidence": "LOW"
           }
@@ -5056,33 +5447,34 @@
       ],
       "version": [
         {
-          "label": "supply-demand-structure@v1.12",
+          "label": "supply-demand-structure@v1.13",
           "ids": [
             "T-0004",
             "T-0009",
             "T-0001",
+            "T-0010",
             "T-0006",
             "T-0007"
           ],
           "summary": {
-            "n": 5,
+            "n": 6,
             "wins": 3,
-            "losses": 2,
+            "losses": 3,
             "breakevens": 0,
-            "win_rate": 0.6,
+            "win_rate": 0.5,
             "avg_win": 4.031780490822723,
             "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 2.0190682944936342,
-            "median": 3.4093567251462034,
-            "total": 10.09534147246817,
+            "expectancy": 1.5158902454113619,
+            "median": 1.2046783625731017,
+            "total": 9.09534147246817,
             "profit_factor": null,
-            "max_win_streak": 3,
+            "max_win_streak": 2,
             "max_loss_streak": 2,
             "max_drawdown": 2.0,
             "ci": [
-              -0.11812865497075933,
-              4.156265243958027
+              -0.2651072124756328,
+              3.414505376025048
             ],
             "evidence": "LOW"
           }
@@ -5115,6 +5507,34 @@
       ],
       "direction": [
         {
+          "label": "short",
+          "ids": [
+            "T-0004",
+            "T-0003",
+            "T-0010",
+            "T-0007"
+          ],
+          "summary": {
+            "n": 4,
+            "wins": 2,
+            "losses": 2,
+            "breakevens": 0,
+            "win_rate": 0.5,
+            "avg_win": 3.5281340265150916,
+            "avg_loss": -1.0,
+            "payoff": null,
+            "expectancy": 1.2640670132575458,
+            "median": 0.9706026457619146,
+            "total": 5.056268053030183,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 1,
+            "max_drawdown": 1.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
           "label": "long",
           "ids": [
             "T-0009",
@@ -5133,33 +5553,6 @@
             "expectancy": 2.326759570320606,
             "median": 3.4093567251462034,
             "total": 6.980278710961818,
-            "profit_factor": null,
-            "max_win_streak": 2,
-            "max_loss_streak": 1,
-            "max_drawdown": 1.0,
-            "ci": null,
-            "evidence": "LOW"
-          }
-        },
-        {
-          "label": "short",
-          "ids": [
-            "T-0004",
-            "T-0003",
-            "T-0007"
-          ],
-          "summary": {
-            "n": 3,
-            "wins": 2,
-            "losses": 1,
-            "breakevens": 0,
-            "win_rate": 0.6666666666666666,
-            "avg_win": 3.5281340265150916,
-            "avg_loss": -1.0,
-            "payoff": null,
-            "expectancy": 2.018756017676728,
-            "median": 2.941205291523829,
-            "total": 6.056268053030183,
             "profit_factor": null,
             "max_win_streak": 2,
             "max_loss_streak": 1,
@@ -5216,6 +5609,31 @@
             "max_win_streak": 1,
             "max_loss_streak": 0,
             "max_drawdown": 0.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
+          "label": "NEARUSD",
+          "ids": [
+            "T-0010"
+          ],
+          "summary": {
+            "n": 1,
+            "wins": 0,
+            "losses": 1,
+            "breakevens": 0,
+            "win_rate": 0.0,
+            "avg_win": null,
+            "avg_loss": -1.0,
+            "payoff": null,
+            "expectancy": -1.0,
+            "median": -1.0,
+            "total": -1.0,
+            "profit_factor": null,
+            "max_win_streak": 0,
+            "max_loss_streak": 1,
+            "max_drawdown": 1.0,
             "ci": null,
             "evidence": "LOW"
           }
@@ -5384,24 +5802,50 @@
         {
           "label": "bearish",
           "ids": [
-            "T-0003"
+            "T-0003",
+            "T-0010"
+          ],
+          "summary": {
+            "n": 2,
+            "wins": 1,
+            "losses": 1,
+            "breakevens": 0,
+            "win_rate": 0.5,
+            "avg_win": 2.941205291523829,
+            "avg_loss": -1.0,
+            "payoff": null,
+            "expectancy": 0.9706026457619146,
+            "median": 0.9706026457619146,
+            "total": 1.9412052915238291,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 1,
+            "max_drawdown": 1.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
+          "label": "news_driven",
+          "ids": [
+            "T-0010"
           ],
           "summary": {
             "n": 1,
-            "wins": 1,
-            "losses": 0,
+            "wins": 0,
+            "losses": 1,
             "breakevens": 0,
-            "win_rate": 1.0,
-            "avg_win": 2.941205291523829,
-            "avg_loss": null,
+            "win_rate": 0.0,
+            "avg_win": null,
+            "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 2.941205291523829,
-            "median": 2.941205291523829,
-            "total": 2.941205291523829,
+            "expectancy": -1.0,
+            "median": -1.0,
+            "total": -1.0,
             "profit_factor": null,
-            "max_win_streak": 1,
-            "max_loss_streak": 0,
-            "max_drawdown": 0.0,
+            "max_win_streak": 0,
+            "max_loss_streak": 1,
+            "max_drawdown": 1.0,
             "ci": null,
             "evidence": "LOW"
           }
@@ -5415,28 +5859,29 @@
             "T-0003",
             "T-0009",
             "T-0001",
+            "T-0010",
             "T-0006",
             "T-0007"
           ],
           "summary": {
-            "n": 6,
+            "n": 7,
             "wins": 4,
-            "losses": 2,
+            "losses": 3,
             "breakevens": 0,
-            "win_rate": 0.6666666666666666,
+            "win_rate": 0.5714285714285714,
             "avg_win": 3.759136690998,
             "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 2.1727577939986666,
-            "median": 3.1752810083350163,
-            "total": 13.036546763992,
+            "expectancy": 1.7195066805702857,
+            "median": 2.941205291523829,
+            "total": 12.036546763992,
             "profit_factor": null,
-            "max_win_streak": 3,
+            "max_win_streak": 2,
             "max_loss_streak": 1,
             "max_drawdown": 1.0,
             "ci": [
-              0.3917603361116721,
-              3.9141628180960324
+              -0.20415400202634082,
+              3.378077452749372
             ],
             "evidence": "LOW"
           }
@@ -5473,12 +5918,13 @@
         {
           "label": "1h",
           "ids": [
-            "T-0009"
+            "T-0009",
+            "T-0010"
           ],
           "summary": {
-            "n": 1,
+            "n": 2,
             "wins": 0,
-            "losses": 1,
+            "losses": 2,
             "breakevens": 0,
             "win_rate": 0.0,
             "avg_win": null,
@@ -5486,11 +5932,11 @@
             "payoff": null,
             "expectancy": -1.0,
             "median": -1.0,
-            "total": -1.0,
+            "total": -2.0,
             "profit_factor": null,
             "max_win_streak": 0,
-            "max_loss_streak": 1,
-            "max_drawdown": 1.0,
+            "max_loss_streak": 2,
+            "max_drawdown": 2.0,
             "ci": null,
             "evidence": "LOW"
           }
@@ -5548,6 +5994,33 @@
       ],
       "top_down": [
         {
+          "label": "yes",
+          "ids": [
+            "T-0009",
+            "T-0010",
+            "T-0006"
+          ],
+          "summary": {
+            "n": 3,
+            "wins": 1,
+            "losses": 2,
+            "breakevens": 0,
+            "win_rate": 0.3333333333333333,
+            "avg_win": 3.4093567251462034,
+            "avg_loss": -1.0,
+            "payoff": null,
+            "expectancy": 0.46978557504873447,
+            "median": -1.0,
+            "total": 1.4093567251462034,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 2,
+            "max_drawdown": 2.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
           "label": "(unknown)",
           "ids": [
             "T-0001",
@@ -5598,32 +6071,6 @@
             "ci": null,
             "evidence": "LOW"
           }
-        },
-        {
-          "label": "yes",
-          "ids": [
-            "T-0009",
-            "T-0006"
-          ],
-          "summary": {
-            "n": 2,
-            "wins": 1,
-            "losses": 1,
-            "breakevens": 0,
-            "win_rate": 0.5,
-            "avg_win": 3.4093567251462034,
-            "avg_loss": -1.0,
-            "payoff": null,
-            "expectancy": 1.2046783625731017,
-            "median": 1.2046783625731017,
-            "total": 2.4093567251462034,
-            "profit_factor": null,
-            "max_win_streak": 1,
-            "max_loss_streak": 1,
-            "max_drawdown": 1.0,
-            "ci": null,
-            "evidence": "LOW"
-          }
         }
       ],
       "leverage": [
@@ -5632,22 +6079,23 @@
           "ids": [
             "T-0004",
             "T-0003",
+            "T-0010",
             "T-0007"
           ],
           "summary": {
-            "n": 3,
+            "n": 4,
             "wins": 2,
-            "losses": 1,
+            "losses": 2,
             "breakevens": 0,
-            "win_rate": 0.6666666666666666,
+            "win_rate": 0.5,
             "avg_win": 3.5281340265150916,
             "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 2.018756017676728,
-            "median": 2.941205291523829,
-            "total": 6.056268053030183,
+            "expectancy": 1.2640670132575458,
+            "median": 0.9706026457619146,
+            "total": 5.056268053030183,
             "profit_factor": null,
-            "max_win_streak": 2,
+            "max_win_streak": 1,
             "max_loss_streak": 1,
             "max_drawdown": 1.0,
             "ci": null,
@@ -5714,28 +6162,29 @@
             "T-0003",
             "T-0009",
             "T-0001",
+            "T-0010",
             "T-0006",
             "T-0007"
           ],
           "summary": {
-            "n": 6,
+            "n": 7,
             "wins": 4,
-            "losses": 2,
+            "losses": 3,
             "breakevens": 0,
-            "win_rate": 0.6666666666666666,
+            "win_rate": 0.5714285714285714,
             "avg_win": 3.759136690998,
             "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 2.1727577939986666,
-            "median": 3.1752810083350163,
-            "total": 13.036546763992,
+            "expectancy": 1.7195066805702857,
+            "median": 2.941205291523829,
+            "total": 12.036546763992,
             "profit_factor": null,
-            "max_win_streak": 3,
+            "max_win_streak": 2,
             "max_loss_streak": 1,
             "max_drawdown": 1.0,
             "ci": [
-              0.3917603361116721,
-              3.9141628180960324
+              -0.20415400202634082,
+              3.378077452749372
             ],
             "evidence": "LOW"
           }
@@ -5746,25 +6195,26 @@
           "label": "good",
           "ids": [
             "T-0001",
+            "T-0010",
             "T-0006",
             "T-0007"
           ],
           "summary": {
-            "n": 3,
+            "n": 4,
             "wins": 3,
-            "losses": 0,
+            "losses": 1,
             "breakevens": 0,
-            "win_rate": 1.0,
+            "win_rate": 0.75,
             "avg_win": 4.031780490822723,
-            "avg_loss": null,
+            "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 4.031780490822723,
-            "median": 4.115062761506354,
-            "total": 12.09534147246817,
+            "expectancy": 2.7738353681170427,
+            "median": 3.7622097433262787,
+            "total": 11.09534147246817,
             "profit_factor": null,
-            "max_win_streak": 3,
-            "max_loss_streak": 0,
-            "max_drawdown": 0.0,
+            "max_win_streak": 2,
+            "max_loss_streak": 1,
+            "max_drawdown": 1.0,
             "ci": null,
             "evidence": "LOW"
           }
@@ -5826,24 +6276,25 @@
           "label": "A",
           "ids": [
             "T-0001",
+            "T-0010",
             "T-0006"
           ],
           "summary": {
-            "n": 2,
+            "n": 3,
             "wins": 2,
-            "losses": 0,
+            "losses": 1,
             "breakevens": 0,
-            "win_rate": 1.0,
+            "win_rate": 0.6666666666666666,
             "avg_win": 3.990139355480909,
-            "avg_loss": null,
+            "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 3.990139355480909,
-            "median": 3.990139355480909,
-            "total": 7.980278710961818,
+            "expectancy": 2.326759570320606,
+            "median": 3.4093567251462034,
+            "total": 6.980278710961818,
             "profit_factor": null,
-            "max_win_streak": 2,
-            "max_loss_streak": 0,
-            "max_drawdown": 0.0,
+            "max_win_streak": 1,
+            "max_loss_streak": 1,
+            "max_drawdown": 1.0,
             "ci": null,
             "evidence": "LOW"
           }
@@ -5956,25 +6407,29 @@
             "T-0003",
             "T-0009",
             "T-0001",
+            "T-0010",
             "T-0006"
           ],
           "summary": {
-            "n": 4,
+            "n": 5,
             "wins": 3,
-            "losses": 1,
+            "losses": 2,
             "breakevens": 0,
-            "win_rate": 0.75,
+            "win_rate": 0.6,
             "avg_win": 3.6404946674952154,
             "avg_loss": -1.0,
             "payoff": null,
-            "expectancy": 2.4803710006214117,
-            "median": 3.1752810083350163,
-            "total": 9.921484002485647,
+            "expectancy": 1.7842968004971294,
+            "median": 2.941205291523829,
+            "total": 8.921484002485647,
             "profit_factor": null,
-            "max_win_streak": 2,
+            "max_win_streak": 1,
             "max_loss_streak": 1,
             "max_drawdown": 1.0,
-            "ci": null,
+            "ci": [
+              -0.21175894169523418,
+              3.780352542689493
+            ],
             "evidence": "LOW"
           }
         },
@@ -6033,6 +6488,32 @@
           }
         },
         {
+          "label": "2026-05",
+          "ids": [
+            "T-0001",
+            "T-0010"
+          ],
+          "summary": {
+            "n": 2,
+            "wins": 1,
+            "losses": 1,
+            "breakevens": 0,
+            "win_rate": 0.5,
+            "avg_win": 4.570921985815614,
+            "avg_loss": -1.0,
+            "payoff": null,
+            "expectancy": 1.7854609929078071,
+            "median": 1.7854609929078071,
+            "total": 3.5709219858156143,
+            "profit_factor": null,
+            "max_win_streak": 1,
+            "max_loss_streak": 1,
+            "max_drawdown": 1.0,
+            "ci": null,
+            "evidence": "LOW"
+          }
+        },
+        {
           "label": "2026-01",
           "ids": [
             "T-0004"
@@ -6053,31 +6534,6 @@
             "max_win_streak": 0,
             "max_loss_streak": 1,
             "max_drawdown": 1.0,
-            "ci": null,
-            "evidence": "LOW"
-          }
-        },
-        {
-          "label": "2026-05",
-          "ids": [
-            "T-0001"
-          ],
-          "summary": {
-            "n": 1,
-            "wins": 1,
-            "losses": 0,
-            "breakevens": 0,
-            "win_rate": 1.0,
-            "avg_win": 4.570921985815614,
-            "avg_loss": null,
-            "payoff": null,
-            "expectancy": 4.570921985815614,
-            "median": 4.570921985815614,
-            "total": 4.570921985815614,
-            "profit_factor": null,
-            "max_win_streak": 1,
-            "max_loss_streak": 0,
-            "max_drawdown": 0.0,
             "ci": null,
             "evidence": "LOW"
           }
@@ -6231,42 +6687,42 @@
     "behaviors": [
       {
         "tag": "followed_setup",
-        "n_with": 4,
-        "mean_with": 3.759136690998,
-        "n_without": 2,
-        "mean_without": -1.0
-      },
-      {
-        "tag": "took_planned_profits",
-        "n_with": 4,
-        "mean_with": 3.759136690998,
+        "n_with": 5,
+        "mean_with": 2.8073093527984,
         "n_without": 2,
         "mean_without": -1.0
       },
       {
         "tag": "waited_for_confirmation",
-        "n_with": 4,
-        "mean_with": 2.366406194544097,
+        "n_with": 5,
+        "mean_with": 1.6931249556352774,
         "n_without": 2,
         "mean_without": 1.7854609929078071
       },
       {
         "tag": "correct_sizing",
-        "n_with": 3,
-        "mean_with": 2.1748064955508526,
+        "n_with": 4,
+        "mean_with": 1.3811048716631393,
         "n_without": 3,
         "mean_without": 2.170709092446481
       },
       {
+        "tag": "took_planned_profits",
+        "n_with": 4,
+        "mean_with": 3.759136690998,
+        "n_without": 3,
+        "mean_without": -1.0
+      },
+      {
         "tag": "did_top_down",
-        "n_with": 2,
-        "mean_with": 1.2046783625731017,
+        "n_with": 3,
+        "mean_with": 0.46978557504873447,
         "n_without": 4,
         "mean_without": 2.656797509711449
       },
       {
         "tag": "respected_invalidation",
-        "n_with": 2,
+        "n_with": 3,
         "mean_with": -1.0,
         "n_without": 4,
         "mean_without": 3.759136690998
@@ -6275,18 +6731,23 @@
         "tag": "waited_for_liquidity",
         "n_with": 2,
         "mean_with": 3.990139355480909,
-        "n_without": 4,
-        "mean_without": 1.2640670132575458
+        "n_without": 5,
+        "mean_without": 0.8112536106060366
       },
       {
         "tag": "followed_htf",
         "n_with": 1,
         "mean_with": 3.4093567251462034,
-        "n_without": 5,
-        "mean_without": 1.9254380077691593
+        "n_without": 6,
+        "mean_without": 1.4378650064742995
       }
     ],
     "process_outcome": [
+      {
+        "grade": "good",
+        "outcome": "loss",
+        "n": 1
+      },
       {
         "grade": "good",
         "outcome": "win",
@@ -6317,24 +6778,32 @@
           "T-0009"
         ],
         "label": "Execution error"
+      },
+      "E": {
+        "n": 1,
+        "total_r": -1.0,
+        "ids": [
+          "T-0010"
+        ],
+        "label": "Information deficiency"
       }
     },
     "mistake_free": {
-      "n": 3,
+      "n": 4,
       "wins": 3,
-      "losses": 0,
+      "losses": 1,
       "breakevens": 0,
-      "win_rate": 1.0,
+      "win_rate": 0.75,
       "avg_win": 4.031780490822723,
-      "avg_loss": null,
+      "avg_loss": -1.0,
       "payoff": null,
-      "expectancy": 4.031780490822723,
-      "median": 4.115062761506354,
-      "total": 12.09534147246817,
+      "expectancy": 2.7738353681170427,
+      "median": 3.7622097433262787,
+      "total": 11.09534147246817,
       "profit_factor": null,
-      "max_win_streak": 3,
-      "max_loss_streak": 0,
-      "max_drawdown": 0.0,
+      "max_win_streak": 2,
+      "max_loss_streak": 1,
+      "max_drawdown": 1.0,
       "ci": null,
       "evidence": "LOW"
     },
@@ -6392,53 +6861,56 @@
       ],
       "counts": {
         "top_down": {
-          "kept": 2,
+          "kept": 3,
           "broken": 2,
           "unknown": 2
         },
         "setup_valid": {
-          "kept": 6,
+          "kept": 7,
           "broken": 0,
           "unknown": 0
         },
         "risk_pct": {
-          "kept": 6,
+          "kept": 7,
           "broken": 0,
           "unknown": 0
         },
         "leverage": {
-          "kept": 4,
+          "kept": 5,
           "broken": 1,
           "unknown": 1
         },
         "min_rr": {
-          "kept": 6,
+          "kept": 7,
           "broken": 0,
           "unknown": 0
         },
         "stop": {
-          "kept": 2,
+          "kept": 3,
           "broken": 0,
           "unknown": 4
         }
       },
       "none_broken": {
-        "n": 4,
+        "n": 5,
         "wins": 3,
-        "losses": 1,
+        "losses": 2,
         "breakevens": 0,
-        "win_rate": 0.75,
+        "win_rate": 0.6,
         "avg_win": 4.031780490822723,
         "avg_loss": -1.0,
         "payoff": null,
-        "expectancy": 2.7738353681170427,
-        "median": 3.7622097433262787,
-        "total": 11.09534147246817,
+        "expectancy": 2.0190682944936342,
+        "median": 3.4093567251462034,
+        "total": 10.09534147246817,
         "profit_factor": null,
-        "max_win_streak": 3,
+        "max_win_streak": 2,
         "max_loss_streak": 1,
         "max_drawdown": 1.0,
-        "ci": null,
+        "ci": [
+          -0.11812865497075933,
+          4.156265243958027
+        ],
         "evidence": "LOW"
       },
       "any_broken": {
@@ -6465,9 +6937,9 @@
       "winners": 4,
       "winner_mae_median": 0.13133684989627492,
       "winner_mae_max": 0.33333333333333404,
-      "losers": 2,
-      "loser_mfe_median": 0.45575851794274036,
-      "loser_mfe_max": 0.6344086021505392
+      "losers": 3,
+      "loser_mfe_median": 0.6344086021505392,
+      "loser_mfe_max": 1.64634146341464
     },
     "counterfactual": [
       {
@@ -6498,11 +6970,11 @@
             "evidence": null,
             "kind": "computed",
             "metric": "measured_trades",
-            "value": 6,
+            "value": 7,
             "min": 20,
             "max": null,
             "met": false,
-            "progress": 0.3
+            "progress": 0.35
           },
           {
             "label": "Losses journaled and classified (A-E)",
@@ -6510,11 +6982,11 @@
             "evidence": null,
             "kind": "computed",
             "metric": "classified_losses",
-            "value": 2,
+            "value": 3,
             "min": 5,
             "max": null,
             "met": false,
-            "progress": 0.4
+            "progress": 0.6
           },
           {
             "label": "Long trades",
@@ -6534,7 +7006,7 @@
             "evidence": null,
             "kind": "computed",
             "metric": "shorts",
-            "value": 3,
+            "value": 4,
             "min": 3,
             "max": null,
             "met": true,
@@ -6678,10 +7150,10 @@
     ],
     "active": "specify",
     "metrics": {
-      "measured_trades": 6,
-      "classified_losses": 2,
+      "measured_trades": 7,
+      "classified_losses": 3,
       "longs": 3,
-      "shorts": 3,
+      "shorts": 4,
       "open_questions": 0,
       "unresolved_profile": 5
     },
@@ -6755,7 +7227,8 @@
       "exchange": "MEXC"
     },
     "open_questions": [
-      "1. The bot needs one leverage rule. You never went above 20x (T-0003, T-0004 and T-0007 at 20x; T-0001 and T-0009 at 10x; T-0006 at 7-8x), and 20x on a 0.6% stop is fine for you. Rule: the lower of 60 / stop % and 20x, rounded down to a whole number (6% stop -> 10x, 3% -> 20x, 0.6% -> 20x)? Or a different ceiling?"
+      "1. The bot needs one leverage rule. You never went above 20x (T-0003, T-0004, T-0007 and T-0010 at 20x; T-0001 and T-0009 at 10x; T-0006 at 7-8x), and 20x on a 0.6% stop is fine for you. Rule: the lower of 60 / stop % and 20x, rounded down to a whole number (6% stop -> 10x, 3% -> 20x, 0.6% -> 20x)? Or a different ceiling?",
+      "2. News as a confluence (T-0010): you used a CPI print (higher than expected = bearish) as a confluence. Should the bot read release results too (it needs actual vs forecast from the calendar), or is that your call only? And for the record: the chart's US event markers are on May 13 and 14 (after the trade) and none on May 11-12. When was that CPI released?"
     ],
     "malfunction_guard": {
       "status": "specified",
@@ -7072,8 +7545,8 @@
     "unreviewed": []
   },
   "build": {
-    "fingerprint": "6d51333637200689",
-    "generated_at": "2026-09-28T20:12:17+00:00",
+    "fingerprint": "89766deae26075b7",
+    "generated_at": "2026-09-28T20:38:34+00:00",
     "validation": [
       {
         "level": "INFO",
@@ -7092,7 +7565,7 @@
       "INFO": 2
     },
     "audit": {
-      "checks": 132,
+      "checks": 144,
       "failures": [],
       "scope": "recomputation"
     }

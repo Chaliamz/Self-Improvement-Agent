@@ -236,3 +236,14 @@ changes:
     fields: [split_entries, leverage_model, checklist]
     note: "The 60% limit and the 50-60% aim are unchanged; the aim is stated to be optional. All supply-demand trades retagged \"1.12\"."
     resulting_version: "1.12"
+  - id: CHG-013
+    kind: clarification
+    date: 2026-09-28
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-28 (T-0010): "c) we had macroeconomic data back in a day with CPI was higher than expected and
+      it's bearish news" (a confluence) ... "We couldn't do anything in this case, setup was A even though it was lost".
+    fields: [confluences, grading]
+    note: "Whether the bot should read release results is a bot question. All supply-demand trades retagged \"1.13\"."
+    resulting_version: "1.13"

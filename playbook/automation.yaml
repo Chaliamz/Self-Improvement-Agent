@@ -11,7 +11,8 @@ venue:
 
 # Questions the bot's specification still needs answered (shown in the terminal's Data gaps).
 open_questions:
-  - "1. The bot needs one leverage rule. You never went above 20x (T-0003, T-0004 and T-0007 at 20x; T-0001 and T-0009 at 10x; T-0006 at 7-8x), and 20x on a 0.6% stop is fine for you. Rule: the lower of 60 / stop % and 20x, rounded down to a whole number (6% stop -> 10x, 3% -> 20x, 0.6% -> 20x)? Or a different ceiling?"
+  - "1. The bot needs one leverage rule. You never went above 20x (T-0003, T-0004, T-0007 and T-0010 at 20x; T-0001 and T-0009 at 10x; T-0006 at 7-8x), and 20x on a 0.6% stop is fine for you. Rule: the lower of 60 / stop % and 20x, rounded down to a whole number (6% stop -> 10x, 3% -> 20x, 0.6% -> 20x)? Or a different ceiling?"
+  - "2. News as a confluence (T-0010): you used a CPI print (higher than expected = bearish) as a confluence. Should the bot read release results too (it needs actual vs forecast from the calendar), or is that your call only? And for the record: the chart's US event markers are on May 13 and 14 (after the trade) and none on May 11-12. When was that CPI released?"
 
 # Trade alerts (trader, 2026-09-28): "you can send alerts when we entered on a trade or exited on SL or TP. Trade will
 # be full analyzed about how you executed, entry and exit prices, risk on $ and leverage, and type of setup."

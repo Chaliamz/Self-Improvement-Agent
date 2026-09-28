@@ -1,0 +1,131 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0010
+status: closed
+opened: 2026-05-12            # the 1.5944 sell limit filled in the May 12 13:00 1h bar (UTC+3)
+closed: 2026-05-12            # the chart trades through the 1.6354 stop in the May 12 22:00 bar (UTC+3); trader: "12/5/26-13/5/26"
+asset: "NEARUSD"
+market: "crypto (chart: TradingView CRYPTO NEARUSD index; exchange not stated)"
+direction: "short"
+session: null
+timeframes:
+  htf: "4h"                   # divergence stated on 1H-2H-4H; the bearish bias timeframe is not stated ("it doesnt appear here because of zoom")
+  execution: "1h"
+  chain: ["4h", "2h", "1h"]
+  detail: []
+  top_down: true              # bias from a higher timeframe, divergence read on 4h, 2h and 1h
+
+setups: [supply_level, choch, divergence, key_level, deviation]
+regime: [bearish, news_driven]   # trader: "Bias Bearish"; entry after a CPI print, loss on NEAR-specific news
+
+strategy:
+  id: supply-demand-structure
+  version: "1.13"             # retagged through CHG-013 (clarifications)
+  experiment: null
+  variant: null
+
+plan:
+  entry: 1.5944               # position-tool label: sell limit at the unretested supply
+  stop: 1.6354                # position-tool label: above the 1.6304 swing high that created the CH
+  targets: [1.4876]           # position-tool label, inside the mini demand level (red box)
+  invalidation: "Price back above the supply and the swing high that created the bearish CH."
+  entry_model: supply_level
+  split_entries: []
+  split_share: null
+  confluences:
+    - "Bearish divergence 1H-2H-4H"
+    - "Supply level (from the entry point to the high) that formed the bearish CH"
+    - "Macroeconomic data: CPI higher than expected, bearish news"
+  confirmations:
+    - "Bearish CH"
+    - "Supply level not tested: sell limit placed there"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # trader: "risk 1%"
+  leverage: 20                # trader: "leverage was 20X" with "2,57% invalidation" (tj: 2.572%, 51.4% of margin)
+  margin_mode: isolated       # the trader's standing rule
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits:
+    - {price: 1.6354, reason: "Stop hit (trader: LOSS)"}
+  fees: null                  # inside the 1% risk (trader, 2026-09-27)
+  duration_minutes: 540       # measured on the 1h chart, about 8-10 h: fill in the May 12 13:00 bar, stop in the 22:00 bar (UTC+3)
+  orders_filled: null
+  worst_price: 1.6354         # the stop filled (price traded to about 1.6400 in that bar)
+  best_price: 1.5269          # about: the May 12 19:00 1h low, +1.65R
+
+result:
+  pnl: null
+  r: null                     # derived price-based from the stop exit: -1.00
+  hypothetical_r: null
+
+journal:
+  before: |
+    Reconstructed from the trader's account on 2026-09-28 (after the outcome, so not hindsight-proof).
+    Bias bearish (on a higher timeframe, not visible at this zoom). Price reached the resistance level (yellow line)
+    after creating a Higher Low. When it broke the resistance level, sellers were aggressive and brought price down,
+    forming a bearish CH. Confluences: bearish divergence 1H-2H-4H; the supply level from the entry point to the high,
+    which formed the bearish CH; CPI higher than expected, bearish news ("we had macroeconomic data back in a day").
+    Confirmations: the bearish CH, and the supply level not tested. Sell limit at the supply with 2.57% invalidation,
+    20x, risk 1%. Target: the mini demand level below (red box), 2.57RR.
+  during: |
+    The limit filled on the May 12 13:00 bar and price fell to about 1.5269 by 19:00 (+1.65R), then rallied through
+    the stop in the 22:00 bar. Trader: "our setup got invalidated and they pushed NEAR higher because of bullish news
+    of NEAR."
+  after: |
+    Trader: "We couldn't do anything in this case, setup was A even though it was lost."
+
+evidence:
+  observed:
+    - "TradingView NEARUSD (CRYPTO index), 1h, chart time UTC+3, May 6-13 2026; screenshot May 13 00:02. Position tool: entry 1.5944, stop 1.6354, target 1.4876 (tj: 2.60R planned, stop distance 2.572%; trader: 2.57% and 2.57RR). The chart is an index, not the exchange where the trade was placed."
+    - "Prices read from chart pixels, calibrated on 18 axis ticks (max residual 0.00018, about half a pixel); times from 17 axis labels (max residual 0.18 h). The image is compressed, so candle colours were matched with a tolerance; the CH label was masked."
+    - "Structure: impulse from about 1.4552 (May 8 00:00) to about 1.6175 (May 9 05:00). Higher low about 1.5458 (May 10 04:00); the red dashed CH line is drawn at about 1.5466 from about May 10 03:00 to May 11 00:00. Yellow resistance about 1.6205."
+    - "The May 10 23:00 bar spiked to about 1.6304, above the yellow resistance and the May 9 high, and traded down to about 1.5373 within the hour: the close under the 1.5466 higher low is the bearish CH. The May 12 04:00 low was about 1.5040."
+    - "Supply untested: the highest high from May 11 00:00 until the fill was about 1.5835 (May 11 02:00). Fill: the first bar to reach 1.5944 is the May 12 13:00 bar (high about 1.6049)."
+    - "After the fill: lows about 1.5399 (14:00), 1.5284 (16:00-17:00), 1.5269 (19:00); then about 1.5824 (20:00), 1.6238 (21:00) and 1.6400 (22:00), through the 1.6354 stop. The last bar (May 13 00:00) closed about 1.6390."
+    - "The stop sat about 0.0050 above the 1.6304 swing high (about 0.31% of price)."
+    - "Red box (mini demand) about 1.4804-1.4944, drawn from about May 8 08:30 (the base of the impulse); the 1.4876 target sits inside it. It was not approached during the trade."
+    - "RSI (1h pane, calibrated on the 80/60/40 labels): at the price highs 1.5824 (May 8 18:00), 1.6175 (May 9 05:00) and 1.6304 (May 10 23:00), the RSI peaks were about 73.9, 70.2 and 71.9. The 2h and 4h are not shown."
+    - "The chart's US economic-event markers sit at about 14:40 on May 13 and 14:55 on May 14 (UTC+3); none is shown on May 11-12."
+    - "tj size: 20x = 51.4% of the margin at the stop (inside the 50-60% aim); isolated liquidation about 1.6658 (1.74x the stop distance)."
+    - "Trader: NEAR was pushed higher by bullish NEAR news (not visible on the chart)."
+  interpreted:
+    - "The chart matches the trader's sequence: a higher low, a push through the yellow resistance that failed within the hour (a deviation above the May 9 high), and a close under the higher low (bearish CH). The supply from the entry to the 1.6304 high stayed untested until the limit filled."
+    - "Divergence on the 1h holds against the May 8 swing (price 1.5824 -> 1.6304, RSI about 73.9 -> 71.9). Between the last two highs (May 9 and May 10) the RSI rose (70.2 -> 71.9): not a divergence on that pair. The 2h and 4h divergences are the trader's reading and not visible here."
+    - "Checklist v1.12: 1 pass (the supply that formed the CH, at the resistance; a 1h zone, the 4h not visible); 2 pass (the push above the resistance took the May 9 high); 3 pass on the 1h (a close under the 1.5466 higher low), the 4h candle range not visible; 4 pass (sell limit at the untested supply); 5 pass (about 0.0050 above the swing high that created the CH); 6 pass (51.4% of margin, liquidation 1.74x the stop distance, 2.60R: above the 2.5R minimum, below the 3R preference); 7 pass (no entry at equal highs); 8 unknown (see the CPI note)."
+    - "News: the trader used a CPI print as a confluence. The chart's event markers are on May 13 and 14, after the trade, and none is on May 12; when the CPI was released relative to the entry is not established. The news rule allows an entry more than 1 hour before a red USD release and keeps open trades."
+    - "The trade ran +1.65R in favour before reversing to the stop within about 3 hours (19:00 -> 22:00). Under the trader's management (hold to TP, break-even barely used) that is a normal outcome, not an error."
+    - "Loss type E (information deficiency): the setup was valid and executed as planned; per the trader, NEAR-specific bullish news after the entry invalidated the thesis. No filter can know coin-specific news in advance, so no rule change follows from one trade."
+  hypotheses:
+    - "Losers that ran well in favour before the stop (T-0010: +1.65R) may say something about management; n=1, and the trader's rule is hold to TP."
+    - "News-driven reversals on single coins break otherwise valid supply shorts (n=1)."
+  charts: [journal/charts/T-0010-near-1h.png]
+
+review:
+  scores:
+    setup: 4                  # CH-born untested supply at resistance after a deviation; divergence against the May 8 swing; 2.60R, below the 3R preference
+    context: 3                # bearish HTF bias (not visible); the 1h was an uptrend from 1.4552 into resistance; news-driven day
+    execution: 5              # sell limit at the untested supply, as planned
+    risk: 5                   # 1%, 20x = 51.4% of margin, stop just above the CH swing high, liquidation 1.74x the stop distance
+    management: 4             # held per the plan; the stop was respected: -1R
+  trader_grade: "A"           # trader: "setup was A even though it was lost"
+  setup_validity: valid
+  followed_plan: true
+  loss_type: E
+  mistakes: []
+  behaviors: [waited_for_confirmation, followed_setup, respected_invalidation, correct_sizing, did_top_down]
+  outside_control: ["Bullish NEAR news after the entry (trader)"]
+  lesson: >-
+    A valid, well-executed supply short can lose to coin-specific news: the process held (untested CH supply, stop
+    above the swing, 51.4% of margin, -1R exactly). Keep the process; one news-driven loss is not evidence against
+    the setup.
+  actionable_change: null
+  strategy_change: "no"
+  evidence_strength: low

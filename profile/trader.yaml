@@ -49,6 +49,8 @@ instruments:                          # list of markets/assets traded
   - "HYPEUSDT perpetual (Bybit)"
   - "S&P 500 index CFD, SPX500 (Capital.com)"
   - "POLUSDT perpetual (BloFin)"
+  - "TIAUSDT perpetual (BloFin)"
+  - "NEAR (chart: TradingView CRYPTO NEARUSD index; exchange not stated)"
 sessions: "24/7"                      # "no, no we trade 24/7 regardless" (2026-09-28): no days or hours avoided besides red USD news
 timeframes:                           # notation: m minutes, h hours, D days, W weeks, M months
   swing_day:                          # swing and day trading (trader, 2026-09-28): the bot's focus
@@ -161,6 +163,8 @@ sources:
   instruments.HYPEUSDT: "T-0006 chart (Bybit HYPEUSDT perpetual), 2026-09-27"
   instruments.SPX500: "T-0007 chart (Capital.com S&P 500 index CFD, 4h), 2026-09-27"
   instruments.POLUSDT: "T-0008 charts (BloFin POLUSDT perpetual, 4h and 1h), 2026-09-27"
+  instruments.TIAUSDT: "T-0009 charts (BloFin TIAUSDT perpetual, 4h and 1h), 2026-09-28"
+  instruments.NEAR: "T-0010 chart (TradingView CRYPTO NEARUSD index, 1h), 2026-09-28"
   risk.max_daily_loss_r: "Trader, 2026-09-27: 'there's no stopping we stick to the plan. only 1% risk we ignore frequency. there's no pause'"
   risk.max_open_risk_pct: "Trader, 2026-09-27: 'only 1% risk we ignore frequency'"
   risk.max_consecutive_losses_before_pause: "Trader, 2026-09-27: 'there's no pause'"
