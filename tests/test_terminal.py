@@ -92,7 +92,7 @@ class ExposureTest(unittest.TestCase):
         self.assertEqual(fmt_cap(at8.max_leverage_for_rule), "9.55x")
         at7 = size_position(SizingInput(leverage=7, **base))              # 44.0%: a NOTE, never a warning
         self.assertEqual([lvl for lvl, _ in at7.flags], ["NOTE"])
-        self.assertIn("below your 50-60% aim (7.96x reaches it)", at7.flags[0][1])
+        self.assertIn("below your 50-60% aim, which is not required", at7.flags[0][1])
         at10 = size_position(SizingInput(leverage=10, **base))            # 62.8%
         self.assertTrue(any(lvl == "CRITICAL" and "above your 60% limit: use 9.55x or less" in m for lvl, m in at10.flags))
         e = exposure(54.44, 51.02, 1.0, leverage=7, margin_mode="isolated", max_margin_loss_pct=60, margin_loss_aim_min_pct=50)
@@ -117,7 +117,9 @@ class ExposureTest(unittest.TestCase):
         self.assertTrue(any(lvl == "CRITICAL" and "BEFORE the stop" in m for lvl, m in at100.flags))
         self.assertEqual(fmt_cap(at100.max_leverage_liq_beyond_stop), "91.15x")
         tight = size_position(SizingInput(entry=100, stop=99.8, **base))                  # 0.2% stop: the aim needs 250x
-        self.assertTrue(any(lvl == "WARN" and "the aim cannot be met" in m for lvl, m in tight.flags))
+        self.assertTrue(any(lvl == "NOTE" and "The aim is not required" in m for lvl, m in tight.flags))
+        at20 = size_position(SizingInput(entry=100, stop=99.4, leverage=20, **base))      # trader: 20x on 0.6% is fine
+        self.assertEqual([lvl for lvl, _ in at20.flags], ["NOTE"])
         e = exposure(100, 99.4, 1.0, margin_mode="isolated", mmr_rate=0.005, max_margin_loss_pct=60, margin_loss_aim_min_pct=50)
         self.assertTrue(e["liq_binds"])
         self.assertEqual(fmt_cap(e["max_leverage_safe"]), "91.15x")                       # not the rule's 100x
@@ -297,7 +299,8 @@ class SplitEntryTest(KBTestCase):
     """Trader, 2026-09-28: up to 3 limit orders; 1 = 1%, 2 = 0.5% each, 3 = 0.3% each; one stop and one target.
     The stop is beyond every order, so it is hit only once all have filled: the margin rule applies to the full position."""
 
-    def test_three_orders_risk_0_9_pct_and_the_full_position_carries_the_margin_rule(self):
+    def test_three_orders_risk_0_9_pct_and_the_first_order_sets_leverage(self):
+        # trader, 2026-09-28: "our first limit order must not exceed 60% ... the same leverage on the rest"
         plan = split_plan([52.9, 54.44, 53.5], 51.02, 30.0, leverage=9, max_margin_loss_pct=60, margin_loss_aim_min_pct=50,
                           targets=(66.10,), min_rr=2.5)
         self.assertEqual(plan.entries, [54.44, 53.5, 52.9])                        # fill order for a long: highest first
@@ -305,18 +308,17 @@ class SplitEntryTest(KBTestCase):
         for f in plan.fills:
             self.assertAlmostEqual(f.loss_at_stop, 30.0 * f.orders)
             self.assertAlmostEqual(f.avg_entry, f.notional / f.qty)
-        full = plan.fills[-1]
-        self.assertAlmostEqual(plan.max_leverage_full_fill, 60 / full.stop_distance_pct)
-        self.assertAlmostEqual(plan.min_leverage_full_fill_aim, 50 / full.stop_distance_pct)
-        self.assertEqual(fmt_cap(plan.max_leverage_first_order), "9.55x")          # the agreed policy: the widest stop
-        self.assertLess(plan.max_leverage_first_order, plan.max_leverage_full_fill)
+        self.assertEqual(fmt_cap(plan.max_leverage_first_order), "9.55x")          # 60 / 6.282%
+        self.assertEqual(fmt_cap(plan.min_leverage_first_order_aim), "7.95x")      # 50 / 6.282% (a preference)
+        self.assertAlmostEqual(plan.max_leverage_full_fill, 60 / plan.fills[-1].stop_distance_pct)
+        self.assertLess(plan.max_leverage_first_order, plan.max_leverage_full_fill)  # the first-order rule implies the full one
         self.assertEqual([f.survives_to for f in plan.fills], [53.5, 52.9, 51.02])  # next order, next order, the stop
         self.assertEqual(plan.flags, [])
-        warn = split_plan([54.44, 53.5], 51.02, 50.0, leverage=10, max_margin_loss_pct=60)   # full position: 53.4%
-        self.assertEqual([lvl for lvl, _ in warn.flags], ["WARN"])
-        self.assertIn("above the agreed first-order cap (9.55x)", warn.flags[0][1])
-        over = split_plan([54.44, 53.5], 51.02, 50.0, leverage=12, max_margin_loss_pct=60)   # full position: 64.0%
-        self.assertTrue(any(lvl == "CRITICAL" and "with every order filled" in m for lvl, m in over.flags))
+        over = split_plan([54.44, 53.5], 51.02, 50.0, leverage=10, max_margin_loss_pct=60)   # first order: 62.8%
+        self.assertEqual([lvl for lvl, _ in over.flags], ["CRITICAL"])
+        self.assertIn("above your 60% limit for the first order: use 9.55x or less for every order", over.flags[0][1])
+        six = split_plan([100.0, 98.0], 94.0, 50.0, leverage=10, max_margin_loss_pct=60)     # the trader's example: 6% -> 10x
+        self.assertEqual(six.flags, [])
 
     def test_liquidation_is_checked_at_every_step(self):
         for entries, stop, mmr in (([54.44, 53.5, 52.9], 51.02, 0.005), ([100.0, 100.3], 100.6, 0.005), ([0.3691, 0.36], 0.3505, 0.01)):
@@ -339,7 +341,7 @@ class SplitEntryTest(KBTestCase):
         code, out = self.run_cli("size", "--entry", "54.44", "--add-entry", "53.5", "--stop", "51.02", "--risk-amount", "100")
         self.assertEqual(code, 0)
         self.assertIn("0.5% of equity per order (50.00)", out)
-        self.assertIn("full position, margin rule", out)
+        self.assertIn("use at most 9.55x", out)
         code, out = self.run_cli("size", "--entry", "54.44", "--add-entry", "53.5", "--add-entry", "53", "--add-entry", "52.5",
                                  "--stop", "51.02", "--risk-amount", "100")
         self.assertEqual(code, 2)                                                  # 4 orders: no rule for it

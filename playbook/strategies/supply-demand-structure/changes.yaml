@@ -225,3 +225,14 @@ changes:
     fields: [grading, split_entries, do_not_trade_when, open_questions]
     note: "No open strategy questions remain. All supply-demand trades retagged \"1.11\"."
     resulting_version: "1.11"
+  - id: CHG-012
+    kind: clarification
+    date: 2026-09-28
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-28: "our first limit order must not exceed 60%. if invalidation is 6% we can get 10X leverage.
+      since we used 10X leverage on first order, we are going to use the same leverage on the rest." ... "its not necessary, the bot can use 20X leverage if invalidation is 0,6% for example (so total loss would be -12% it's absolutely fine with that, we don't have to reach it to -60% at all costs)"
+    fields: [split_entries, leverage_model, checklist]
+    note: "The 60% limit and the 50-60% aim are unchanged; the aim is stated to be optional. All supply-demand trades retagged \"1.12\"."
+    resulting_version: "1.12"

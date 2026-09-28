@@ -11,16 +11,13 @@ venue:
 
 # Questions the bot's specification still needs answered (shown in the terminal's Data gaps).
 open_questions:
-  - "1. Leverage on tight stops: when the 50-60% aim would put liquidation at or before the stop (a 0.6% stop needs 83x for 50%; liquidation comes first above about 91x at a 0.5% maintenance rate, earlier on MEXC's higher tiers), the bot would use the highest leverage that keeps liquidation at least 1.5x the stop distance away, even if that falls below 50%. The loss at the stop stays 1% either way. Agreed?"
-  - "2. Alerts: which channel should the trade alerts (entry, exit at SL or TP) go to: Telegram, email, or both?"
-  - "3. No halts: the malfunction guard would never stop the bot. It refuses or repairs only the one faulty order or position (for example, it places a missing stop at once), logs it in the terminal's Health tab, and the bot keeps trading. Is that what you mean?"
-  - "4. Split leverage, corrected: since the stop is reached only after all orders fill, your 50-60% aim can apply to the full position (T-0006 example: 10.94x-13.12x with 3 orders) instead of the first-order cap you agreed to (9.55x, which lands at 41% when all fill). Liquidation is still checked at every fill. Keep the first-order cap, or aim on the full position?"
+  - "1. The bot needs one leverage rule. You never went above 20x (T-0003, T-0004 and T-0007 at 20x; T-0001 and T-0009 at 10x; T-0006 at 7-8x), and 20x on a 0.6% stop is fine for you. Rule: the lower of 60 / stop % and 20x, rounded down to a whole number (6% stop -> 10x, 3% -> 20x, 0.6% -> 20x)? Or a different ceiling?"
 
 # Trade alerts (trader, 2026-09-28): "you can send alerts when we entered on a trade or exited on SL or TP. Trade will
 # be full analyzed about how you executed, entry and exit prices, risk on $ and leverage, and type of setup."
 alerts:
-  channel: null                       # bot question 2
-  events: [entry filled, exit at stop loss, exit at take profit]
+  channel: [Telegram, email]          # "I think both ways can work" (trader, 2026-09-28)
+  events: [entry filled, exit at stop loss, exit at take profit, error (a malfunction-guard event or bug)]
   content: [execution analysis, entry and exit prices, risk in USDT, leverage, setup type]
 
 # Mandatory (trader, 2026-09-28: "Yes that's a huge MUST. We need to avoid these types of actions at all costs.
@@ -31,8 +28,11 @@ alerts:
 malfunction_guard:
   status: specified                   # specified -> implemented -> tested; no bot code exists yet
   on_trip: >-
-    Block or repair only the faulty order or position, leave every exchange-side stop in place, and log the event as
-    an incident (the terminal's Health tab). The bot keeps trading: no halts. Nothing is closed except by G1.
+    Block or repair only the faulty order or position, leave every exchange-side stop in place, log the event as an
+    incident (the terminal's Health tab) and report it to the trader as an error, explaining what happened. The bot
+    keeps trading: no halts. Nothing is closed except by G1. Trader, 2026-09-28: "any issues are appearing, you mention
+    them as errors, you explain to me what happened and we are looking for a fix. of course we don't halt but we keep
+    an eye to minimize these types of mistakes or bugs".
   checks:
     - id: G1
       name: "Position without a stop"
@@ -44,7 +44,7 @@ malfunction_guard:
       action: "Refuse the order; if already filled, reduce the position to 1% risk."
     - id: G3
       name: "Leverage above the margin rule"
-      trigger: "Stop distance % x leverage above 60% of the posted margin (for split entries, on the full position)."
+      trigger: "Stop distance % x leverage above 60% of the posted margin (split entries: the first order's stop sets the leverage for every order)."
       action: "Refuse the order; resend it only with leverage inside the rule."
     - id: G4
       name: "Liquidation before the stop"

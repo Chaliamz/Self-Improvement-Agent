@@ -210,13 +210,17 @@ def _split_report(p: dict, args, rc: dict, sources: list, risk_amount: float, fe
                     f"{f.survives_to:g} {'(stop)' if f.orders == len(plan.entries) else '(next order)'} |")
         row += "".join(f" {r:.2f} |" for r in f.rr)
         print(row)
-    print("\nThe stop is reached only after every order has filled, so the margin rule applies to the full position.")
-    print("One leverage setting covers the whole position:")
-    if plan.max_leverage_full_fill is not None:
-        rng = f"{plan.min_leverage_full_fill_aim:.2f}x to " if plan.min_leverage_full_fill_aim is not None else "up to "
-        print(f"- full position, margin rule: {rng}{fmt_cap(plan.max_leverage_full_fill)}")
-        print(f"- agreed policy (2026-09-28), the first order's stop: at most {fmt_cap(plan.max_leverage_first_order)}")
+    print("\nOne leverage for every order, set by the first order's stop (trader, 2026-09-28: 'our first limit order must")
+    print("not exceed 60% ... we are going to use the same leverage on the rest'). The stop is reached only after every")
+    print("order fills, so a full stop costs every order's risk.")
+    if plan.max_leverage_first_order is not None:
+        aim = (f"; the aim's lower edge is {plan.min_leverage_first_order_aim:.2f}x, not required"
+               if plan.min_leverage_first_order_aim is not None else "")
+        print(f"- first order ({abs(plan.entries[0] - args.stop) / plan.entries[0] * 100:.3f}% stop): at most "
+              f"{fmt_cap(plan.max_leverage_first_order)}{aim}")
     print(f"- liquidation behind every next order and the stop (maintenance {mmr}): at most {fmt_cap(plan.max_leverage_liq)}")
+    if plan.max_leverage_first_order is not None:
+        print(f"- use at most {fmt_cap(min(plan.max_leverage_first_order, plan.max_leverage_liq))}")
     if plan.flags:
         print("\nFlags:")
         for level, msg in plan.flags:

@@ -1,0 +1,102 @@
+# Strategy version file (§5, §21). IMMUTABLE once committed.
+#
+# v1.5 is a CLARIFICATION of v1.4 (CHG-005): the target on day and swing timeframes, and the 50-60% margin aim as
+# a preference (trader, 2026-09-28). No rule changed; no performance claim: the only example (T-0003) is a 1m scalp.
+
+version: "1.5"
+date: 2026-09-28
+source: "Trader's answers on targets and leverage, 2026-09-28. Clarifies v1.4 (CHG-005)."
+supersedes: "1.4"
+
+direction: "Both. Long on reclaim-retest-accept; short when the level is lost again (deviation) and retested."
+
+scope: >-
+  Day trading and swings. "I'm going to analyze further in the future if we go to scalps too, for now we don't focus
+  on scalps. I want you to take this example and execute on daytrading and swings. It can work very well there even
+  more" (trader, 2026-09-28). The last sentence is the trader's expectation, untested: no day or swing example yet.
+
+timeframes:
+  bias: ["1D", "4h"]          # day trading and swings (the trader's chain, 2026-09-28)
+  levels_and_confirmations: ["1h", "30m"]
+  execution: ["4h", "1h", "30m", "5m", "1m"]   # 4h-30m for day/swing; 1m-5m was the scalp chain (T-0003)
+  scalp_chain:                # T-0003; scalps are not a focus for now
+    structure: ["30m", "1h"]
+    key_levels: "15m"
+    execution: ["1m", "5m"]
+top_down: >-
+  Day and swing: "We start from 1D-4H for bias (we can execute on 4H as well only if setups are great), we can jump to
+  1H-30M for levels + confirmations" (trader, 2026-09-28). Scalps:
+  "We prefer starting 30M-1H time frame to identify bias and structure then we go to 15M to identify key
+  levels+liquidity and we can find confirmations on 1M-5M" (trader, 2026-09-27; M = minutes here).
+
+level_definition: >-
+  Key support/resistance level drawn from a wick. It is valid once price has reacted to it multiple
+  times: at least 3 reactions preferred, and the same holds for trendlines (trader, 2026-09-27). T-0003:
+  tapped, lost, reclaimed and lost again. Supply/demand zones work the other way: the fewer mitigations,
+  the stronger (see supply-demand-structure).
+reactions: >-
+  Not knowable in advance: "we grab a level and we see if that level is key for traders. If it reacts or
+  not." A reaction is a touch that rejects; a break past it that retests and continues; or a deviation that
+  breaks past it, retests, fails, and loses the level again. "In this case it's deviation most of times so
+  we take the retest for continuation" (trader, 2026-09-27). T-0007's red ray (7,574) is an example level
+  used as a target.
+
+market_conditions: []         # not stated
+
+required_conditions:
+  - "A key level validated by multiple reactions: at least 3 preferred."
+  - "Long: the level is reclaimed, retested from above, and accepted."
+  - "Short: the level is lost again (the reclaim was a deviation), then retested from below."
+
+confirmation:
+  - "Multiple reactions at the level"
+  - "Retest of the level from the other side"
+
+confluences:
+  - "Red line: key level drawn from a wick, tapped multiple times"
+
+entry_models:
+  reclaim_retest_accept: "Long: on the retest after the level is reclaimed and accepted."
+  deviation_retest: "Short: on the retest from below after the level is lost again (T-0003)."
+
+stop_model: >-
+  Beyond the latest swing before price broke the level, in case it reclaims the level. For a short,
+  the latest high before the break (T-0003: 85.7453, the 20:32 high before the 20:33 break).
+target_model: >-
+  Day and swing: "our plan is to target 2.5R minimum if we can go higher we go for it" (trader, 2026-09-28): the
+  opposing level that gives at least 2.5R, further when a stronger level allows. Scalps (T-0003): an LTF point of
+  interest when no better level data exists: "I chose is because of the lower wick it created and closed bullish so
+  it was a ltf point of interest, there wasnt proper data there" (trader, 2026-09-27).
+filters:
+  min_rr: 2.5                 # the trader's general rule (profile)
+  preferred_rr: 3.0
+risk_model: "1% of equity per trade. Fees are inside the 1% (trader, 2026-09-27); the bot will count them separately."
+leverage_model: >-
+  Isolated margin: "always aim for 50-60% at the stop" (trader, 2026-09-28), never above 60%, margin call at 80%.
+  Higher leverage when the invalidation % is small (T-0003: 0.239% stop, 20x = 4.8% of margin). On stops this tight
+  the aim is out of reach: 50% needs about 209.6x, while liquidation comes before the stop above about 135.2x at a 0.5%
+  maintenance rate (tj size). Liquidation must stay beyond the stop. The aim is not required: "its not necessary, the bot can use 20X leverage if invalidation is 0,6% for example (so total loss would be -12% it's absolutely fine with that, we don't have to reach it to -60% at all costs)"
+  (trader, 2026-09-28).
+context: >-
+  The trader called T-0003 risky because no top-down analysis was done: only the 1m chart was used,
+  so higher-timeframe levels that could invalidate the setup were not checked. The top-down for scalps
+  is 30m-1h, then 15m, then 1m-5m (see top_down).
+
+management:
+  default: "Hold until TP hits."
+  breakeven: "Barely used."
+  partials: "Barely used."
+  trailing: null
+  reentry: null
+  max_hold: null
+  early_exit: null
+  invalidation: "Stop beyond the latest swing before the break (see stop_model)."
+
+do_not_trade_when:
+  - "Best target gives less than 2.5R (the trader's general rule)."
+  - "Within 1 hour before or after a red (high-impact) USD event on ForexFactory: no new entry, resting orders cancelled; open trades kept (the trader's general rule, 2026-09-27/28)."
+  - "Price in the middle of nowhere: no key level (or demand/supply) at the entry, whatever the confluences ('it's more preferable not to execute', trader, 2026-09-28)."
+
+common_mistakes: [skipped_top_down]
+
+open_questions: []               # all answered by 2026-09-28

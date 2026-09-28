@@ -12,8 +12,8 @@ LOW tier. Six trades cannot separate skill from luck. Nothing below is establish
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.10 | unvalidated | 5 (T-0001, T-0004, T-0006, T-0007, T-0009) | n=5: +2.02R, 95% CI [-0.12, +4.16] (LOW) |
-| key-level-sr | 1.4 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
+| supply-demand-structure | 1.12 | unvalidated | 5 (T-0001, T-0004, T-0006, T-0007, T-0009) | n=5: +2.02R, 95% CI [-0.12, +4.16] (LOW) |
+| key-level-sr | 1.5 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
 _None. Requires the promotion gate in `config.yaml`._
@@ -111,9 +111,10 @@ from the recurring flag. The top-down rule was broken in both trades where it wa
 ## Risk rules
 Stated by the trader (2026-09-26). These are the trader's rules, not performance findings.
 - 1% of equity at risk per trade, always.
-- Isolated margin. Leverage is set from the stop distance: "always aim for 50-60% at the stop" (2026-09-28), so
-  50 / stop % <= leverage <= 60 / stop %, and never so high that liquidation comes before the stop. Below 50% is
-  short of the aim, not a risk breach. T-0006: 6.28% x 8x = 50.3%. Leverage does not change the 1% risk.
+- Isolated margin. Leverage is set from the stop distance: never above 60% of the margin lost at the stop, and never
+  so high that liquidation comes before the stop. 50-60% is the aim, a preference: "the bot can use 20X leverage if
+  invalidation is 0,6% ... we don't have to reach it to -60% at all costs" (2026-09-28). T-0006: 6.28% x 8x = 50.3%.
+  Leverage does not change the 1% risk. The bot's exact choice (a 20x ceiling?) is the one open bot question.
 - Minimum R:R 2.5 for the best target; 3.0 preferred.
 - Hold until TP; break-even and partials are barely used. Good R:R setups are hunted.
 - Fees are inside the 1% risk; the bot will count them separately (trader, 2026-09-27).
@@ -128,14 +129,15 @@ Stated by the trader (2026-09-26). These are the trader's rules, not performance
   not a criterion ("Ignore small and weak candles"). An unfilled limit is cancelled when price reaches the TP first.
 - Split entries (2026-09-28): up to 3 limits, 1% / 0.5% each / 0.3% each, one stop and one target. The stop is
   reached only after every order fills, so a full stop costs 0.9% (-0.9R); 1 of 3 filled at 3R = +0.9R (R on the full
-  1%). Results count in USDT as well as R. Leverage: one setting per position, from the first order's stop (agreed);
-  whether to aim 50-60% on the full position instead is bot question 4. `./tj size --add-entry` computes it all.
+  1%). Results count in USDT as well as R. Leverage: the first order's stop x leverage must not exceed 60%, and the
+  same leverage goes on every order (6% stop -> 10x). `./tj size --add-entry` computes it all.
 - Timeframes for swing and day trading: 1D-4h bias, 1h-30m levels and confirmations, 4h execution only for great
   setups (T-0006, T-0007).
 - Bot: MEXC USDT-margined perpetuals BTC_USDT, ETH_USDT, HYPE_USDT for now; day trading and swings, no scalps for
   now. The malfunction guard is mandatory (G1-G9 in `playbook/automation.yaml`, shown in the Health tab) and never
-  halts the bot: it blocks or repairs the faulty action. Every entry and exit sends a trade alert (execution analysis,
-  prices, risk in USDT, leverage, setup type). Open bot questions are in Data gaps.
+  halts the bot: it blocks or repairs the faulty action, and every issue is reported as an error with an explanation so
+  a fix can be found. Every entry and exit sends a trade alert by Telegram and email (execution analysis, prices, risk in
+  USDT, leverage, setup type). Key-level setups on day/swing timeframes target at least 2.5R, further when possible.
 - Unresolved: fee rates, maintenance-margin rate, account equity (see `profile/trader.yaml`). Base currency: USDT.
 
 ## Behavioural rules
@@ -144,6 +146,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-09-28 | supply-demand-structure v1.12 (CHG-012): the 50-60% aim is a preference; split entries take the first order's leverage (at most 60% on its stop) for every order. key-level-sr v1.5 (CHG-005): day/swing target at least 2.5R, further when possible. Bot: alerts by Telegram and email, errors reported with an explanation, no halts. No strategy questions open | trader's answers |
 | 2026-09-28 | supply-demand-structure v1.11 (CHG-011): why T-0004 is D; no trade in the middle of nowhere; split fills, R unit (+0.9R for 1 of 3 at 3R) and leverage policy. key-level-sr v1.4 (CHG-004): scoped to day trading and swings (no scalps for now); one open question on its targets there | trader's answers |
 | 2026-09-28 | Bot spec: USDT perpetuals on MEXC, trade alerts on entry and exit, no halts (the guard blocks or repairs the faulty action). Split-entry sizing corrected: the margin rule applies to the full position (INC-019); journal R for split trades in the trader's unit | trader's answers; tests |
 | 2026-09-28 | supply-demand-structure v1.10 clarification (CHG-010): candle size is not an entry criterion ("Ignore small and weak candles"); split entries of up to 3 limits (1% / 0.5% each / 0.3% each, one stop and target; `tj size --add-entry`); the 1h as a detail timeframe; stops "just very close" to the swing or level; T-0009 is the B example. No rule changed | trader's answers; T-0009 |

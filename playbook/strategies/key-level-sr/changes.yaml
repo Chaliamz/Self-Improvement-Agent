@@ -64,6 +64,16 @@ changes:
     fields: [scope, timeframes, top_down, do_not_trade_when, open_questions]
     note: "Scope moves to day trading and swings at the trader's instruction; the performance there is untested (n=0). T-0003 retagged 1.4."
     resulting_version: "1.4"
+  - id: CHG-005
+    kind: clarification
+    date: 2026-09-28
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-28: "yes our plan is to target 2.5R minimum if we can go higher we go for it." ... "its not necessary, the bot can use 20X leverage if invalidation is 0,6% for example (so total loss would be -12% it's absolutely fine with that, we don't have to reach it to -60% at all costs)"
+    fields: [target_model, leverage_model, open_questions]
+    note: "No open questions remain. T-0003 retagged 1.5."
+    resulting_version: "1.5"
 #  - id: CHG-001
 #    date: 2026-01-01
 #    current_rule: "Enter after liquidity sweep."

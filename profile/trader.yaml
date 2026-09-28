@@ -26,7 +26,7 @@ risk:
     risk_pct_per_order: {1: 1.0, 2: 0.5, 3: 0.3}   # 3 x 0.3% = 0.9%: "it's okay if it's 0.9% total risk"
     same_stop_and_target: true
     r_unit: "the full 1% (risk_per_trade_pct): 1 of 3 orders filled at 3R = +0.9R; the stop is reached only after every order fills"
-    leverage_policy: "first order's stop (the widest), agreed 2026-09-28"
+    leverage_policy: "the first order's stop x leverage must not exceed 60%; the same leverage for every order (6% stop -> 10x)"
 reporting:
   measures: [USDT, R]                 # "On trading we will count $ not only RR" (2026-09-28)
 
@@ -34,7 +34,7 @@ leverage:
   max_leverage: "none"                # no fixed cap: leverage is set from the stop distance by the margin rule below
   margin_mode: isolated               # isolated | cross
   max_margin_loss_at_stop_pct: 60     # upper edge of the aim: stop distance % x leverage (isolated margin); beyond is a breach
-  margin_loss_aim_min_pct: 50         # lower edge: "always aim for 50-60% at the stop" (trader, 2026-09-28)
+  margin_loss_aim_min_pct: 50         # lower edge of the aim "50-60% at the stop"; a preference: "we don't have to reach it to -60% at all costs"
   margin_call_at_margin_loss_pct: 80  # "margin call occurs on 80%" (trader)
   maintenance_margin_rate: null       # decimal; exchange/tier specific
 
@@ -169,7 +169,7 @@ sources:
   execution_venue: "Trader, 2026-09-27: 'I'm expecting to use MEXC as an exchange to use the bot placing orders.'"
   grading.examples: "Trader, 2026-09-27: T-0001 'would be A ... it would be S if I would get extreme demand and get higher RR'; T-0003 'would be C because I focused only on 1M time frame regardless of win'; T-0006 'would be A because I executed well but had to let it reach supply level so it would be an S'"
   grading: "Trader, 2026-09-27: 'its a rough guide, it doesnt matter if that's 3.5R it could be slightly less. And no we can consider trading S,A,B,C trading setups. We would avoid D setups and maybe C ones as well.'"
-  leverage.margin_loss_aim_min_pct: "Trader, 2026-09-28: 'always aim for 50-60% at the stop'. Earlier: 'not to exceed -50%' (2026-09-26); 'until 50%, it's okay if it goes to 55%' (2026-09-27)."
+  leverage.margin_loss_aim_min_pct: "Trader, 2026-09-28: 'always aim for 50-60% at the stop'; then 'its not necessary, the bot can use 20X leverage if invalidation is 0,6% for example (so total loss would be -12% it's absolutely fine with that, we don't have to reach it to -60% at all costs)'. Earlier: 'not to exceed -50%' (2026-09-26); 'until 50%, it's okay if it goes to 55%' (2026-09-27)."
   grading.b_criteria: "Trader, 2026-09-28: 'B setup would be anything with decent RR but few confluences, which means it could be a risky execution.'"
   grading.examples.T-0004: "Trader, 2026-09-28: 'it's D setup because it executed poorly (mistake) setup was good but executed early.'"
   news_filter.resume_after_minutes: "Trader, 2026-09-28: 'they can resume after 1H after manipulation could stop. anything resting gets cancelled too.'"
@@ -179,7 +179,7 @@ sources:
   execution_venue.scalps: "Trader, 2026-09-28: 'I'm going to analyze further in the future if we go to scalps too, for now we don't focus on scalps.'"
   reporting: "Trader, 2026-09-28: 'On trading we will count $ not only RR'"
   risk.split_entries.r_unit: "Trader, 2026-09-28: 'it's impossible to hit SL when only 1 of 3 orders filled. the actual opposite. if 1 order of 3 fills and reaches TP, for example 3RR it's going to be a profit of 0.9R'"
-  risk.split_entries.leverage_policy: "Trader, 2026-09-28: 'Agreed.' (leverage from the first order, the widest stop)"
+  risk.split_entries.leverage_policy: "Trader, 2026-09-28: 'our first limit order must not exceed 60%. if invalidation is 6% we can get 10X leverage. since we used 10X leverage on first order, we are going to use the same leverage on the rest.'"
   risk.max_correlated_positions: "Trader, 2026-09-28: 'no, we take every valid setup, bad days will happen either way.'"
   execution_venue.pairs: "Trader, 2026-09-28: 'The certain ones will be BTC-ETH-HYPE.' ... 'yes, we are trading on perpetuals and USDT as our stable coin.' (MEXC BTC_USDT, ETH_USDT, HYPE_USDT)"
   execution_venue.styles: "Trader, 2026-09-28: 'as long as we focus on swing trades and day trading.'"

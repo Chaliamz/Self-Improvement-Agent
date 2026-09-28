@@ -77,7 +77,7 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
    the proof that the thesis was not written with hindsight (§33, §37).
 2. `./tj size --entry E --stop S [--leverage L --margin-mode M --target T]` for the risk
    decomposition; for split limit entries add `--add-entry E2 [--add-entry E3]` (per-order risk from profile
-   `risk.split_entries`; one leverage for the position, set by the widest-stop order). Surface every CRITICAL/WARN
+   `risk.split_entries`; one leverage for every order, set by the first order's stop: at most 60% of margin there). Surface every CRITICAL/WARN
    flag and every "ASSUMED"/"default" input.
 3. Run the strategy version's `checklist` item by item and report each as pass / fail / unknown with
    the evidence. T-0004 is the reference failure: a 5m CHoCH the 30m had not confirmed (item 3), entry

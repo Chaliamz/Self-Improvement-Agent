@@ -4,7 +4,7 @@
 id: supply-demand-structure
 name: "Supply/Demand + Price Action / Market Structure (liquidity confluences)"
 status: unvalidated
-current_version: "1.11"
+current_version: "1.12"
 created: 2026-09-26
 summary: >-
   Trader's main strategy, in their words: "supply/demand level and price action/market structure,

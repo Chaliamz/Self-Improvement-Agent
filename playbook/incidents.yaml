@@ -236,8 +236,8 @@ incidents:
     found_by: trader
     status: fixed
     fix: >-
-      split_plan applies the margin rule to the full position, checks liquidation against the next order and the stop at
-      every fill, and reports the agreed first-order cap separately (a WARN above it, never a CRITICAL); tests cover
-      both. Journal R for split trades follows the trader's unit (1 of 3 filled at 3R = +0.9R) in the model, the
-      validator and the audit. Which leverage the bot uses is bot question 4.
+      split_plan checks liquidation against the next order and the stop at every fill and reports the full-position
+      figure; journal R for split trades follows the trader's unit (1 of 3 filled at 3R = +0.9R) in the model, the
+      validator and the audit; tests cover both. The trader then set the leverage rule (2026-09-28): the first order
+      must not exceed 60%, the same leverage for every order. tj size enforces it as CRITICAL.
 

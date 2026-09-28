@@ -1084,7 +1084,7 @@ function renderRisk() {
     ["Pause after consecutive losses", "risk.max_consecutive_losses_before_pause", v => String(v)],
     ["Split entries", "risk.split_entries", v => splitText(v)],
     ["Max leverage", "leverage.max_leverage", v => v + "x"], ["Margin mode", "leverage.margin_mode", v => titleCase(v)],
-    ["Margin loss at stop: aim", "leverage.margin_loss_aim_min_pct", v => `${v}-${dig(p, "leverage.max_margin_loss_at_stop_pct")}% of margin (leverage ${v} / stop % to ${dig(p, "leverage.max_margin_loss_at_stop_pct")} / stop %)`],
+    ["Margin loss at stop: aim", "leverage.margin_loss_aim_min_pct", v => `${v}-${dig(p, "leverage.max_margin_loss_at_stop_pct")}% of margin (leverage ${v} / stop % to ${dig(p, "leverage.max_margin_loss_at_stop_pct")} / stop %); a preference, lower is fine`],
     ["Margin loss at stop: limit", "leverage.max_margin_loss_at_stop_pct", v => `${v}% (above is a breach; liquidation must also sit beyond the stop)`],
     ["Margin call", "leverage.margin_call_at_margin_loss_pct", v => `at ${v}% of margin lost`],
     ["Minimum R:R", "risk.min_rr", v => "1:" + v], ["Preferred R:R", "risk.preferred_rr", v => "1:" + v],
@@ -1229,11 +1229,11 @@ function botSpec() {
     ["Hours", orNone(p.sessions)],
     ["Risk per trade", isNum(dig(p, "risk.risk_per_trade_pct")) ? `${p.risk.risk_per_trade_pct}% of equity, fees inside` : unstated("Unresolved")],
     ["Split entries", dig(p, "risk.split_entries") ? splitText(p.risk.split_entries) : unstated("Unresolved")],
-    ["Leverage", isNum(lim) ? `Isolated; ${isNum(aim) ? aim + "-" : ""}${lim}% of margin lost at the stop, never above ${lim}%; liquidation beyond the stop` : unstated("Unresolved")],
+    ["Leverage", isNum(lim) ? `Isolated; never above ${lim}% of margin lost at the stop${isNum(aim) ? ` (${aim}-${lim}% preferred, lower is fine)` : ""}; liquidation beyond the stop` : unstated("Unresolved")],
     ["News", isNum(nf.no_new_entries_before_minutes) ? `No entries ${nf.no_new_entries_before_minutes} min before to ${isNum(nf.resume_after_minutes) ? nf.resume_after_minutes + " min after" : "?"} red ${(nf.currencies || []).join("/")} events${nf.cancel_resting_orders ? "; resting orders cancelled" : ""}; open trades kept` : unstated("Unresolved")],
     ["Daily stop / pause / correlation cap", [dig(p, "risk.max_daily_loss_r"), dig(p, "risk.max_consecutive_losses_before_pause"), dig(p, "risk.max_correlated_positions")].every(v => v === "none") ? "None (your rules)" : "See Risk"],
     ["Malfunction guard", g.checks ? `${g.checks.length} checks, ${g.status === "specified" ? "specified (see Health)" : g.status}; blocks or repairs the faulty action, never halts the bot` : unstated("Not specified")],
-    ["Trade alerts", al.events ? `${al.events.join(", ")}: ${(al.content || []).join(", ")}${al.channel ? " · via " + al.channel : " · channel open (Data gaps)"}` : unstated("Not specified")],
+    ["Trade alerts", al.events ? `${al.events.join(", ")}: ${(al.content || []).join(", ")}${al.channel ? " · via " + [].concat(al.channel).join(" and ") : " · channel open (Data gaps)"}` : unstated("Not specified")],
     ["Scalps", dig(p, "execution_venue.scalps") === false ? "Not for now (day trading and swings only)" : dig(p, "execution_venue.scalps") ? "Yes" : unstated("Unresolved")],
     ["Results counted in", (dig(p, "reporting.measures") || []).join(" and ") || unstated("Unresolved")]]);
 }
