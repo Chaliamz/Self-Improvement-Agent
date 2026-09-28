@@ -26,6 +26,12 @@ bootstrap:
   seed: 7
   confidence: 0.95
 
+# Monte Carlo outlook: the next `trades` trades resampled from the realized R, `paths` times (same seed).
+# It shows the spread the sample implies, not the edge. Shown from min_n_for_ci trades.
+outlook:
+  trades: 100
+  paths: 2000
+
 # A mistake tag seen at least this many times is flagged as RECURRING (§15).
 recurring_error_min: 3
 # "Recent" = the last N recorded (non-planned) trades.

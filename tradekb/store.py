@@ -40,6 +40,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "min_n_for_ratios": 10,
     "min_n_for_ci": 5,
     "bootstrap": {"resamples": 10000, "seed": 7, "confidence": 0.95},
+    "outlook": {"trades": 100, "paths": 2000},
     "recurring_error_min": 3,
     "recent_window": 20,
     "process": {"good_min": 3.5, "poor_max": 2.5, "min_scored_dimensions": 3},

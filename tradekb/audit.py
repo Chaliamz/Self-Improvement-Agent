@@ -11,6 +11,8 @@ from __future__ import annotations
 import base64
 import datetime as dt
 import json
+import math
+import random
 import re
 from pathlib import Path
 
@@ -18,7 +20,7 @@ from .export import IMAGE_TYPES, build_payload, fingerprint
 from .store import KB, trade_number
 
 TOL = 1e-9
-SINGLE_VALUED = ("direction", "asset", "timeframe", "top_down", "strategy", "version", "entry_model",
+SINGLE_VALUED = ("weekday", "direction", "asset", "timeframe", "top_down", "strategy", "version", "entry_model",
                  "leverage", "risk", "grade", "trader_grade", "trend", "month", "session")
 MAGIC = {".png": b"\x89PNG", ".jpg": b"\xff\xd8", ".jpeg": b"\xff\xd8", ".gif": b"GIF8"}
 KB_DATA_RE = re.compile(r'<script id="kb-data" type="application/json">(.*?)</script>', re.S)
@@ -78,6 +80,94 @@ def _independent_r(t: dict) -> float | None:
 def _sort_key(t: dict):
     when = t.get("closed") or t.get("opened")
     return (str(when) if when else "9999", trade_number(t["id"]) or 0)
+
+
+def _rank(values: list, q: float):
+    """Nearest rank, restated: the value at position round-half-up(q x (count - 1)) of the sorted list."""
+    s = sorted(values)
+    return s[math.floor(q * (len(s) - 1) + 0.5)]
+
+
+def _audit_more(a: Audit, p: dict, realized: list, kb: KB) -> None:
+    mo = p["stats"]["more"]
+    rs = [t["derived"]["r"] for t in realized]
+    n = len(rs)
+    a.check(mo["n"] == n, "more stats: n")
+    if n >= 2:
+        mean = sum(rs) / n
+        sd = math.sqrt(sum((r - mean) ** 2 for r in rs) / (n - 1))
+        a.check(mo["sd"] is not None and abs(mo["sd"] - sd) < 1e-9, "more stats: standard deviation of R re-derived")
+        want_sqn = math.sqrt(min(n, 100)) * mean / sd if n >= kb.config["min_n_for_ratios"] and sd else None
+        a.check((mo["sqn"] is None and want_sqn is None) or (want_sqn is not None and abs(mo["sqn"] - want_sqn) < 1e-9), "more stats: SQN re-derived")
+    if rs:
+        a.check(abs(mo["best"]["r"] - max(rs)) < TOL and abs(mo["worst"]["r"] - min(rs)) < TOL, "more stats: best and worst R")
+    hits = []
+    for t in realized:
+        targets = [_num(x) for x in (t.get("plan") or {}).get("targets") or [] if _num(x) is not None]
+        exits = [_num(e.get("price")) for e in (t.get("fills") or {}).get("exits") or [] if _num(e.get("price")) is not None]
+        if any(abs(e - x) <= 1e-9 * max(abs(x), 1.0) for e in exits for x in targets):
+            hits.append(t["id"])
+    a.check(sorted(mo["target_hit_ids"]) == sorted(hits) and mo["target_hits"] == len(hits), "more stats: target hits recounted")
+    best_rr = [max(x for x in t["derived"]["planned_rr"] if x is not None) for t in realized
+               if any(x is not None for x in t["derived"]["planned_rr"])]
+    if best_rr:
+        mean_rr = sum(best_rr) / len(best_rr)
+        a.check(abs(mo["planned_rr_mean"] - mean_rr) < 1e-9 and abs(mo["breakeven_win_rate"] - 1 / (1 + mean_rr)) < 1e-9,
+                "more stats: planned R:R and break-even win rate")
+
+
+def _audit_outlook(a: Audit, p: dict, realized: list, kb: KB) -> None:
+    """Replay the Monte Carlo protocol with separately written aggregation."""
+    out, cfg = p["stats"]["outlook"], kb.config
+    rs = [t["derived"]["r"] for t in realized]
+    if len(rs) < cfg["min_n_for_ci"]:
+        a.check(out is None, "outlook: absent below the minimum sample")
+        return
+    horizon, paths, band, seed = cfg["outlook"]["trades"], cfg["outlook"]["paths"], cfg["breakeven_band_r"], cfg["bootstrap"]["seed"]
+    wins, losses = [r for r in rs if r > band], [r for r in rs if r < -band]
+
+    def replay(next_r):
+        steps, finals, dds, streaks = [[] for _ in range(horizon)], [], [], []
+        for _ in range(paths):
+            path = [next_r() for _ in range(horizon)]
+            cum = 0.0
+            running = []
+            for r in path:
+                cum += r
+                running.append(cum)
+            for i, v in enumerate(running):
+                steps[i].append(v)
+            highs = [max([0.0] + running[:i + 1]) for i in range(horizon)]
+            dds.append(max(h - v for h, v in zip(highs, running)) if running else 0.0)
+            best = cur = 0
+            for r in path:
+                cur = cur + 1 if r < -band else 0
+                best = best if best > cur else cur
+            streaks.append(best); finals.append(running[-1])
+        return steps, finals, dds, streaks
+
+    sc = {s["key"]: s for s in out["scenarios"]}
+    g = random.Random(seed)
+    cases = [("as_sampled", lambda: rs[g.randrange(len(rs))])]
+    if wins and losses:
+        k, n, z = len(wins), len(rs), 1.96
+        ph = k / n
+        w = (ph + z * z / (2 * n) - z * math.sqrt(ph * (1 - ph) / n + z * z / (4 * n * n))) / (1 + z * z / n)
+        aw, al = sum(wins) / len(wins), sum(losses) / len(losses)
+        g2 = random.Random(seed + 1)
+        cases.append(("low_win_rate", lambda: aw if g2.random() < w else al))
+        a.check("low_win_rate" in sc and abs(sc["low_win_rate"]["win_rate"] - w) < 1e-12, "outlook: low win rate is the Wilson lower bound")
+    a.check(len(sc) == len(cases), "outlook: scenario count")
+    for key, draw in cases:
+        steps, finals, dds, streaks = replay(draw)
+        s = sc.get(key) or {}
+        ok = all(abs(s["bands"][name][i + 1] - _rank(steps[i], q)) < 1e-9 for name, q in
+                 (("p5", .05), ("p25", .25), ("p50", .5), ("p75", .75), ("p95", .95)) for i in range(horizon))
+        a.check(ok and all(s["bands"][b][0] == 0.0 for b in s["bands"]), f"outlook {key}: percentile bands replayed")
+        a.check(abs(s["final"]["p50"] - _rank(finals, .5)) < 1e-9 and abs(s["p_negative"] - sum(f < 0 for f in finals) / paths) < 1e-12,
+                f"outlook {key}: final R and the chance of ending negative replayed")
+        a.check(abs(s["max_drawdown"]["p95"] - _rank(dds, .95)) < 1e-9 and s["losing_streak"]["p95"] == _rank(streaks, .95),
+                f"outlook {key}: drawdown and losing streak replayed")
 
 
 def run(kb: KB, check_outputs: bool = True) -> Audit:
@@ -200,6 +290,9 @@ def run(kb: KB, check_outputs: bool = True) -> Audit:
             a.check(total_n == len(rs), f"breakdown '{key}': groups sum to n ({total_n})")
         else:
             a.check(total_n >= len(rs), f"breakdown '{key}': multi-valued groups cover n ({total_n} >= {len(rs)})")
+
+    _audit_more(a, p, realized, kb)
+    _audit_outlook(a, p, realized, kb)
 
     m = p["readiness"]["metrics"]
     a.check(m["measured_trades"] == len(rs), "readiness: measured trades")

@@ -247,3 +247,14 @@ changes:
     fields: [confluences, grading]
     note: "Whether the bot should read release results is a bot question. All supply-demand trades retagged \"1.13\"."
     resulting_version: "1.13"
+  - id: CHG-014
+    kind: clarification
+    date: 2026-09-28
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-28: "its actually my call, CPI released in 12th may." ... "Ceiling should be 60% so we should avoid
+      margin calls (80%)".
+    fields: [confluences, leverage_model]
+    note: "All supply-demand trades retagged \"1.14\"."
+    resulting_version: "1.14"

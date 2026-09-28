@@ -31,7 +31,8 @@ reporting:
   measures: [USDT, R]                 # "On trading we will count $ not only RR" (2026-09-28)
 
 leverage:
-  max_leverage: "none"                # no fixed cap: leverage is set from the stop distance by the margin rule below
+  max_leverage: "none"                # no fixed cap: "Ceiling should be 60% so we should avoid margin calls (80%)" (2026-09-28)
+  bot_default: "the highest whole-number leverage with at most 60% of the margin lost at the stop and liquidation at least 1.5x the stop distance away (MEXC tier); lower is always allowed"
   margin_mode: isolated               # isolated | cross
   max_margin_loss_at_stop_pct: 60     # upper edge of the aim: stop distance % x leverage (isolated margin); beyond is a breach
   margin_loss_aim_min_pct: 50         # lower edge of the aim "50-60% at the stop"; a preference: "we don't have to reach it to -60% at all costs"
@@ -168,6 +169,7 @@ sources:
   risk.max_daily_loss_r: "Trader, 2026-09-27: 'there's no stopping we stick to the plan. only 1% risk we ignore frequency. there's no pause'"
   risk.max_open_risk_pct: "Trader, 2026-09-27: 'only 1% risk we ignore frequency'"
   risk.max_consecutive_losses_before_pause: "Trader, 2026-09-27: 'there's no pause'"
+  leverage.bot_default: "Derived 2026-09-28 from the trader's rules: 'Ceiling should be 60% so we should avoid margin calls (80%)'; 'we don't have to reach it to -60% at all costs'. The 1.5x liquidation buffer is the agent's safety default (lower leverage is always allowed)."
   leverage.max_leverage: "Trader, 2026-09-27: 'leverage can be depending on invalidation ... so we won't be close to margin call (80%). for example having 7% invalidation we can use until 7-8X'"
   news_filter: "Trader, 2026-09-27: 'we avoid macroeconomic data 1 Hour before event occurs. Forexfactory.com ... we focus only on USD and red symbols (high impact). This is true only if we didn't enter the trade yet.'"
   execution_venue: "Trader, 2026-09-27: 'I'm expecting to use MEXC as an exchange to use the bot placing orders.'"

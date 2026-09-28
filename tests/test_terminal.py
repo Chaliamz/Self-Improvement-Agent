@@ -101,6 +101,19 @@ class ExposureTest(unittest.TestCase):
         e8 = exposure(54.44, 51.02, 1.0, leverage=8, margin_mode="isolated", max_margin_loss_pct=60, margin_loss_aim_min_pct=50)
         self.assertFalse(e8["margin_loss_below_aim"]); self.assertFalse(e8["margin_loss_breach"])
 
+    def test_bot_default_leverage(self):
+        # trader, 2026-09-28: the ceiling is 60% of margin at the stop; lower is always allowed
+        cases = {(100, 94): 10, (100, 99.4): 71, (1.5944, 1.6354): 22, (54.44, 51.02): 9}   # 6%: the trader's own 10x
+        for (entry, stop), want in cases.items():
+            res = size_position(SizingInput(entry=entry, stop=stop, risk_amount=100, max_margin_loss_pct=60, mmr_rate=0.005))
+            self.assertEqual(res.default_leverage, want, (entry, stop))
+            at = size_position(SizingInput(entry=entry, stop=stop, risk_amount=100, max_margin_loss_pct=60, mmr_rate=0.005,
+                                           leverage=want))
+            self.assertLessEqual(at.margin_loss_pct, 60 + 1e-9)
+            self.assertGreaterEqual(at.liq_to_stop_ratio, 1.5 - 1e-9)
+        plan = split_plan([54.44, 53.5, 52.9], 51.02, 30.0, max_margin_loss_pct=60)
+        self.assertEqual(plan.default_leverage, 9)
+
     def test_liquidation_cap_sits_exactly_at_the_stop(self):
         for entry, stop, side in ((100, 99.4, "long"), (100, 100.6, "short"), (54.44, 51.02, "long"), (0.01298, 0.013478, "short")):
             for mmr in (0.0, 0.005, 0.01):
@@ -387,6 +400,60 @@ class DetailTimeframeTest(KBTestCase):
         self.assertFalse([i for i in self.issues() if "timeframes" in i.msg or "top_down" in i.msg])
         self.write_trade("T-0001", result={"r": 3.41}, timeframes={**tf, "detail": ["1D"]})
         self.assertTrue(any("is not below the execution timeframe" in i.msg for i in self.issues("ERROR")))
+
+
+class OutlookAndMoreStatsTest(KBTestCase):
+    CFG = {"min_n_for_ci": 5, "breakeven_band_r": 0.1, "bootstrap": {"seed": 7}, "outlook": {"trades": 50, "paths": 300}}
+
+    def test_wilson_lower_bound(self):
+        from tradekb.stats import wilson_low
+        self.assertAlmostEqual(wilson_low(4, 7), 0.25045, places=5)          # (0.387905) / (1.5488), by hand
+        self.assertAlmostEqual(wilson_low(0, 10), 0.0, places=12)
+        self.assertLess(wilson_low(55, 100), 0.55)
+
+    def test_outlook_is_deterministic_and_ordered(self):
+        from tradekb.stats import outlook
+        rs = [4.57, 2.94, -1.0, 3.41, 4.12, -1.0, -1.0]
+        a, b = outlook(rs, self.CFG), outlook(rs, self.CFG)
+        self.assertEqual(a, b)                                                     # fixed seed: same data, same numbers
+        self.assertIsNone(outlook(rs[:4], self.CFG))                              # below min_n_for_ci
+        for sc in a["scenarios"]:
+            bands = sc["bands"]
+            for i in range(51):
+                self.assertTrue(bands["p5"][i] <= bands["p25"][i] <= bands["p50"][i] <= bands["p75"][i] <= bands["p95"][i])
+            self.assertTrue(0 <= sc["p_negative"] <= 1)
+            self.assertLessEqual(sc["losing_streak"]["p95"], 50)
+        low = next(sc for sc in a["scenarios"] if sc["key"] == "low_win_rate")
+        self.assertLess(low["win_rate"], 4 / 7)                                    # the stress case is below the sample
+        self.assertLess(low["expectancy"], a["scenarios"][0]["expectancy"])
+
+    def test_outlook_edge_cases(self):
+        from tradekb.stats import outlook
+        wins_only = outlook([1.0] * 6, self.CFG)
+        self.assertEqual([sc["key"] for sc in wins_only["scenarios"]], ["as_sampled"])   # no losses: no stress scenario
+        sc = wins_only["scenarios"][0]
+        self.assertEqual(sc["final"]["p5"], 50.0); self.assertEqual(sc["max_drawdown"]["p95"], 0.0)
+        self.assertEqual(sc["losing_streak"]["p95"], 0)
+
+    def test_more_stats_weekday_and_audit(self):
+        self.write_trade("T-0001", opened="2026-09-28", closed="2026-09-28", plan={"entry": 100, "stop": 98, "targets": [106]},
+                         fills={"exits": [{"price": 106}]})                         # target hit, +3R, a Monday
+        self.write_trade("T-0002", opened="2026-09-29", closed="2026-09-29", plan={"entry": 100, "stop": 98, "targets": [106]},
+                         fills={"exits": [{"price": 98}]})                          # stopped, -1R
+        for i in range(3, 7):
+            self.write_trade(f"T-000{i}", opened=f"2026-09-0{i}", closed=f"2026-09-0{i}", result={"r": 1.0})
+        p = build_payload(load_kb())
+        mo = p["stats"]["more"]
+        self.assertEqual(mo["target_hit_ids"], ["T-0001"])
+        self.assertAlmostEqual(mo["planned_rr_mean"], 3.0)
+        self.assertAlmostEqual(mo["breakeven_win_rate"], 0.25)
+        self.assertEqual((mo["best"]["id"], mo["worst"]["id"]), ("T-0001", "T-0002"))
+        self.assertIsNone(mo["sqn"])                                               # below min_n_for_ratios
+        days = {g["label"]: g["ids"] for g in p["stats"]["by"]["weekday"]}
+        self.assertEqual(days["Mon"], ["T-0001"]); self.assertEqual(days["Tue"], ["T-0002"])
+        self.assertIsNotNone(p["stats"]["outlook"])
+        from tradekb import audit
+        self.assertEqual(audit.run(load_kb(), check_outputs=False).failures, [])
 
 
 class VersionNumberTest(KBTestCase):

@@ -18,8 +18,10 @@ from unittest import mock
 REPO = Path(__file__).resolve().parent.parent
 TABS = ["overview", "journal", "performance", "strategy", "risk", "behaviour", "readiness", "gaps", "health"]
 BACKGROUNDS = ["aurora", "borealis", "nebula", "plasma", "lava", "fireflies", "silk", "constellation", "starfield", "waves",
-               "tape", "depth", "heatmap", "bubbles", "radar", "matrix", "synthwave", "off"]
-CANVAS = {"borealis", "fireflies", "silk", "constellation", "starfield", "matrix", "waves", "depth", "heatmap", "bubbles", "radar"}
+               "galaxy", "ripples", "embers", "tape", "depth", "heatmap", "bubbles", "radar", "matrix", "paths", "network",
+               "synthwave", "off"]
+CANVAS = {"borealis", "fireflies", "silk", "constellation", "starfield", "matrix", "waves", "depth", "heatmap", "bubbles", "radar",
+          "galaxy", "ripples", "embers", "paths", "network"}
 
 
 def chromium() -> str | None:
@@ -62,7 +64,8 @@ addEventListener("load", () => {
                        grades: panel.querySelectorAll("svg[data-chart=grades] .grade-letter").length,
                        items: panel.querySelectorAll("li").length,
                        ladder: panel.querySelectorAll("svg[data-chart=ladder] .pin").length,
-                       incidents: panel.querySelectorAll(".inc-title").length, guards: panel.querySelectorAll(".guard-id").length };
+                       incidents: panel.querySelectorAll(".inc-title").length, guards: panel.querySelectorAll(".guard-id").length,
+                       outlook: panel.querySelectorAll("svg[data-chart=outlook] path.median").length };
       step();
     }, 300);
   };
@@ -91,6 +94,7 @@ class RenderTest(unittest.TestCase):
         cls.want_grades = len((kb["profile"].get("grading") or {}).get("scale") or ["S", "A", "B", "C", "D"])
         cls.want_bot_questions = len(kb["readiness"].get("open_questions") or [])
         cls.want_incidents = len(kb.get("incidents") or [])
+        cls.want_outlook = len((kb["stats"].get("outlook") or {}).get("scenarios") or [])
         cls.want_guards = len((kb["readiness"].get("malfunction_guard") or {}).get("checks") or [])
         cls.want_ladder = sum(1 for t in kb["trades"] if any(x is not None for x in t["derived"].get("planned_rr") or []))
         cls.results = {}
@@ -127,6 +131,7 @@ class RenderTest(unittest.TestCase):
         self.assertGreaterEqual(tabs["journal"]["rows"], 1)
         self.assertEqual(tabs["health"]["incidents"], self.want_incidents, "health: one row per logged incident")
         self.assertEqual(tabs["health"]["guards"], self.want_guards, "health: one row per malfunction-guard check")
+        self.assertEqual(tabs["performance"]["outlook"], self.want_outlook, "outlook: one median line per scenario")
 
     def test_backgrounds_and_trade_dialogs(self):
         out = self.results[1280]["out"]

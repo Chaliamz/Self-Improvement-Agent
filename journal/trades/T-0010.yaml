@@ -22,7 +22,7 @@ regime: [bearish, news_driven]   # trader: "Bias Bearish"; entry after a CPI pri
 
 strategy:
   id: supply-demand-structure
-  version: "1.13"             # retagged through CHG-013 (clarifications)
+  version: "1.14"             # retagged through CHG-014 (clarifications)
   experiment: null
   variant: null
 
@@ -94,13 +94,14 @@ evidence:
     - "Red box (mini demand) about 1.4804-1.4944, drawn from about May 8 08:30 (the base of the impulse); the 1.4876 target sits inside it. It was not approached during the trade."
     - "RSI (1h pane, calibrated on the 80/60/40 labels): at the price highs 1.5824 (May 8 18:00), 1.6175 (May 9 05:00) and 1.6304 (May 10 23:00), the RSI peaks were about 73.9, 70.2 and 71.9. The 2h and 4h are not shown."
     - "The chart's US economic-event markers sit at about 14:40 on May 13 and 14:55 on May 14 (UTC+3); none is shown on May 11-12."
+    - "Trader, 2026-09-28: 'CPI released in 12th may'. US CPI is published at 08:30 New York time: 15:30 UTC+3 on May 12."
     - "tj size: 20x = 51.4% of the margin at the stop (inside the 50-60% aim); isolated liquidation about 1.6658 (1.74x the stop distance)."
     - "Trader: NEAR was pushed higher by bullish NEAR news (not visible on the chart)."
   interpreted:
     - "The chart matches the trader's sequence: a higher low, a push through the yellow resistance that failed within the hour (a deviation above the May 9 high), and a close under the higher low (bearish CH). The supply from the entry to the 1.6304 high stayed untested until the limit filled."
     - "Divergence on the 1h holds against the May 8 swing (price 1.5824 -> 1.6304, RSI about 73.9 -> 71.9). Between the last two highs (May 9 and May 10) the RSI rose (70.2 -> 71.9): not a divergence on that pair. The 2h and 4h divergences are the trader's reading and not visible here."
-    - "Checklist v1.12: 1 pass (the supply that formed the CH, at the resistance; a 1h zone, the 4h not visible); 2 pass (the push above the resistance took the May 9 high); 3 pass on the 1h (a close under the 1.5466 higher low), the 4h candle range not visible; 4 pass (sell limit at the untested supply); 5 pass (about 0.0050 above the swing high that created the CH); 6 pass (51.4% of margin, liquidation 1.74x the stop distance, 2.60R: above the 2.5R minimum, below the 3R preference); 7 pass (no entry at equal highs); 8 unknown (see the CPI note)."
-    - "News: the trader used a CPI print as a confluence. The chart's event markers are on May 13 and 14, after the trade, and none is on May 12; when the CPI was released relative to the entry is not established. The news rule allows an entry more than 1 hour before a red USD release and keeps open trades."
+    - "Checklist v1.12: 1 pass (the supply that formed the CH, at the resistance; a 1h zone, the 4h not visible); 2 pass (the push above the resistance took the May 9 high); 3 pass on the 1h (a close under the 1.5466 higher low), the 4h candle range not visible; 4 pass (sell limit at the untested supply); 5 pass (about 0.0050 above the swing high that created the CH); 6 pass (51.4% of margin, liquidation 1.74x the stop distance, 2.60R: above the 2.5R minimum, below the 3R preference); 7 pass (no entry at equal highs); 8 pass (the limit filled in the 13:00 bar, more than 1 hour before the 15:30 CPI; open trades are kept)."
+    - "News: the CPI printed at 15:30 UTC+3, about 2 hours after the limit filled (13:00 bar). Its result could not have been known at the fill: it was a confluence for holding the trade, not for entering it. The chart's event markers (May 13 and 14) are later releases. Macro results are the trader's call, not a bot input ('its actually my call')."
     - "The trade ran +1.65R in favour before reversing to the stop within about 3 hours (19:00 -> 22:00). Under the trader's management (hold to TP, break-even barely used) that is a normal outcome, not an error."
     - "Loss type E (information deficiency): the setup was valid and executed as planned; per the trader, NEAR-specific bullish news after the entry invalidated the thesis. No filter can know coin-specific news in advance, so no rule change follows from one trade."
   hypotheses:

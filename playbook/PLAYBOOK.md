@@ -13,7 +13,7 @@ established.
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.13 | unvalidated | 6 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010) | n=6: +1.52R, 95% CI [-0.27, +3.41] (LOW) |
+| supply-demand-structure | 1.14 | unvalidated | 6 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010) | n=6: +1.52R, 95% CI [-0.27, +3.41] (LOW) |
 | key-level-sr | 1.5 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -50,6 +50,11 @@ _None._
   T-0001 0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R); the losers ran +0.28R (T-0004), +0.63R (T-0009) and +1.65R
   (T-0010) before their stops (median 0.63R). This measures the trader's "sniper entries" (S criterion). The trader's
   management is hold to TP; no break-even rule is proposed from n=3 losers. Descriptive only, n=7. Status: observation.
+- **Drawdown planning (outlook).** `./tj build` Monte Carlo, 100 trades x 2,000 paths from the 7 measured trades. As
+  sampled: median worst drawdown 5.0R (95%: 8.0R), losing streak 5 (95%: 8). At the low win rate the sample still
+  allows (25%, 95% Wilson bound; +0.19R per trade): drawdown 14.7R (95%: 28.7R, i.e. about 28.7% of equity at 1% risk,
+  not compounded), losing streak 12 (95%: 20), and about 19% of runs end below zero. Plan for the second, not the first.
+  Status: risk planning figure (n=7), not a forecast.
 - **Valid setups still lose.** T-0010 (NEAR short, graded A, process 4.20/5) lost -1.00R to NEAR-specific bullish news
   after the entry, having run +1.65R first: loss type E, BAD OUTCOME / GOOD PROCESS. Keep the process. Status:
   observation (n=1).
@@ -119,7 +124,9 @@ Stated by the trader (2026-09-26). These are the trader's rules, not performance
 - Isolated margin. Leverage is set from the stop distance: never above 60% of the margin lost at the stop, and never
   so high that liquidation comes before the stop. 50-60% is the aim, a preference: "the bot can use 20X leverage if
   invalidation is 0,6% ... we don't have to reach it to -60% at all costs" (2026-09-28). T-0006: 6.28% x 8x = 50.3%.
-  Leverage does not change the 1% risk. The bot's exact choice (a 20x ceiling?) is the one open bot question.
+  Leverage does not change the 1% risk. No fixed leverage cap: "Ceiling should be 60% so we should avoid margin calls
+  (80%)" (2026-09-28). The bot's default: the highest whole number within 60% and with liquidation at least 1.5x the
+  stop distance away (6% stop -> 10x; 0.6% stop -> 71x); lower is always allowed (`./tj size` prints it).
 - Minimum R:R 2.5 for the best target; 3.0 preferred.
 - Hold until TP; break-even and partials are barely used. Good R:R setups are hunted.
 - Fees are inside the 1% risk; the bot will count them separately (trader, 2026-09-27).
@@ -151,6 +158,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-09-28 | supply-demand-structure v1.14 (CHG-014): macro release results are the trader's call, not a bot input; the 60% margin rule is the only leverage ceiling. Bot default leverage recorded. T-0010: the CPI printed at 15:30 UTC+3, about 2 hours after the fill. Terminal: more statistics, a two-scenario 100-trade outlook, weekday breakdown, five new backgrounds | trader's answers; tests |
 | 2026-09-28 | T-0010 NEARUSD short -1.00R (supply_level, 1h, grade A, loss type E: NEAR news). supply-demand-structure v1.13 (CHG-013): macro news in the trade's direction as a confluence; T-0010 is an A that lost. Bot question on reading release results | T-0010 chart; trader's review |
 | 2026-09-28 | supply-demand-structure v1.12 (CHG-012): the 50-60% aim is a preference; split entries take the first order's leverage (at most 60% on its stop) for every order. key-level-sr v1.5 (CHG-005): day/swing target at least 2.5R, further when possible. Bot: alerts by Telegram and email, errors reported with an explanation, no halts. No strategy questions open | trader's answers |
 | 2026-09-28 | supply-demand-structure v1.11 (CHG-011): why T-0004 is D; no trade in the middle of nowhere; split fills, R unit (+0.9R for 1 of 3 at 3R) and leverage policy. key-level-sr v1.4 (CHG-004): scoped to day trading and swings (no scalps for now); one open question on its targets there | trader's answers |

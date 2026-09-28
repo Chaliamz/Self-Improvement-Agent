@@ -10,7 +10,8 @@ from __future__ import annotations
 import datetime as dt
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from statistics import fmean
+from math import sqrt
+from statistics import fmean, median, stdev
 from typing import Callable
 
 from .model import COUNTERFACTUAL, REALIZED, Derived, derive, entry_price, num, planned_rr
@@ -130,7 +131,48 @@ GROUPERS: dict[str, Callable[[Row], list[str]]] = {
     "trend": lambda r: [trend_alignment(r.t)],
     "outcome": lambda r: _one(r.d.outcome),
     "month": lambda r: _one(r.when.strftime("%Y-%m") if r.when else None),
+    "weekday": lambda r: _one(_weekday(r.t)),
 }
+
+
+def _weekday(t: dict) -> str | None:
+    """The entry day (opened), in chart time, as Mon..Sun."""
+    try:
+        day = as_date(t.get("opened"))
+    except ValueError:
+        return None
+    return day.strftime("%a") if day else None
+
+
+def target_hit(t: dict) -> bool:
+    """An exit at a planned target price (the TP filled)."""
+    targets = [num(x) for x in dig(t, "plan.targets", []) or [] if num(x) is not None]
+    exits = [num(e.get("price")) for e in dig(t, "fills.exits", []) or [] if isinstance(e, dict) and num(e.get("price")) is not None]
+    return any(abs(e - x) <= 1e-9 * max(abs(x), 1.0) for e in exits for x in targets)
+
+
+def more_stats(rs: list[Row], kb: KB) -> dict:
+    """Overall figures beyond the summary: spread of R, SQN, extremes, target hits, planned R:R, time in trade."""
+    cfg = kb.config
+    r = [row.d.r for row in rs]
+    n = len(r)
+    sd = stdev(r) if n >= 2 else None
+    sqn = sqrt(min(n, 100)) * fmean(r) / sd if n >= cfg["min_n_for_ratios"] and sd else None
+    best = max(rs, key=lambda row: row.d.r) if rs else None
+    worst = min(rs, key=lambda row: row.d.r) if rs else None
+    hits = [row.trade.id for row in rs if target_hit(row.t)]
+    planned = [max(x for x in planned_rr(row.t) if x is not None) for row in rs if any(x is not None for x in planned_rr(row.t))]
+    mean_planned = fmean(planned) if planned else None
+    hours = [h for h in (holding_hours(row) for row in rs) if h is not None]
+    return {
+        "n": n, "sd": sd, "sqn": sqn, "sqn_min_n": cfg["min_n_for_ratios"],
+        "best": {"r": best.d.r, "id": best.trade.id} if best else None,
+        "worst": {"r": worst.d.r, "id": worst.trade.id} if worst else None,
+        "target_hits": len(hits), "target_hit_ids": hits,
+        "planned_rr_mean": mean_planned, "planned_rr_n": len(planned),
+        "breakeven_win_rate": 1 / (1 + mean_planned) if mean_planned and mean_planned > 0 else None,
+        "median_hours": median(hours) if hours else None, "hours_n": len(hours),
+    }
 
 
 def labels(row: Row, key: str) -> list[str]:

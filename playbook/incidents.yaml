@@ -241,3 +241,16 @@ incidents:
       validator and the audit; tests cover both. The trader then set the leverage rule (2026-09-28): the first order
       must not exceed 60%, the same leverage for every order. tj size enforces it as CRITICAL.
 
+
+  - id: INC-020
+    date: 2026-09-28
+    area: terminal
+    severity: medium
+    title: "The first outlook design would have shown +172R as the expected result of 100 trades"
+    detail: >-
+      Resampling only the 7 measured trades treats their 57% win rate as the truth: the median path ended at +172R
+      with 0% chance of ending below zero. Seven trades allow a win rate as low as about 25% (95% Wilson bound), where
+      the same average win gives +0.19R per trade and about 1 run in 5 ends negative.
+    found_by: agent
+    status: caught
+    fix: "The outlook shows two scenarios side by side, as sampled and at the low win rate, and says it is a range to plan drawdowns against, not a forecast; the audit replays both."

@@ -49,6 +49,16 @@ def max_leverage_liq_beyond_stop(entry: float, stop: float, mmr_rate: float, buf
     return 1 / (mmr_rate + buffer * frac * ((1 - mmr_rate) if side == "long" else (1 + mmr_rate)))
 
 
+def default_leverage(caps: list[float | None]) -> int | None:
+    """The bot's default leverage: the highest whole number under every cap (the 60% margin rule, liquidation kept
+    1.5x the stop distance away). Lower is always allowed (trader, 2026-09-28: "we don't have to reach it to -60% at
+    all costs"; "Ceiling should be 60% so we should avoid margin calls (80%)")."""
+    live = [c for c in caps if c is not None]
+    if not live:
+        return None
+    return max(1, math.floor(min(live) + 1e-9))
+
+
 def fmt_cap(leverage: float) -> str:
     """A leverage ceiling for display, floored to 0.01x: rounding up would print a value that breaks the rule."""
     return f"{math.floor(leverage * 100 + 1e-9) / 100:.2f}x"
@@ -106,6 +116,7 @@ class SizingResult:
     flags: list[tuple[str, str]] = field(default_factory=list)
     min_leverage_for_aim: float | None = None        # lowest leverage that reaches the aim's lower edge
     max_leverage_liq_beyond_stop: float | None = None  # isolated: highest leverage whose liquidation stays beyond the stop
+    default_leverage: int | None = None              # the bot's choice: highest whole number within the rule and the buffer
 
 
 def infer_side(entry: float, stop: float) -> str:
@@ -274,7 +285,9 @@ def size_position(inp: SizingInput) -> SizingResult:
     return SizingResult(side, qty, qty_raw, notional, stop_fill, stop_distance_pct, per_unit_loss,
                         fee_per_unit, loss_at_stop, risk_pct, effective_leverage, margin_required,
                         liq, liq_ratio, margin_loss_pct, max_leverage_for_rule, targets, flags,
-                        min_leverage_for_aim=min_leverage_for_aim, max_leverage_liq_beyond_stop=max_leverage_liq)
+                        min_leverage_for_aim=min_leverage_for_aim, max_leverage_liq_beyond_stop=max_leverage_liq,
+                        default_leverage=default_leverage([max_leverage_for_rule, max_leverage_liq_beyond_stop(
+                            inp.entry, stop_fill, inp.mmr_rate, inp.liq_buffer_warn) if inp.margin_mode == "isolated" else None]))
 
 
 @dataclass
@@ -304,12 +317,13 @@ class SplitPlan:
     max_leverage_full_fill: float | None       # margin limit on the full position (implied by the first-order rule)
     max_leverage_liq: float                    # liquidation behind every next order and the stop
     flags: list[tuple[str, str]] = field(default_factory=list)
+    default_leverage: int | None = None        # the bot's choice: first-order rule and a 1.5x liquidation buffer at every step
 
 
 def split_plan(entries: list[float], stop: float, order_risk: float, *, leverage: float | None = None,
                mmr_rate: float = 0.005, fee_rate: float = 0.0, max_margin_loss_pct: float | None = None,
                margin_loss_aim_min_pct: float | None = None, targets: tuple[float, ...] = (),
-               min_rr: float | None = None) -> SplitPlan:
+               min_rr: float | None = None, liq_buffer: float = 1.5) -> SplitPlan:
     """Split limit entries sharing one stop and one target (trader, 2026-09-28: up to 3 orders; 1 = 1%, 2 = 0.5% each,
     3 = 0.3% each). Each order is sized from its own risk share, and fills merge into ONE isolated position with ONE
     leverage setting.
@@ -340,12 +354,14 @@ def split_plan(entries: list[float], stop: float, order_risk: float, *, leverage
     qtys = [order_risk / u for u in per_unit]
     fills: list[SplitFill] = []
     caps: list[float] = []
+    buffered: list[float] = []
     for n in range(1, len(order) + 1):
         q = sum(qtys[:n]); notional = sum(qq * e for qq, e in zip(qtys[:n], order[:n]))
         avg = notional / q
         loss = sum(qq * u for qq, u in zip(qtys[:n], per_unit[:n]))
         nxt = order[n] if n < len(order) else stop
         caps.append(max_leverage_liq_beyond_stop(avg, nxt, mmr_rate))
+        buffered.append(max_leverage_liq_beyond_stop(avg, nxt, mmr_rate, liq_buffer))
         mloss = loss * leverage / notional * 100 if leverage else None
         liq = liquidation_price(avg, side, q, leverage=leverage, margin_mode="isolated", mmr_rate=mmr_rate) if leverage else None
         first = None if liq is None else (liq >= nxt if side == "long" else liq <= nxt)
@@ -372,7 +388,8 @@ def split_plan(entries: list[float], stop: float, order_risk: float, *, leverage
                                     f"filled: use {fmt_cap(liq_cap)} or less"))
     if min_rr is not None and targets and max(fills[0].rr) < min_rr - 1e-9:
         flags.append((WARN, f"if only the first order fills, the best target gives {max(fills[0].rr):.2f}R, below your {min_rr:g}R minimum"))
-    return SplitPlan(side, order, order_risk, qtys, fills, first_cap, first_aim, full_cap, liq_cap, flags)
+    return SplitPlan(side, order, order_risk, qtys, fills, first_cap, first_aim, full_cap, liq_cap, flags,
+                     default_leverage([first_cap, *buffered]))
 
 
 def exposure(entry: float, stop: float, risk_pct: float | None, leverage: float | None = None,

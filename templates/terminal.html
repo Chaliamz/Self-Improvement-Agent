@@ -304,9 +304,11 @@ footer { color: var(--muted); font-size: 12px; padding: 16px 0 32px; border-top:
           <optgroup label="Ambient"><option value="aurora">Aurora</option><option value="borealis">Borealis</option><option value="nebula">Nebula</option>
             <option value="plasma">Plasma</option><option value="lava">Lava lamp</option><option value="fireflies">Fireflies</option>
             <option value="silk">Silk</option><option value="constellation">Constellation</option><option value="starfield">Starfield</option>
-            <option value="waves">Waves</option></optgroup>
+            <option value="waves">Waves</option><option value="galaxy">Galaxy</option><option value="ripples">Ripples</option>
+            <option value="embers">Embers</option></optgroup>
           <optgroup label="Market"><option value="tape">Candle tape</option><option value="depth">Order-book depth</option><option value="heatmap">Liquidity heatmap</option>
             <option value="bubbles">Order-flow bubbles</option><option value="radar">Market radar</option><option value="matrix">Price rain</option>
+            <option value="paths">Price paths</option><option value="network">Blockchain network</option>
 </optgroup>
           <optgroup label="Retro"><option value="synthwave">Synthwave</option></optgroup>
           <option value="off">No animation</option>
@@ -755,6 +757,51 @@ function rrLadderChart(host, rows, minRR, sGuide) {
   });
 }
 const HOUR_TICKS = [[0.25, "15m"], [1, "1h"], [4, "4h"], [24, "1d"], [168, "1w"], [720, "1mo"], [2160, "3mo"]];
+const OUTLOOK_COLOURS = { as_sampled: "var(--brand)", low_win_rate: "var(--warning)" };
+function outlookChart(host, out) {
+  if (!out) { host.replaceChildren(h("p", { class: "empty", text: `Shown from n=${KB.config.min_n_for_ci} measured trades.` })); return; }
+  responsive(host, W => {
+    const H = 260, m = { t: 16, r: 84, b: 30, l: 52 }, iw = W - m.l - m.r, ih = H - m.t - m.b, N = out.trades;
+    const all = out.scenarios.flatMap(sc => [...sc.bands.p5, ...sc.bands.p95]);
+    const yt = niceTicks(Math.min(0, ...all), Math.max(0, ...all)), y0 = yt[0], y1 = yt[yt.length - 1];
+    const X = i => m.l + i / N * iw, Y = v => m.t + ih - (v - y0) / (y1 - y0) * ih;
+    const root = s("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "data-chart": "outlook",
+                            "aria-label": `Outlook over the next ${N} trades: ${out.scenarios.map(sc => `${sc.label}, median ${fmtR(sc.final.p50)}`).join("; ")}` });
+    for (const v of yt) {
+      root.append(s("line", { x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v), class: v === 0 ? "axis" : "grid" }));
+      root.append(s("text", { x: m.l - 8, y: Y(v), "text-anchor": "end", "dominant-baseline": "middle" }, fmtTick(v)));
+    }
+    for (const i of [0, 25, 50, 75, 100].filter(i => i <= N))
+      root.append(s("text", { x: X(i), y: H - 8, "text-anchor": i === 0 ? "start" : i === N ? "end" : "middle" }, i === 0 ? "Now" : `+${i} trades`));
+    const band = (lo, hi) => lo.map((v, i) => `${i ? "L" : "M"}${X(i)},${Y(v)}`).join("") + hi.map((v, i) => `L${X(hi.length - 1 - i)},${Y(hi[hi.length - 1 - i])}`).join("") + "Z";
+    for (const sc of out.scenarios) {
+      const col = OUTLOOK_COLOURS[sc.key] || "var(--ink-2)", b = sc.bands;
+      root.append(s("path", { d: band(b.p5, b.p95), class: "band", style: `fill:${col};fill-opacity:0.12` }));
+      root.append(s("path", { d: band(b.p25, b.p75), class: "band", style: `fill:${col};fill-opacity:0.22` }));
+      root.append(s("path", { d: b.p50.map((v, i) => `${i ? "L" : "M"}${X(i)},${Y(v)}`).join(""), class: "median", style: `fill:none;stroke:${col};stroke-width:2` }));
+      root.append(s("text", { x: X(N) + 6, y: Y(b.p50[N]), class: "end-label", "dominant-baseline": "middle", style: `fill:${col}` }, fmtR(b.p50[N])));
+    }
+    const cross = s("line", { class: "crosshair", y1: m.t, y2: m.t + ih, visibility: "hidden" });
+    const hit = s("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent", tabindex: 0,
+                            "aria-label": "Outlook chart: use left and right arrow keys to move along the trades" });
+    root.append(cross, hit);
+    let idx = N;
+    const show = (i, cx, cy) => {
+      idx = Math.max(0, Math.min(N, i));
+      cross.setAttribute("x1", X(idx)); cross.setAttribute("x2", X(idx)); cross.setAttribute("visibility", "visible");
+      showTip(`After ${idx} trades`, out.scenarios.map(sc => ({ key: OUTLOOK_COLOURS[sc.key],
+        text: `${sc.label}: ${fmtR(sc.bands.p50[idx])} (5-95%: ${fmtR(sc.bands.p5[idx])} to ${fmtR(sc.bands.p95[idx])})` })), cx, cy);
+    };
+    hit.addEventListener("pointermove", e => { const r = root.getBoundingClientRect(); show(Math.round((e.clientX - r.left - m.l) / iw * N), e.clientX, e.clientY); });
+    hit.addEventListener("pointerleave", () => { cross.setAttribute("visibility", "hidden"); hideTip(); });
+    hit.addEventListener("keydown", e => {
+      if (!["ArrowLeft", "ArrowRight"].includes(e.key)) return; e.preventDefault();
+      const r = hit.getBoundingClientRect(); show(idx + (e.key === "ArrowRight" ? 5 : -5), r.left + (X(idx) - m.l), r.top + 20);
+    });
+    hit.addEventListener("blur", () => { cross.setAttribute("visibility", "hidden"); hideTip(); });
+    return root;
+  });
+}
 function scatterChart(host, points, o) {
   if (!points.length) { host.replaceChildren(h("p", { class: "empty", text: o.empty || "No data yet." })); return; }
   responsive(host, W => {
@@ -953,7 +1000,7 @@ function renderJournal() {
 function renderPerformance() {
   const labels = { strategy: "Strategy", setup: "Setup", entry_model: "Entry model", version: "Strategy version", direction: "Direction (long vs short)",
                    timeframe: "Execution timeframe", top_down: "Top-down analysis", asset: "Asset", regime: "Market regime", session: "Session",
-                   leverage: "Leverage setting", risk: "Risk per trade", grade: "Process grade", trader_grade: "Trader's setup grade", trend: "With vs against the trend", month: "Month" };
+                   leverage: "Leverage setting", risk: "Risk per trade", grade: "Process grade", trader_grade: "Trader's setup grade", trend: "With vs against the trend", month: "Month", weekday: "Weekday (entry day)" };
   const multi = new Set(["setup", "regime"]);
   const pick = h("select", { "aria-label": "Breakdown" }, Object.entries(labels).map(([k, v]) => h("option", { value: k, text: v })));
   const host = h("div", {}), note = h("p", { class: "note" }), barHost = h("div", { class: "chart-host", style: "min-height:0" });
@@ -987,11 +1034,32 @@ function renderPerformance() {
     gradeChart(gradeHost, gradeRows);
     rrLadderChart(ladderHost, ladderRows, minRR, sGuide);
   });
+  const mo = KB.stats.more || {}, out = KB.stats.outlook, outHost = h("div", { class: "chart-host" });
+  mount(() => outlookChart(outHost, out));
+  const moreTiles = h("div", { class: "tiles" },
+    tile("Spread of R", isNum(mo.sd) ? mo.sd.toFixed(2) + "R" : "—", "Standard deviation: how far one trade typically lands from the average"),
+    tile("SQN", isNum(mo.sqn) ? mo.sqn.toFixed(2) : "—", isNum(mo.sqn) ? "Mean / spread x sqrt(n): system quality" : `System quality number, shown from n=${mo.sqn_min_n}`),
+    tile("Best / worst trade", mo.best ? `${fmtR(mo.best.r)} / ${fmtR(mo.worst.r)}` : "—", mo.best ? `${mo.best.id} / ${mo.worst.id}` : null),
+    tile("Target hit rate", mo.n ? `${mo.target_hits} of ${mo.n} (${fmtFrac(mo.target_hits / mo.n)})` : "—", "Exits at a planned target"),
+    tile("Average planned R:R", isNum(mo.planned_rr_mean) ? mo.planned_rr_mean.toFixed(2) + "R" : "—",
+         isNum(mo.breakeven_win_rate) ? `Break-even win rate at that R:R: ${fmtFrac(mo.breakeven_win_rate)} (n=${mo.planned_rr_n})` : null),
+    tile("Median time in trade", fmtHours(mo.median_hours), mo.hours_n ? `n=${mo.hours_n}` : null));
+  const outCols = [{ label: "Scenario", render: r => h("span", {}, h("span", { class: "dot", style: `display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:${OUTLOOK_COLOURS[r.key]}` }), r.label) },
+    { label: "Win rate", num: true, render: r => fmtFrac(r.win_rate) }, { label: "Expectancy", num: true, render: r => rSpan(r.expectancy) },
+    { label: "Median result", num: true, render: r => rSpan(r.final.p50) }, { label: "5-95% range", num: true, render: r => `${fmtR(r.final.p5)} to ${fmtR(r.final.p95)}` },
+    { label: "Below zero", title: "Share of paths that end the 100 trades below 0R", num: true, render: r => fmtFrac(r.p_negative, 1) },
+    { label: "Drawdown", title: "Worst peak-to-trough drawdown: median / 95th percentile", num: true, render: r => `${r.max_drawdown.p50.toFixed(1)} / ${r.max_drawdown.p95.toFixed(1)}R` },
+    { label: "Losing streak", title: "Longest run of losses: median / 95th percentile", num: true, render: r => `${r.losing_streak.p50} / ${r.losing_streak.p95}` }];
+  const outlookCard = card(`Next ${out ? out.trades : dig(KB.config, "outlook.trades") || 100} trades: two scenarios`,
+    out ? `Monte Carlo, ${out.paths.toLocaleString("en-US")} paths from your ${out.n_source} measured trades. "As sampled" replays your trades as they are and inherits their luck. "Low win rate" keeps your average win and loss but wins only as often as the low end of what ${out.n_source} trades allow (95% lower bound). Bands: 5-95% and 25-75%; line: median. Drawdown and losing streak: median / 95th percentile. 1R = 1% of equity at your risk, not compounded. A range to plan drawdowns against, not a forecast.` : null,
+    outHost, out ? table(outCols, out.scenarios) : null);
   const pointTable = pts => h("details", { class: "table-view" }, h("summary", { text: "Table view" }),
     table([{ key: "id", label: "Trade" }, { key: "xText", label: "Value" }, { label: "R", num: true, render: r => rSpan(r.y) }], pts));
   return h("div", { class: "stack" },
+    card("More statistics", `Across ${mo.n || 0} measured trades. Descriptive: small samples swing.`, moreTiles),
     card("Breakdown", "One selector scopes the chart and the table. Bars show expectancy with its 95% interval once a group reaches n=" + KB.config.min_n_for_ci + ". Small groups are noise until proven otherwise.",
       h("div", { class: "filters" }, h("label", {}, "Group by", pick)), note, barHost, h("div", { style: "height:12px" }), host),
+    outlookCard,
     h("div", { class: "grid2" },
       card("Time in trade vs R", "Scalps and swings on one axis (log scale). Duration uses your stated minutes when given, otherwise the dates.", holdHost, pointTable(holdPts)),
       card("Results by your grade", "Does your grade predict the result? S should sit highest and D lowest. Grades come from you, trade by trade; policy from your scale (S-B trade, C maybe, D avoid). Descriptive until each grade has enough trades.",
@@ -1618,6 +1686,143 @@ Object.assign(SCENES, {
         ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(nx, ny); ctx.stroke();
         q.x = nx; q.y = ny; q.life -= k;
         if (q.life < 0 || q.x < -5 || q.x > S.W + 5 || q.y < -5 || q.y > S.H + 5) Object.assign(q, { x: S.rnd() * S.W, y: S.rnd() * S.H, life: 150 + S.rnd() * 250 });
+      }
+    },
+  },
+});
+Object.assign(SCENES, {
+  paths: {
+    // random walks fanning out from one price, like the outlook's Monte Carlo: green above the start, red below
+    init(S) {
+      S.n = Math.max(10, Math.min(22, Math.round(S.H / 45))); S.step = 6;
+      S.newPath = () => ({ pts: [0], x0: 0, vol: 6 + S.rnd() * 10, drift: (S.rnd() - 0.5) * 1.6, age: 0 });
+      S.paths = Array.from({ length: S.n }, () => { const p = S.newPath();
+        const len = Math.floor(S.rnd() * S.W / S.step); for (let i = 0; i < len; i++) p.pts.push(p.pts[p.pts.length - 1] + p.drift + (S.rnd() - 0.5) * p.vol); return p; });
+      S.acc = 0;
+    },
+    draw(S, ctx, c, k) {
+      S.acc += k;
+      while (S.acc >= 1.5) {
+        S.acc -= 1.5;
+        for (const p of S.paths) {
+          p.pts.push(p.pts[p.pts.length - 1] + p.drift + (S.rnd() - 0.5) * p.vol);
+          if (p.x0 + p.pts.length * S.step > S.W + 40) Object.assign(p, S.newPath(), { x0: 0 });
+        }
+      }
+      ctx.clearRect(0, 0, S.W, S.H);
+      const mid = S.H * 0.55; ctx.lineWidth = 1.4; ctx.lineJoin = "round";
+      ctx.globalAlpha = 0.18; ctx.strokeStyle = c.ink; ctx.setLineDash([4, 6]);
+      ctx.beginPath(); ctx.moveTo(0, mid); ctx.lineTo(S.W, mid); ctx.stroke(); ctx.setLineDash([]);
+      for (const p of S.paths) {
+        const last = p.pts[p.pts.length - 1];
+        ctx.globalAlpha = 0.5; ctx.strokeStyle = last <= 0 ? c.up : c.down;       // canvas y grows downwards: <= 0 is above the start
+        ctx.beginPath();
+        p.pts.forEach((v, i) => { const x = p.x0 + i * S.step, y = mid + v; if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+        ctx.stroke();
+        const hx = p.x0 + (p.pts.length - 1) * S.step, hy = mid + last;
+        ctx.globalAlpha = 0.9; ctx.fillStyle = last <= 0 ? c.up : c.down; ctx.beginPath(); ctx.arc(hx, hy, 2.4, 0, Math.PI * 2); ctx.fill();
+      }
+    },
+  },
+  network: {
+    // a mesh of nodes; pulses travel along the links and light the node they reach, like blocks propagating
+    init(S) {
+      const gap = 110; S.nodes = [];
+      for (let y = gap / 2; y < S.H + gap; y += gap) for (let x = gap / 2; x < S.W + gap; x += gap)
+        S.nodes.push({ x: x + (S.rnd() - 0.5) * gap * 0.7, y: y + (S.rnd() - 0.5) * gap * 0.7, glow: S.rnd() * 0.4 });
+      S.links = [];
+      S.nodes.forEach((a, i) => S.nodes.forEach((b, j) => { if (j > i && Math.hypot(a.x - b.x, a.y - b.y) < gap * 1.35) S.links.push([i, j]); }));
+      S.pulses = Array.from({ length: Math.max(8, Math.round(S.links.length / 14)) }, () => ({ l: Math.floor(S.rnd() * S.links.length), t: S.rnd(), dir: S.rnd() < 0.5, sp: 0.006 + S.rnd() * 0.01, up: S.rnd() < 0.6 }));
+    },
+    draw(S, ctx, c, k) {
+      ctx.clearRect(0, 0, S.W, S.H); ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.13; ctx.strokeStyle = c.brand; ctx.beginPath();
+      for (const [i, j] of S.links) { ctx.moveTo(S.nodes[i].x, S.nodes[i].y); ctx.lineTo(S.nodes[j].x, S.nodes[j].y); }
+      ctx.stroke();
+      for (const p of S.pulses) {
+        p.t += p.sp * k;
+        const [i, j] = S.links[p.l], a = S.nodes[p.dir ? i : j], b = S.nodes[p.dir ? j : i];
+        if (p.t >= 1) {
+          b.glow = 1;
+          const next = S.links.map((l, n) => [l, n]).filter(([l]) => l[0] === (p.dir ? j : i) || l[1] === (p.dir ? j : i));
+          const [l, n] = next[Math.floor(S.rnd() * next.length)] || [S.links[0], 0];
+          p.l = n; p.dir = l[0] === (p.dir ? j : i); p.t = 0; continue;
+        }
+        const x = a.x + (b.x - a.x) * p.t, y = a.y + (b.y - a.y) * p.t;
+        ctx.globalAlpha = 0.9; ctx.fillStyle = p.up ? c.up : c.pos; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.35; ctx.strokeStyle = p.up ? c.up : c.pos; ctx.beginPath(); ctx.moveTo(a.x + (b.x - a.x) * Math.max(0, p.t - 0.18), a.y + (b.y - a.y) * Math.max(0, p.t - 0.18)); ctx.lineTo(x, y); ctx.stroke();
+      }
+      for (const n of S.nodes) {
+        n.glow = Math.max(0.12, n.glow - 0.012 * k);
+        ctx.globalAlpha = 0.25 + n.glow * 0.7; ctx.fillStyle = n.glow > 0.5 ? c.up : c.brand;
+        ctx.fillRect(n.x - 2.5, n.y - 2.5, 5, 5);
+      }
+    },
+  },
+  galaxy: {
+    // a spiral galaxy: stars on two arms, inner stars orbiting faster (differential rotation)
+    init(S) {
+      S.n = Math.max(500, Math.min(1400, Math.round(S.W * S.H / 900))); S.rot = 0;
+      S.stars = Array.from({ length: S.n }, () => {
+        const arm = S.rnd() < 0.5 ? 0 : Math.PI, r = Math.pow(S.rnd(), 0.6);
+        return { r, a: arm + r * 5.2 + (S.rnd() - 0.5) * 0.7 * (1.1 - r), size: 1 + S.rnd() * 2, hue: S.rnd() };
+      });
+    },
+    draw(S, ctx, c, k) {
+      ctx.clearRect(0, 0, S.W, S.H);
+      const cx = S.W * 0.6 + (S.pointer ? (S.pointer.x - S.W / 2) * 0.03 : 0), cy = S.H * 0.52 + (S.pointer ? (S.pointer.y - S.H / 2) * 0.03 : 0);
+      const R = Math.min(S.W, S.H * 1.8) * 0.48;
+      const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.22);
+      core.addColorStop(0, c.brand); core.addColorStop(1, "transparent");
+      ctx.globalAlpha = 0.35; ctx.fillStyle = core; ctx.beginPath(); ctx.arc(cx, cy, R * 0.22, 0, Math.PI * 2); ctx.fill();
+      for (const st of S.stars) {
+        st.a += 0.0016 * k / (0.25 + st.r);
+        const x = cx + Math.cos(st.a) * st.r * R, y = cy + Math.sin(st.a) * st.r * R * 0.42;
+        ctx.globalAlpha = 0.45 + 0.5 * (1 - st.r);
+        ctx.fillStyle = st.hue < 0.5 ? c.brand : st.hue < 0.8 ? c.pos : st.hue < 0.93 ? c.up : c.ink;
+        ctx.fillRect(x, y, st.size, st.size);
+      }
+    },
+  },
+  ripples: {
+    // rings spreading from random points, like rain on still water
+    init(S) {
+      S.rings = Array.from({ length: 10 }, () => ({ x: S.rnd() * S.W, y: S.rnd() * S.H, r: S.rnd() * 160, max: 150 + S.rnd() * 170, up: S.rnd() < 0.5 }));
+    },
+    draw(S, ctx, c, k) {
+      ctx.clearRect(0, 0, S.W, S.H); ctx.lineWidth = 1.4;
+      if (S.rnd() < 0.035 * k) S.rings.push({ x: S.rnd() * S.W, y: S.rnd() * S.H, r: 0, max: 150 + S.rnd() * 170, up: S.rnd() < 0.5 });
+      if (S.pointer && S.rnd() < 0.02 * k) S.rings.push({ x: S.pointer.x, y: S.pointer.y, r: 0, max: 120, up: true });
+      S.rings = S.rings.filter(g => g.r < g.max);
+      for (const g of S.rings) {
+        g.r += 0.9 * k;
+        const life = 1 - g.r / g.max;
+        for (const [dr, a] of [[0, 1], [-14, 0.55], [-28, 0.3]]) {
+          const rr = g.r + dr; if (rr <= 0) continue;
+          ctx.globalAlpha = 0.5 * life * a; ctx.strokeStyle = g.up ? c.up : c.brand;
+          ctx.beginPath(); ctx.ellipse(g.x, g.y, rr, rr * 0.55, 0, 0, Math.PI * 2); ctx.stroke();
+        }
+      }
+    },
+  },
+  embers: {
+    // sparks rising and swaying, flickering as they cool
+    init(S) {
+      S.n = Math.max(60, Math.min(160, Math.round(S.W * S.H / 9000)));
+      S.spawn = (y) => ({ x: S.rnd() * S.W, y: y ?? S.H + S.rnd() * 40, vy: 0.4 + S.rnd() * 0.9, sway: S.rnd() * 6.28, size: 1 + S.rnd() * 2.2, heat: 0.6 + S.rnd() * 0.4, hot: S.rnd() < 0.55 });
+      S.e = Array.from({ length: S.n }, () => S.spawn(S.rnd() * S.H));
+    },
+    draw(S, ctx, c, k) {
+      ctx.clearRect(0, 0, S.W, S.H);
+      for (const e of S.e) {
+        e.y -= e.vy * k; e.sway += 0.03 * k; e.x += Math.sin(e.sway) * 0.4 * k; e.heat -= 0.0012 * k;
+        if (e.y < -10 || e.heat <= 0) Object.assign(e, S.spawn());
+        const flick = 0.6 + 0.4 * Math.sin(e.sway * 3.7);
+        const col = e.hot ? c.down : c.brand;
+        const g = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.size * 5);
+        g.addColorStop(0, col); g.addColorStop(1, "transparent");
+        ctx.globalAlpha = 0.3 * e.heat * flick; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(e.x, e.y, e.size * 5, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.95 * e.heat * flick; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(e.x, e.y, e.size * 0.7, 0, Math.PI * 2); ctx.fill();
       }
     },
   },

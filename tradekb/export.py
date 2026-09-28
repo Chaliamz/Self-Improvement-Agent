@@ -22,7 +22,7 @@ from typing import Any
 from . import __version__, analysis, model, readiness
 from .model import num
 from .risk import exposure
-from .stats import histogram
+from .stats import histogram, outlook
 from .store import INCIDENT_ENUMS, KB, TAXONOMIES, dig, unresolved
 
 SCHEMA_VERSION = 1
@@ -31,7 +31,7 @@ TEMPLATE = "templates/terminal.html"
 INPUT_GLOBS = ("config.yaml", "profile/*.yaml", "taxonomy/*.yaml", "journal/trades/*.yaml", "journal/charts/*",
                "playbook/*.yaml", "playbook/strategies/**/*.yaml", "playbook/experiments/*.yaml", "tradekb/*.py", TEMPLATE)
 BREAKDOWNS = ("setup", "entry_model", "strategy", "version", "direction", "asset", "regime", "session", "timeframe",
-              "top_down", "leverage", "risk", "grade", "trader_grade", "trend", "month")
+              "top_down", "leverage", "risk", "grade", "trader_grade", "trend", "month", "weekday")
 # Explicit, because Python's built-in table lacks .webp and the system table is not always present.
 IMAGE_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",
                ".gif": "image/gif", ".avif": "image/avif"}
@@ -164,7 +164,7 @@ def build_payload(kb: KB) -> dict:
         "profile": jsonable(kb.profile),
         "unresolved": unresolved(kb.profile),
         "config": jsonable({k: cfg[k] for k in ("breakeven_band_r", "evidence_tiers", "min_n_for_ratios",
-                                                "min_n_for_ci", "recurring_error_min", "promotion")}),
+                                                "min_n_for_ci", "recurring_error_min", "promotion", "outlook")}),
         "taxonomy": {name: jsonable(kb.taxonomies[name].tags) for name in TAXONOMIES},
         "strategies": strategies,
         "experiments": [jsonable(e) for e in kb.experiments.values()],
@@ -184,6 +184,8 @@ def build_payload(kb: KB) -> dict:
             "with_mistakes": _summary(dirty, kb),
             "rules": _rules(kb, rs),
             "excursions": _excursions(rs),
+            "more": analysis.more_stats(rs, kb),
+            "outlook": outlook([row.d.r for row in rs], cfg),
             "counterfactual": [{"id": row.trade.id, "hypothetical_r": row.d.counterfactual_r}
                                for row in analysis.counterfactuals(kb)],
         },

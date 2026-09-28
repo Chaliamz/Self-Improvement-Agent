@@ -10,9 +10,7 @@ venue:
   exchange: "MEXC"                    # trader, 2026-09-27: "I'm expecting to use MEXC as an exchange to use the bot placing orders"
 
 # Questions the bot's specification still needs answered (shown in the terminal's Data gaps).
-open_questions:
-  - "1. The bot needs one leverage rule. You never went above 20x (T-0003, T-0004, T-0007 and T-0010 at 20x; T-0001 and T-0009 at 10x; T-0006 at 7-8x), and 20x on a 0.6% stop is fine for you. Rule: the lower of 60 / stop % and 20x, rounded down to a whole number (6% stop -> 10x, 3% -> 20x, 0.6% -> 20x)? Or a different ceiling?"
-  - "2. News as a confluence (T-0010): you used a CPI print (higher than expected = bearish) as a confluence. Should the bot read release results too (it needs actual vs forecast from the calendar), or is that your call only? And for the record: the chart's US event markers are on May 13 and 14 (after the trade) and none on May 11-12. When was that CPI released?"
+open_questions: []                    # all answered by 2026-09-28
 
 # Trade alerts (trader, 2026-09-28): "you can send alerts when we entered on a trade or exited on SL or TP. Trade will
 # be full analyzed about how you executed, entry and exit prices, risk on $ and leverage, and type of setup."
@@ -163,6 +161,8 @@ safety:
   - "The bot trades a dedicated sub-account funded with only the capital it may risk."
   - "Every order is placed with its exchange-side stop, sized by the 1% rule, with leverage set from the stop distance by the margin rule (aim 50-60% of margin at the stop, never above 60%, margin call at 80%) and capped so liquidation sits beyond the stop."
   - "Trading rules have no daily stop, no pause after losses and no correlation cap (trader, 2026-09-27/28). The malfunction guard (G1-G9 above) is separate and mandatory: it blocks or repairs the one action only a bug produces and logs it; it never halts the bot."
+  - "Leverage: the highest whole number with at most 60% of the margin lost at the stop ('Ceiling should be 60% so we should avoid margin calls (80%)', trader, 2026-09-28) and liquidation at least 1.5x the stop distance away at MEXC's tier, capped by the pair's maximum; split entries take it from the first order. Lower is always allowed."
+  - "Macro release results (CPI above or below forecast) are the trader's call, not a bot input ('its actually my call', 2026-09-28): the bot only applies the news window."
   - "Every entry and every exit (stop or target) sends a trade alert with the execution analysis, entry and exit prices, risk in USDT, leverage and setup type (trader, 2026-09-28)."
   - "No new entries and no resting orders from 1 hour before to 1 hour after a red (high-impact) USD event on ForexFactory; open trades are kept (trader, 2026-09-27/28). Otherwise the bot runs 24/7."
   - "Execution is deterministic code, not a language model: the same market data always produces the same orders, and every decision is logged."

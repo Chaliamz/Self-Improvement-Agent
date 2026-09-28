@@ -148,6 +148,9 @@ def cmd_size(kb: KB, args) -> int:
         else:
             capped = " (capped by liquidation)" if liq_cap is not None and liq_cap < res.max_leverage_for_rule else ""
             print(f"| Leverage for your {aim} aim | {res.min_leverage_for_aim:.2f}x to {fmt_cap(top)}{capped} |")
+    if res.default_leverage is not None:
+        print(f"| Bot default leverage | {res.default_leverage}x (the highest whole number within the margin limit, liquidation "
+              f"at least {rc['liq_buffer_warn']:g}x the stop distance away; lower is always allowed) |")
     if res.liquidation is not None:
         print(f"| Liquidation, {margin_mode} (approx.) | {res.liquidation:,.6g} "
               f"({res.liq_to_stop_ratio:.2f}x stop distance) |")
@@ -183,7 +186,7 @@ def _split_report(p: dict, args, rc: dict, sources: list, risk_amount: float, fe
     plan = split_plan(entries, args.stop, order_risk, leverage=args.leverage, mmr_rate=mmr, fee_rate=fee_rate,
                       max_margin_loss_pct=num(dig(p, "leverage.max_margin_loss_at_stop_pct")),
                       margin_loss_aim_min_pct=num(dig(p, "leverage.margin_loss_aim_min_pct")),
-                      targets=tuple(args.target or ()), min_rr=num(dig(p, "risk.min_rr")))
+                      targets=tuple(args.target or ()), min_rr=num(dig(p, "risk.min_rr")), liq_buffer=rc["liq_buffer_warn"])
     if args.side and args.side != plan.side:
         raise ValueError(f"the stop makes this a {plan.side}, not a {args.side}")
     print(f"## Split entry — {plan.side.upper()}, {len(entries)} limit orders, one stop and one target\n")
@@ -221,6 +224,9 @@ def _split_report(p: dict, args, rc: dict, sources: list, risk_amount: float, fe
     print(f"- liquidation behind every next order and the stop (maintenance {mmr}): at most {fmt_cap(plan.max_leverage_liq)}")
     if plan.max_leverage_first_order is not None:
         print(f"- use at most {fmt_cap(min(plan.max_leverage_first_order, plan.max_leverage_liq))}")
+    if plan.default_leverage is not None:
+        print(f"- bot default: {plan.default_leverage}x (whole number; liquidation at least {rc['liq_buffer_warn']:g}x the distance "
+              f"to the next order or the stop)")
     if plan.flags:
         print("\nFlags:")
         for level, msg in plan.flags:

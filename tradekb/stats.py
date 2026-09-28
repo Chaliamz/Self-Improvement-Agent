@@ -161,6 +161,75 @@ def compare(a: list[float], b: list[float], cfg: dict, cond_a: int = 0, cond_b: 
     return Comparison(sa, sb, diff, ci, verdict)
 
 
+def nearest_rank(values: list[float], p: float) -> float:
+    """Percentile by nearest rank on the sorted values (index rounded half up)."""
+    ordered = sorted(values)
+    return ordered[int(p * (len(ordered) - 1) + 0.5)]
+
+
+OUTLOOK_BANDS = (("p5", 0.05), ("p25", 0.25), ("p50", 0.50), ("p75", 0.75), ("p95", 0.95))
+
+
+def wilson_low(k: int, n: int, z: float = 1.96) -> float:
+    """Lower end of the 95% Wilson interval for a proportion k/n: the lowest win rate the sample reasonably allows."""
+    p = k / n
+    centre = p + z * z / (2 * n)
+    spread = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n))
+    return (centre - spread) / (1 + z * z / n)
+
+
+def _simulate(draw, rng: random.Random, horizon: int, paths: int, band: float) -> dict:
+    by_step: list[list[float]] = [[] for _ in range(horizon)]
+    finals, drawdowns, streak_max = [], [], []
+    for _ in range(paths):
+        cum = peak = worst = 0.0
+        run = longest = 0
+        for i in range(horizon):
+            r = draw(rng)
+            cum += r
+            by_step[i].append(cum)
+            peak = max(peak, cum)
+            worst = max(worst, peak - cum)
+            run = run + 1 if r < -band else 0
+            longest = max(longest, run)
+        finals.append(cum); drawdowns.append(worst); streak_max.append(longest)
+    return {
+        "bands": {k: [0.0] + [nearest_rank(step, p) for step in by_step] for k, p in OUTLOOK_BANDS},
+        "final": {k: nearest_rank(finals, p) for k, p in OUTLOOK_BANDS},
+        "p_negative": sum(1 for f in finals if f < 0) / paths,
+        "max_drawdown": {"p50": nearest_rank(drawdowns, 0.5), "p95": nearest_rank(drawdowns, 0.95)},
+        "losing_streak": {"p50": nearest_rank(streak_max, 0.5), "p95": nearest_rank(streak_max, 0.95)},
+    }
+
+
+def outlook(rs: list[float], cfg: dict) -> dict | None:
+    """Monte Carlo of the next `trades` trades in two scenarios.
+
+    as_sampled: each trade drawn with replacement from the realized R. It inherits the sample's luck: with few trades
+    its win rate is the main uncertainty, so on its own it overstates what to expect.
+    low_win_rate: wins at the 95% Wilson lower bound of the sample's win rate, paying the sample's average win; every
+    other trade the sample's average loss. This is the stress case the sample cannot rule out.
+    Protocol, replayed by the audit: as_sampled uses random.Random(seed) and rs[rng.randrange(n)] per trade;
+    low_win_rate uses random.Random(seed + 1) and a win when rng.random() < the low win rate."""
+    n = len(rs)
+    if n < cfg["min_n_for_ci"]:
+        return None
+    horizon, paths, band, seed = cfg["outlook"]["trades"], cfg["outlook"]["paths"], cfg["breakeven_band_r"], cfg["bootstrap"]["seed"]
+    wins = [r for r in rs if r > band]
+    losses = [r for r in rs if r < -band]
+    sample = {"key": "as_sampled", "label": "As sampled", "win_rate": len(wins) / n, "expectancy": fmean(rs),
+              **_simulate(lambda g: rs[g.randrange(n)], random.Random(seed), horizon, paths, band)}
+    scenarios = [sample]
+    if wins and losses:
+        w = wilson_low(len(wins), n)
+        avg_win, avg_loss = fmean(wins), fmean(losses)
+        scenarios.append({"key": "low_win_rate", "label": "Low win rate (95% lower bound)", "win_rate": w,
+                          "avg_win": avg_win, "avg_loss": avg_loss, "expectancy": w * avg_win + (1 - w) * avg_loss,
+                          **_simulate(lambda g: avg_win if g.random() < w else avg_loss, random.Random(seed + 1),
+                                      horizon, paths, band)})
+    return {"n_source": n, "trades": horizon, "paths": paths, "scenarios": scenarios}
+
+
 def histogram(rs: list[float], band: float) -> list[tuple[str, int]]:
     """R distribution. The first bin isolates losses beyond -1.1R: slippage, gaps or a violated stop."""
     bins = [
