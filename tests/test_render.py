@@ -16,7 +16,7 @@ from pathlib import Path
 from unittest import mock
 
 REPO = Path(__file__).resolve().parent.parent
-TABS = ["overview", "journal", "performance", "strategy", "risk", "behaviour", "readiness", "gaps"]
+TABS = ["overview", "journal", "performance", "strategy", "risk", "behaviour", "readiness", "gaps", "health"]
 BACKGROUNDS = ["aurora", "borealis", "nebula", "plasma", "lava", "fireflies", "silk", "constellation", "starfield", "waves",
                "tape", "depth", "heatmap", "bubbles", "radar", "matrix", "synthwave", "off"]
 CANVAS = {"borealis", "fireflies", "silk", "constellation", "starfield", "matrix", "waves", "depth", "heatmap", "bubbles", "radar"}
@@ -61,7 +61,8 @@ addEventListener("load", () => {
                        rows: panel.querySelectorAll("tbody tr").length, overflow: de.scrollWidth - de.clientWidth,
                        grades: panel.querySelectorAll("svg[data-chart=grades] .grade-letter").length,
                        items: panel.querySelectorAll("li").length,
-                       ladder: panel.querySelectorAll("svg[data-chart=ladder] .pin").length };
+                       ladder: panel.querySelectorAll("svg[data-chart=ladder] .pin").length,
+                       incidents: panel.querySelectorAll(".inc-title").length, guards: panel.querySelectorAll(".guard-id").length };
       step();
     }, 300);
   };
@@ -89,6 +90,8 @@ class RenderTest(unittest.TestCase):
         kb = json.loads((cls.tmp / "exports" / "kb.json").read_text(encoding="utf-8"))
         cls.want_grades = len((kb["profile"].get("grading") or {}).get("scale") or ["S", "A", "B", "C", "D"])
         cls.want_bot_questions = len(kb["readiness"].get("open_questions") or [])
+        cls.want_incidents = len(kb.get("incidents") or [])
+        cls.want_guards = len((kb["readiness"].get("malfunction_guard") or {}).get("checks") or [])
         cls.want_ladder = sum(1 for t in kb["trades"] if any(x is not None for x in t["derived"].get("planned_rr") or []))
         cls.results = {}
         for width in (1280, 500):
@@ -122,6 +125,8 @@ class RenderTest(unittest.TestCase):
         self.assertGreaterEqual(tabs["gaps"]["items"], self.want_bot_questions, "data gaps list the bot questions")
         self.assertEqual(tabs["performance"]["ladder"], self.want_ladder, "planned R:R ladder: one pin per setup with a target")
         self.assertGreaterEqual(tabs["journal"]["rows"], 1)
+        self.assertEqual(tabs["health"]["incidents"], self.want_incidents, "health: one row per logged incident")
+        self.assertEqual(tabs["health"]["guards"], self.want_guards, "health: one row per malfunction-guard check")
 
     def test_backgrounds_and_trade_dialogs(self):
         out = self.results[1280]["out"]

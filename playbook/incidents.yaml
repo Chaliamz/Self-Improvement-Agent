@@ -1,0 +1,195 @@
+# Incident log: every bug, data corruption and near miss found in the knowledge base, its tools or
+# (later) the bot. APPEND-ONLY: never delete or rewrite an entry; when an incident is resolved, change
+# its `status` and fill `fix`. The terminal's Health tab shows this log; kb.json exports it.
+#
+# Fields
+#   id        INC-### in order of discovery
+#   date      the day it was found
+#   area      tooling | terminal | risk | data | tests | bot
+#   severity  high   = could produce a wrong trade decision, a wrong risk number or lose data
+#             medium = a wrong number or a missing record on screen, no trade decision affected
+#             low    = cosmetic, or caught before it reached a commit
+#   found_by  agent | test | audit | validator | trader
+#   status    open | fixed | guarded (a check now blocks it; the cause is external) | caught (never committed)
+#   fix       what changed, and the commit when one exists (null while open)
+
+incidents:
+  - id: INC-001
+    date: 2026-09-26
+    area: tooling
+    severity: low
+    title: "A bare `no` in a trade record became the boolean false"
+    detail: >-
+      YAML reads an unquoted no/yes as false/true, so `strategy_change: no` failed with an opaque enum error
+      instead of meaning "no change".
+    found_by: validator
+    status: fixed
+    fix: "The validator names the cause and says to quote the word (commit 6e7a0d6)."
+
+  - id: INC-002
+    date: 2026-09-26
+    area: terminal
+    severity: medium
+    title: "WebP chart screenshots were dropped from the terminal"
+    detail: "The image type came from the system MIME table, which lacks .webp on some machines, so those charts were silently left out."
+    found_by: agent
+    status: fixed
+    fix: "An explicit image-type table in the build, and the audit checks every embedded chart byte for byte (commit 490349a)."
+
+  - id: INC-003
+    date: 2026-09-26
+    area: tooling
+    severity: medium
+    title: "The report's mean holding time ignored stated durations"
+    detail: "Trades with fills.duration_minutes (scalps) were timed from their dates instead, so the mean was wrong."
+    found_by: agent
+    status: fixed
+    fix: "The report uses the stated minutes (commit 490349a)."
+
+  - id: INC-004
+    date: 2026-09-26
+    area: terminal
+    severity: low
+    title: "The terminal header showed only the first strategy"
+    detail: "With two strategies recorded, the header listed one."
+    found_by: agent
+    status: fixed
+    fix: "All strategies listed (commit 490349a)."
+
+  - id: INC-005
+    date: 2026-09-27
+    area: risk
+    severity: high
+    title: "Leverage caps were rounded UP"
+    detail: >-
+      For T-0006's 6.282% stop the cap under the margin rule is 7.96x; tj size printed "8.0x" and then flagged 8x
+      as a breach. A bot reading a rounded-up cap would set leverage that breaks the trader's rule. The same
+      rounding sat in the validator message and in two places in the terminal.
+    found_by: agent
+    status: fixed
+    fix: "Every cap is floored to 0.01x by one formatter (risk.fmt_cap and the terminal's fmtCap); a test proves both agree and never round up (commit cd8ef0a)."
+
+  - id: INC-006
+    date: 2026-09-27
+    area: terminal
+    severity: medium
+    title: "The margin-rule note had 50% hard-coded"
+    detail: "The terminal's text did not read the trader's limit from the profile, so a rule change would have left the screen wrong."
+    found_by: agent
+    status: fixed
+    fix: "The note reads the profile (commit cd8ef0a)."
+
+  - id: INC-007
+    date: 2026-09-27
+    area: terminal
+    severity: low
+    title: "Two numbered question lists were merged into one in Data gaps"
+    detail: "Questions from two strategies appeared as a single list with clashing numbers."
+    found_by: agent
+    status: fixed
+    fix: "Questions are grouped under each strategy (commit cd8ef0a)."
+
+  - id: INC-008
+    date: 2026-09-27
+    area: terminal
+    severity: low
+    title: "Two JavaScript syntax errors in terminal edits"
+    detail: "An extra ')' in the excursion chart and an unclosed grid block. Either would have blanked the terminal."
+    found_by: test
+    status: caught
+    fix: "The script-parse and headless-browser render tests failed before the commit; both were fixed first."
+
+  - id: INC-009
+    date: 2026-09-27
+    area: tests
+    severity: low
+    title: "The render test depended on the current number of trades and questions"
+    detail: "It would have failed on every new trade, training everyone to ignore it."
+    found_by: agent
+    status: fixed
+    fix: "The test derives its expectations from kb.json."
+
+  - id: INC-010
+    date: 2026-09-27
+    area: data
+    severity: medium
+    title: "T-0003 duration recorded as the approximate 45 minutes"
+    detail: "The chart measures 24 minutes. The trader had said the 45 was approximate: 'you can fix it'."
+    found_by: agent
+    status: fixed
+    fix: "Corrected to 24 minutes with the trader's approval (commit 3d0e045)."
+
+  - id: INC-011
+    date: 2026-09-27
+    area: data
+    severity: medium
+    title: "T-0006 target recorded at 62.64 instead of 66.10"
+    detail: "62.64 was the resistance named as a confluence; the order was at 66.10 (3.41R)."
+    found_by: trader
+    status: fixed
+    fix: "Target corrected to 66.10; 62.64 kept as a confluence."
+
+  - id: INC-012
+    date: 2026-09-27
+    area: data
+    severity: medium
+    title: "Zone readings the trader corrected: T-0006 'mitigated', T-0005 'sweep candle'"
+    detail: >-
+      The agent read T-0006's demand as mitigated (the trader: a reclaim level + CH, not mitigation) and T-0005's
+      supply as a sweep candle (the trader: the level that created the reversal).
+    found_by: trader
+    status: fixed
+    fix: "Both records and the strategy's zone rules corrected (commit 23d6d55)."
+
+  - id: INC-013
+    date: 2026-09-28
+    area: data
+    severity: medium
+    title: "A duplicate key in the profile silently erased a definition"
+    detail: >-
+      terminology had `inducement:` twice. YAML keeps the last duplicate and drops the first without an error,
+      so "Equal lows = liquidity resting below" never reached the terminal or kb.json. Found while editing the
+      profile; a scan of all 38 YAML files found no other case.
+    found_by: agent
+    status: fixed
+    fix: "The two definitions merged; the loader now rejects a duplicate key in every YAML file, and a test proves it."
+
+  - id: INC-014
+    date: 2026-09-28
+    area: data
+    severity: medium
+    title: "T-0004 loss typed D (invalid setup); the trader: good setup, executed early"
+    detail: "The agent classified the setup invalid. The trader: 'setup was good but executed early', which is a type C execution error."
+    found_by: trader
+    status: fixed
+    fix: "Loss type C, setup valid, entered_before_confirmation added, rescored; grade D recorded."
+
+  - id: INC-015
+    date: 2026-09-28
+    area: risk
+    severity: high
+    title: "On tight stops the 60% margin rule allows leverage that liquidates before the stop"
+    detail: >-
+      Stop distance x leverage = 60% says nothing about maintenance margin. A 0.6% stop at 100x is exactly 60%,
+      yet at a 0.5% maintenance rate isolated liquidation (about 99.50 on a 100 entry) comes before the 99.40
+      stop: the stop cannot protect the position. The limit is about 91x there, and MEXC's tiers raise the
+      maintenance rate as size grows.
+    found_by: agent
+    status: guarded
+    fix: >-
+      tj size prints the highest leverage whose liquidation stays beyond the stop and warns when the 50-60% aim
+      cannot be met; the terminal's Max leverage column is the lower of the two caps (it binds on T-0003 and T-0007);
+      the audit re-derives it; malfunction guard G4 makes the bot refuse such an order using MEXC's own tier.
+
+  - id: INC-016
+    date: 2026-09-28
+    area: tooling
+    severity: medium
+    title: "An unquoted version 1.10 would have been read as 1.1"
+    detail: >-
+      YAML parses `version: 1.10` as the number 1.1. Strategy versions are matched as text, so a trade tagged 1.10
+      without quotes would have counted silently under v1.1 and split per-version statistics. Latent: every
+      current record quotes its version, but the next clarification of supply-demand-structure is v1.10.
+    found_by: agent
+    status: fixed
+    fix: "The validator refuses a numeric strategy.version, current_version or resulting_version; a test proves it."

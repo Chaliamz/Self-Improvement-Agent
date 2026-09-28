@@ -92,6 +92,14 @@ def run(kb: KB, check_outputs: bool = True) -> Audit:
         exp = t["derived"].get("exposure")
         if exp and entry and stop:
             a.check(abs(exp["stop_pct"] - abs(entry - stop) / entry * 100) < TOL, f"{t['id']}: stop distance %")
+            if "max_leverage_liq" in exp:
+                mmr = _num((kb.profile.get("leverage") or {}).get("maintenance_margin_rate"))
+                mmr = mmr if mmr is not None else kb.config["risk_checks"]["default_mmr_rate"]
+                cap = exp["max_leverage_liq"]
+                liq = entry * (1 - 1 / cap) / (1 - mmr) if stop < entry else entry * (1 + 1 / cap) / (1 + mmr)
+                a.check(abs(liq - stop) <= abs(entry - stop) * 1e-9, f"{t['id']}: at the liquidation cap {cap:.4f}x, liquidation sits on the stop")
+                a.check(exp["max_leverage_safe"] == min(cap, exp["max_leverage_for_rule"])
+                        and exp["liq_binds"] == (cap < exp["max_leverage_for_rule"]), f"{t['id']}: safe leverage is the lower cap")
             lev = _num((t.get("risk") or {}).get("leverage"))
             if lev and "margin_loss_pct" in exp:
                 a.check(abs(exp["margin_loss_pct"] - exp["stop_pct"] * lev) < TOL, f"{t['id']}: margin loss at stop")
@@ -122,8 +130,7 @@ def run(kb: KB, check_outputs: bool = True) -> Audit:
     # rule compliance: the numeric rules recomputed from raw fields, and the counts re-tallied
     prof = kb.profile or {}
     limit = _num((prof.get("leverage") or {}).get("max_margin_loss_at_stop_pct"))
-    tol = _num((prof.get("leverage") or {}).get("margin_loss_tolerance_pct"))
-    ceiling = tol if tol is not None else limit     # independent restatement: a breach is beyond the tolerance
+    ceiling = limit                                 # independent restatement: a breach is above the limit (the aim's top)
     cap = _num((prof.get("risk") or {}).get("max_risk_per_trade_pct"))
     taken = [t for t in trades if t["status"] in ("closed", "open")]
     for t in trades:
@@ -200,6 +207,25 @@ def run(kb: KB, check_outputs: bool = True) -> Audit:
             head = path.read_bytes()[:12]
             sig_ok = (head[:4] == b"RIFF" and head[8:12] == b"WEBP") if ext == ".webp" else head.startswith(MAGIC.get(ext, b""))
             a.check(ext in IMAGE_TYPES and sig_ok, f"{t['id']}: chart {rel} is a valid {ext} image")
+
+    # incident log: exported unchanged, counts re-tallied
+    raw = [i for i in kb.incidents if isinstance(i, dict)]
+    a.check(p["incidents"] == json.loads(json.dumps(p["incidents"])) and len(p["incidents"]) == len(kb.incidents),
+            "incidents: exported one for one")
+    hl = p["health"]
+    a.check(hl["incidents"] == len(raw), "health: incident total re-tallied")
+    for key, field_ in (("by_status", "status"), ("by_severity", "severity")):
+        tally: dict = {}
+        for i in raw:
+            tally[i.get(field_)] = tally.get(i.get(field_), 0) + 1
+        a.check(all(hl[key].get(k, 0) == v for k, v in tally.items()) and sum(hl[key].values()) == len(raw),
+                f"health: incidents {key} re-tallied")
+    opens: dict = {}
+    for i in raw:
+        if i.get("status") == "open":
+            opens[i.get("severity")] = opens.get(i.get("severity"), 0) + 1
+    a.check(all(hl["open_by_severity"].get(k, 0) == v for k, v in opens.items())
+            and sum(hl["open_by_severity"].values()) == sum(opens.values()), "health: open incidents re-tallied")
 
     if not check_outputs:
         return a

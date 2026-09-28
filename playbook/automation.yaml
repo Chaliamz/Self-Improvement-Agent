@@ -11,12 +11,57 @@ venue:
 
 # Questions the bot's specification still needs answered (shown in the terminal's Data gaps).
 open_questions:
-  - "1. Scan list: which MEXC pairs should the bot watch, and on which timeframes (4h zones, then 1h / 30m / 5m execution as in your trades)?"
-  - "2. News: after a red USD release, when may new entries resume (straight away, after 15 minutes, after the next candle closes)? And is a resting limit order cancelled 1 hour before the event, or left in place because it is not a trade until it fills?"
-  - "3. Leverage for the bot: aim for 50% of margin at the stop (7x on a 7% stop), or allow your example of 8x on a 7% stop (56%, just past the 55% tolerance)?"
-  - "4. Correlation: with 1% per trade and no cap on open trades, several same-direction positions in correlated coins act as one bigger bet (5 alt longs is about 5% on one market move). Should the bot limit that, or take every valid setup?"
-  - "5. Malfunction guard: separate from your trading rules (no daily stop, no pause), should the bot halt itself and alert you on behaviour that can only be a bug: an order without a stop, a position sized above 1%, or a burst of orders?"
-  - "6. Weekends and hours: besides red USD news, are there days or hours you avoid (weekends, the daily open, low-liquidity hours)?"
+  - "1. Leverage on tight stops: when the 50-60% aim would put liquidation at or before the stop (a 0.6% stop needs 83x for 50%; liquidation comes first above about 91x at a 0.5% maintenance rate, earlier on MEXC's higher tiers), the bot would use the highest leverage that keeps liquidation at least 1.5x the stop distance away, even if that falls below 50%. The loss at the stop stays 1% either way. Agreed?"
+  - "2. Alerts: where should the bot send a halt or malfunction alert (Telegram, email, both)? After a halt, does it restart only when you restart it?"
+  - "3. Pairs: are BTC, ETH and HYPE the USDT-margined perpetual futures on MEXC (BTC_USDT, ETH_USDT, HYPE_USDT)?"
+  - "4. Scope: the bot focuses on swing and day trading (1D-4h bias, 1h-30m levels and confirmations). Are 1m-5m scalps like T-0003 outside the bot, left to you by hand?"
+
+# Mandatory (trader, 2026-09-28: "Yes that's a huge MUST. We need to avoid these types of actions at all costs.
+# Protecting our capital is important."). Separate from the trading rules, which have no daily stop and no pause:
+# these checks fire only on behaviour a correct bot can never produce. Every check gets a test that trips it
+# before the bot sends a single live order (stage 2).
+malfunction_guard:
+  status: specified                   # specified -> implemented -> tested; no bot code exists yet
+  on_trip: >-
+    Stop placing new orders, leave every exchange-side stop in place, alert the trader, and log the event as an
+    incident. Open positions keep their stops and targets; nothing is closed except by G1.
+  checks:
+    - id: G1
+      name: "Position without a stop"
+      trigger: "An entry order sent without an attached exchange-side stop, or a position on the exchange with no live stop order."
+      action: "Place the planned stop at once; if the exchange refuses it, close the position at market. Then halt."
+    - id: G2
+      name: "Risk above 1%"
+      trigger: "Size x (entry to stop distance) plus fees is above 1% of equity, checked before sending and again on the fill."
+      action: "Refuse the order; if already filled, reduce the position to 1% risk. Halt."
+    - id: G3
+      name: "Leverage above the margin rule"
+      trigger: "Stop distance % x leverage above 60% of the posted margin."
+      action: "Refuse the order. Halt."
+    - id: G4
+      name: "Liquidation before the stop"
+      trigger: "Isolated liquidation, computed with MEXC's maintenance-margin tier for this position size, sits at or inside the stop (warn under 1.5x the stop distance)."
+      action: "Refuse the order. Halt."
+    - id: G5
+      name: "Order burst or duplicate"
+      trigger: "More orders in a window than the strategy can produce (limit set from the backtest's highest signal rate), or a second order for a setup already ordered."
+      action: "Cancel the extra orders. Halt."
+    - id: G6
+      name: "Order inside the news window"
+      trigger: "A new entry or a resting order from 1 hour before to 1 hour after a red USD event on ForexFactory, or the calendar could not be read."
+      action: "Refuse or cancel the order; no halt when the calendar merely confirms the window."
+    - id: G7
+      name: "Pair not on the scan list"
+      trigger: "An order on a pair outside profile execution_venue.pairs."
+      action: "Refuse the order. Halt."
+    - id: G8
+      name: "Bot and exchange disagree"
+      trigger: "The bot's own record of orders and positions differs from the exchange's (unknown position, missing order, different size or stop)."
+      action: "Halt new orders until the trader reconciles."
+    - id: G9
+      name: "Stale data or repeated errors"
+      trigger: "Market data older than one execution candle, the clock off by more than a few seconds, or repeated rejected orders and API errors."
+      action: "No new orders until the data is fresh; halt on repeated errors."
 
 stages:
   - id: specify
@@ -41,6 +86,9 @@ stages:
       - label: "Detector reproduces journaled setups"
         manual: pending
         target: "At least 80% of journaled setups found with matching zone, stop and target; every miss explained"
+      - label: "Malfunction guard implemented and tripped by tests"
+        manual: pending
+        target: "Every check G1-G9 in malfunction_guard has a test that trips it and shows the halt, the alert and the incident entry"
 
   - id: backtest
     name: "3. Backtest out of sample"
@@ -104,7 +152,7 @@ safety:
   - "API keys never go into chat, the repository or kb.json. They live only in the bot server's secret store or environment."
   - "Keys have trade permission only: withdrawals disabled, IP-whitelisted to the bot's server."
   - "The bot trades a dedicated sub-account funded with only the capital it may risk."
-  - "Every order is placed with its exchange-side stop, sized by the 1% rule, with leverage set from the stop distance by the margin rule (50% target, 55% tolerance, margin call at 80%)."
-  - "Trading rules have no daily stop and no pause after losses (trader, 2026-09-27). A malfunction guard is separate: it halts on behaviour only a bug produces (orders without stops, oversized positions, order bursts) and alerts the trader. Its triggers are open question 5."
-  - "No new entries within 1 hour before a red (high-impact) USD event on ForexFactory; open trades are kept (trader, 2026-09-27)."
+  - "Every order is placed with its exchange-side stop, sized by the 1% rule, with leverage set from the stop distance by the margin rule (aim 50-60% of margin at the stop, never above 60%, margin call at 80%) and capped so liquidation sits beyond the stop."
+  - "Trading rules have no daily stop, no pause after losses and no correlation cap (trader, 2026-09-27/28). The malfunction guard (G1-G9 above) is separate and mandatory: it halts on behaviour only a bug produces and alerts the trader."
+  - "No new entries and no resting orders from 1 hour before to 1 hour after a red (high-impact) USD event on ForexFactory; open trades are kept (trader, 2026-09-27/28). Otherwise the bot runs 24/7."
   - "Execution is deterministic code, not a language model: the same market data always produces the same orders, and every decision is logged."

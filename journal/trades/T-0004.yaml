@@ -21,7 +21,7 @@ regime: [bullish]             # 30m: rally from about 0.0106 (Jan 4) and a fresh
 
 strategy:
   id: supply-demand-structure
-  version: "1.8"                # retagged through CHG-008 (clarifications)
+  version: "1.9"                # retagged through CHG-009 (clarifications)
   experiment: null
   variant: null
 
@@ -74,6 +74,7 @@ journal:
     Mistakes (trader): (a) the stop was the 30m supply level where the CHoCH formed; the valid short was
     exactly where the stop sat. (b) Ignored the 15-30M timeframes and focused only on the 5M.
     The proper trade is T-0005.
+    Trader, 2026-09-28: "it's D setup because it executed poorly (mistake) setup was good but executed early."
 
 evidence:
   observed:
@@ -90,30 +91,33 @@ evidence:
     - "The chart confirms the trader's diagnosis: the 5m CHoCH at 22:30 sat inside the range of the bullish 22:00 30m candle."
     - "The stop sat just above the obvious 22:00 spike high: resting liquidity. Price swept it (up to about 0.013813) before the real 30m CHoCH formed."
     - "On the 30m, the bearish divergence appears only at the Jan 6 05:30 sweep high (price higher high, RSI lower high: 65.2 vs 76.2). At the Jan 5 22:30 entry, RSI rose with price (76.2 vs 74.5): no 30m divergence yet. If it was seen on the 5m, it was the same 5m-vs-30m misalignment."
-    - "Risk (tj size): stop 3.837%. At 20x, 76.7% of the posted margin is lost at the stop, beyond the 55% tolerance (13.03x for the 50% target, 14.33x at most). Isolated liquidation about 0.013561, only 1.17x the stop distance; the 03:00 candle traded through it (high about 0.013595). The stop filling was the only thing between -1R and liquidation of the margin (about 1.30R at 1% risk sizing)."
+    - "Risk (tj size): stop 3.837%. At 20x, 76.7% of the posted margin is lost at the stop, above the 60% limit (the 50-60% aim is 13.03x to 15.63x; the rule stated 2026-09-28). Isolated liquidation about 0.013561, only 1.17x the stop distance; the 03:00 candle traded through it (high about 0.013595). The stop filling was the only thing between -1R and liquidation of the margin (about 1.30R at 1% risk sizing)."
   hypotheses:
     - "A 5m CHoCH that the 30m does not confirm may be consolidation, not a reversal (n=1, trader-diagnosed)."
     - "Stops just beyond an obvious swing are swept before the move (n=1)."
+    - "Loss type, corrected 2026-09-28 from D (invalid setup) to C (execution error) on the trader's statement that the setup was good and the entry early. The 4H key level and the supply above it were a valid short location; the 5m entry before the 30m confirmed is the error."
   charts: [journal/charts/T-0004-pengu-30m.png]
 
 review:
-  scores:
-    setup: 2                  # valid 4H level; the 5m confirmation was invalid on 30m
+  scores:                     # rescored 2026-09-28: "setup was good but executed early" (trader)
+    setup: 4                  # the 4H key level and the supply above it were a good short location (trader)
     context: 2                # 4H considered; 15m-30m ignored
-    execution: 2              # entered on an unconfirmed 5m CHoCH below the supply, not at the zone
-    risk: 1                   # stop in the liquidity; 20x far beyond the 50% target / 55% tolerance, liquidation 1.17x the stop distance
+    execution: 1              # executed early: an unconfirmed 5m CHoCH below the supply, not at the zone
+    risk: 1                   # stop in the liquidity; 20x = 76.7% of margin, above the 60% limit; liquidation 1.17x the stop distance
     management: 4             # the stop was respected: -1R taken, no moving or removing
-  setup_validity: invalid
+  trader_grade: "D"           # trader, 2026-09-28: "it's D setup because it executed poorly (mistake)"
+  setup_validity: valid       # trader, 2026-09-28: "setup was good" (was invalid until then)
   followed_plan: true
-  loss_type: D
-  mistakes: [ignored_htf, stop_in_liquidity, excessive_leverage, false_ch]   # false_ch: the trader's own diagnosis, a 5m break inside the 30m candle range (named 2026-09-27)
+  loss_type: C                # execution error (was D): "setup was good but executed early"
+  mistakes: [ignored_htf, stop_in_liquidity, excessive_leverage, false_ch, entered_before_confirmation]   # false_ch: a 5m break inside the 30m candle range (named 2026-09-27); entered_before_confirmation: "executed early" (2026-09-28)
   behaviors: [respected_invalidation]
   outside_control: []
   lesson: >-
     A lower-timeframe CHoCH is not a confirmation until the 15m-30m agrees. The stop just above the
     obvious spike high was the liquidity the market needed; the valid short formed exactly there
     (T-0005, +3.09R counterfactual). Leverage must follow the margin rule from the actual stop distance
-    (3.8% here: 13x for the 50% target, 14.3x at most), not the lower timeframe's feel.
+    (3.8% here: 13.03x to 15.63x for the 50-60% aim), not the lower timeframe's feel. The setup was good; the
+    execution was early (trader, 2026-09-28): wait for the 30m to confirm, then enter at the zone.
   actionable_change: "Run strategy v1.3's checklist before every entry; items 3, 5 and 6 would each have blocked this trade."
   strategy_change: "no"
   evidence_strength: low

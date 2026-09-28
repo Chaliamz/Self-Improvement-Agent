@@ -19,13 +19,14 @@ risk:
   max_consecutive_losses_before_pause: "none"   # trader: "there's no pause"
   min_rr: 2.5                         # hard floor for the best target (trader: '1:2,5RR as well')
   preferred_rr: 3.0                   # 'I prefer hunting 1:3RR minimum'
+  max_correlated_positions: "none"    # "no, we take every valid setup, bad days will happen either way" (2026-09-28)
   fees_inside_risk: true              # 'Everything is inside them' (fees within the 1%); the bot counts them separately
 
 leverage:
   max_leverage: "none"                # no fixed cap: leverage is set from the stop distance by the margin rule below
   margin_mode: isolated               # isolated | cross
-  max_margin_loss_at_stop_pct: 50     # TARGET: stop distance % x leverage (isolated margin)
-  margin_loss_tolerance_pct: 55       # accepted above the target: "it's okay if it goes to 55% or something"
+  max_margin_loss_at_stop_pct: 60     # upper edge of the aim: stop distance % x leverage (isolated margin); beyond is a breach
+  margin_loss_aim_min_pct: 50         # lower edge: "always aim for 50-60% at the stop" (trader, 2026-09-28)
   margin_call_at_margin_loss_pct: 80  # "margin call occurs on 80%" (trader)
   maintenance_margin_rate: null       # decimal; exchange/tier specific
 
@@ -40,8 +41,12 @@ instruments:                          # list of markets/assets traded
   - "HYPEUSDT perpetual (Bybit)"
   - "S&P 500 index CFD, SPX500 (Capital.com)"
   - "POLUSDT perpetual (BloFin)"
-sessions: null                        # the trader's own session names
+sessions: "24/7"                      # "no, no we trade 24/7 regardless" (2026-09-28): no days or hours avoided besides red USD news
 timeframes:                           # notation: m minutes, h hours, D days, W weeks, M months
+  swing_day:                          # swing and day trading (trader, 2026-09-28): the bot's focus
+    bias: "1D-4h"
+    levels_confirmations: "1h-30m"
+    execution_4h: "only if the setup is great (T-0006, T-0007)"
   swing:
     structure: "4h"                   # T-0001
     execution: "4h"                   # T-0001
@@ -65,10 +70,10 @@ grading:
   s_criteria: "Proper confluences, clear confirmations, sniper entries leading to TP and a high RR (3.5RR and higher)."
   separated_by: "The quality of the setup (trader, 2026-09-27)."
   a_criteria: "A good setup executed well, one step short of S: a better entry or a stronger target would have made it S (T-0001, T-0006)."
-  b_criteria: null                    # not yet stated
+  b_criteria: "Decent R:R but few confluences: 'it could be a risky execution'."
   c_criteria: "A setup taken without the full process, 'regardless of win' (T-0003: only the 1m timeframe)."
   d_criteria: "A poor trade plus a mistake: 'D would definitely be a poor trade+mistake'."
-  examples: {T-0001: A, T-0003: C, T-0006: A, T-0007: S}
+  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S}
 
 # News filter (trader, 2026-09-27). Applies to NEW entries only: open trades are kept.
 news_filter:
@@ -77,11 +82,14 @@ news_filter:
   impact: high                        # the red symbols only
   no_new_entries_before_minutes: 60   # "we avoid macroeconomic data 1 Hour before event occurs"
   applies_to_open_trades: false       # "This is true only if we didn't enter the trade yet"
-  resume_after_minutes: null          # not yet stated
+  resume_after_minutes: 60            # "they can resume after 1H after manipulation could stop"
+  cancel_resting_orders: true         # "anything resting gets cancelled too": unfilled limits are cancelled for the window
 
 # Automation venue (trader, 2026-09-27).
 execution_venue:
   exchange: "MEXC"                    # "I'm expecting to use MEXC as an exchange to use the bot placing orders"
+  pairs: [BTC, ETH, HYPE]             # "The certain ones will be BTC-ETH-HYPE"; more to come. Contract type: bot question 3
+  styles: [swing, day trading]        # "as long as we focus on swing trades and day trading"
 
 # How the trader analyses, in their words.
 process:
@@ -92,7 +100,6 @@ process:
 # The trader's own terms, in their words. These win over generic taxonomy labels.
 terminology:
   CHoCH: "Change of character. Bullish CHoCH requires a candle CLOSE above the last lower high."
-  inducement: "Equal lows = liquidity resting below."
   extreme demand level: "The red box: the full wick-to-wick range of the candle at the lower low that formed massive volume and a point of interest."
   extreme supply level: "Mirror of extreme demand, at the higher high."
   POI: "Point of interest."
@@ -113,13 +120,13 @@ terminology:
   supply/demand level: "Drawn where price created a CH (bearish: supply, bullish: demand), stronger with an FVG: 'we draw supply demand levels which form a FVG +CH'."
   mitigation: "Price returning into a supply/demand level. Unmitigated = high probability; the more it mitigates, the weaker it becomes. T-0007's supply is the example; a zone traded through and reclaimed with a CH is a reclaim level, not mitigation (T-0006)."
   FVG: "Fair value gap. Strengthens the supply/demand level whose move left it."
-  inducement: "Equal highs/lows resting liquidity. 'AVOID Inducements at all costs'."
+  inducement: "Equal highs/lows: resting liquidity (equal lows = liquidity resting below, T-0001). 'AVOID Inducements at all costs'."
   level validity: "S/R levels and trendlines: at least 3 reactions preferred. Not for S/D levels (fewer mitigations = stronger)."
   reaction: "Not knowable in advance: a level is key if traders react to it. A touch that rejects, a break-retest-continue, or a deviation (break, retest, fail, level lost again). Mostly deviations, so the retest is traded for continuation."
   equal highs/lows: "No fixed tolerance; they may take longer to form. Still a liquidity level likely to be swept."
   potential CH (30m): "A 30m candle closes below the previous bullish 30m candle's low (bearish), or above the previous bearish 30m candle's high (bullish)."
   S setup: "Proper confluences, clear confirmations, a sniper entry that runs to TP, and a high R:R (about 3.5R; a rough guide) (trader, 2026-09-27). T-0007."
-  grades: "S, A, B, C, D. S-B tradeable, C maybe, D avoided. A-D criteria not yet stated."
+  grades: "S, A, B, C, D. S-B tradeable, C maybe, D avoided. Criteria for each in grading (all stated by 2026-09-28)."
   4H candle range: "The range of the impulsive candle that made the high/low (cyan lines). Inside it = consolidation. A pullback must CLOSE beyond its opposite end."
   NOT CH: "A break of a level inside a candle range. Consolidation, not a change of character (T-0008)."
   pullback: "From a high, price must break and CLOSE below the low of the candle range, read on the HTF (4h); otherwise it is consolidation. A 1h pullback inside a 4h candle range is not a 4h pullback (trader, T-0008)."
@@ -150,9 +157,18 @@ sources:
   execution_venue: "Trader, 2026-09-27: 'I'm expecting to use MEXC as an exchange to use the bot placing orders.'"
   grading.examples: "Trader, 2026-09-27: T-0001 'would be A ... it would be S if I would get extreme demand and get higher RR'; T-0003 'would be C because I focused only on 1M time frame regardless of win'; T-0006 'would be A because I executed well but had to let it reach supply level so it would be an S'"
   grading: "Trader, 2026-09-27: 'its a rough guide, it doesnt matter if that's 3.5R it could be slightly less. And no we can consider trading S,A,B,C trading setups. We would avoid D setups and maybe C ones as well.'"
-  leverage.margin_loss_tolerance_pct: "Trader, 2026-09-27: 'since margin call occurs on 80% i prefer to adjust it until 50%, it's okay if it goes to 55% or something'"
+  leverage.margin_loss_aim_min_pct: "Trader, 2026-09-28: 'always aim for 50-60% at the stop'. Earlier: 'not to exceed -50%' (2026-09-26); 'until 50%, it's okay if it goes to 55%' (2026-09-27)."
+  grading.b_criteria: "Trader, 2026-09-28: 'B setup would be anything with decent RR but few confluences, which means it could be a risky execution.'"
+  grading.examples.T-0004: "Trader, 2026-09-28: 'it's D setup because it executed poorly (mistake) setup was good but executed early.'"
+  news_filter.resume_after_minutes: "Trader, 2026-09-28: 'they can resume after 1H after manipulation could stop. anything resting gets cancelled too.'"
+  news_filter.cancel_resting_orders: "Trader, 2026-09-28: 'anything resting gets cancelled too.'"
+  sessions: "Trader, 2026-09-28: 'no, no we trade 24/7 regardless.'"
+  risk.max_correlated_positions: "Trader, 2026-09-28: 'no, we take every valid setup, bad days will happen either way.'"
+  execution_venue.pairs: "Trader, 2026-09-28: 'Im going to tell you soon about pairs. The certain ones will be BTC-ETH-HYPE.'"
+  execution_venue.styles: "Trader, 2026-09-28: 'as long as we focus on swing trades and day trading.'"
+  timeframes.swing_day: "Trader, 2026-09-28: 'We start from 1D-4H for bias (we can execute on 4H as well only if setups are great \"T-0006+T-0007 are great examples), we can jump to 1H-30M for levels + confirmations as long as we focus on swing trades and day trading.'"
   leverage.margin_call_at_margin_loss_pct: "Trader, 2026-09-27: 'margin call occurs on 80%'"
   leverage.margin_mode: "Trader: 'which means I use an isolated margin', 2026-09-26"
-  leverage.max_margin_loss_at_stop_pct: "Trader: 'leverage planning not to exceed -50%', 2026-09-26"
+  leverage.max_margin_loss_at_stop_pct: "Trader, 2026-09-28: 'always aim for 50-60% at the stop' (the latest statement; 50% on 2026-09-26, up to 55% on 2026-09-27)"
   risk.min_rr: "Trader: 'I could enter a trade with 1:2,5RR as well', 2026-09-26"
   risk.preferred_rr: "Trader: 'I prefer hunting 1:3RR minimum', 2026-09-26"

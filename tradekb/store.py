@@ -20,6 +20,13 @@ import yaml
 TRADE_ID_RE = re.compile(r"^T-(\d{4,})$")
 STATUSES = ("planned", "open", "closed", "missed", "not_taken")
 TAXONOMIES = ("setups", "regimes", "mistakes", "behaviors", "loss_types")
+INCIDENTS_FILE = "playbook/incidents.yaml"
+INCIDENT_ENUMS = {
+    "area": ("tooling", "terminal", "risk", "data", "tests", "bot"),
+    "severity": ("high", "medium", "low"),
+    "found_by": ("agent", "test", "audit", "validator", "trader"),
+    "status": ("open", "fixed", "guarded", "caught"),
+}
 
 # Defaults are ASSUMPTIONS, not facts about the trader. config.yaml overrides them.
 DEFAULT_CONFIG: dict[str, Any] = {
@@ -58,10 +65,36 @@ def root() -> Path:
     return Path(env).resolve() if env else Path(__file__).resolve().parent.parent
 
 
+class _StrictLoader(yaml.SafeLoader):
+    """SafeLoader that refuses duplicate mapping keys. Plain YAML keeps the LAST duplicate and drops the
+    first without a word: a second `inducement:` in the profile once erased the trader's first definition."""
+
+
+def _mapping_without_duplicates(loader: _StrictLoader, node: yaml.MappingNode, deep: bool = False) -> dict:
+    loader.flatten_mapping(node)
+    seen: dict[Any, int] = {}
+    for key_node, _ in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        try:
+            first = seen.get(key)
+        except TypeError:                     # unhashable key: construct_mapping reports it
+            continue
+        if first is not None:
+            raise yaml.constructor.ConstructorError(
+                "while constructing a mapping", node.start_mark,
+                f"duplicate key {key!r} (first on line {first + 1}); YAML would silently keep only the last",
+                key_node.start_mark)
+        seen[key] = key_node.start_mark.line
+    return loader.construct_mapping(node, deep=deep)
+
+
+_StrictLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _mapping_without_duplicates)
+
+
 def load_yaml(path: Path) -> Any:
     try:
         with path.open(encoding="utf-8") as fh:
-            return yaml.safe_load(fh)
+            return yaml.load(fh, Loader=_StrictLoader)  # noqa: S506 - a SafeLoader subclass
     except yaml.YAMLError as exc:
         raise KBError(f"{path.name}: invalid YAML: {exc}") from exc
     except OSError as exc:
@@ -156,6 +189,7 @@ class KB:
     experiments: dict[str, dict]
     load_errors: list[str] = field(default_factory=list)
     automation: dict = field(default_factory=dict)
+    incidents: list = field(default_factory=list)
 
     def trade(self, trade_id: str) -> Trade | None:
         return next((t for t in self.trades if t.id == trade_id), None)
@@ -272,6 +306,16 @@ def load_kb(r: Path | None = None) -> KB:
                 errors.append("playbook/automation.yaml: expected a mapping")
         except KBError as exc:
             errors.append(str(exc))
+    incidents: list = []
+    if (r / INCIDENTS_FILE).exists():
+        try:
+            loaded = load_yaml(r / INCIDENTS_FILE) or {}
+            if isinstance(loaded, dict) and isinstance(loaded.get("incidents") or [], list):
+                incidents = loaded.get("incidents") or []
+            else:
+                errors.append(f"{INCIDENTS_FILE}: expected a mapping with an `incidents` list")
+        except KBError as exc:
+            errors.append(str(exc))
     return KB(
         root=r,
         config=config,
@@ -282,6 +326,7 @@ def load_kb(r: Path | None = None) -> KB:
         experiments=_load_experiments(r, errors),
         load_errors=errors,
         automation=automation,
+        incidents=incidents,
     )
 
 

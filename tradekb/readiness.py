@@ -77,4 +77,5 @@ def evaluate(kb: KB) -> dict:
             "sample_size": {"alpha": sizing.get("alpha", 0.05), "power": sizing.get("power", 0.8),
                             "scenarios": scenarios, "note": sizing.get("note")},
             "safety": doc.get("safety") or [], "venue": doc.get("venue") or {},
-            "open_questions": [str(q) for q in doc.get("open_questions") or []]}
+            "open_questions": [str(q) for q in doc.get("open_questions") or []],
+            "malfunction_guard": doc.get("malfunction_guard") or {}}

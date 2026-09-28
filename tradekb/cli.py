@@ -7,7 +7,7 @@ import sys
 
 from . import analysis, report
 from .model import num
-from .risk import CRITICAL, SizingInput, fmt_cap, size_position
+from .risk import CRITICAL, SizingInput, fmt_cap, max_leverage_liq_beyond_stop, size_position
 from .stats import compare
 from .store import KB, KBError, create_trade, dig, load_kb
 from .validate import validate
@@ -106,7 +106,7 @@ def cmd_size(kb: KB, args) -> int:
         max_risk_pct=num(dig(p, "risk.max_risk_per_trade_pct")),
         max_leverage=num(dig(p, "leverage.max_leverage")),
         max_margin_loss_pct=num(dig(p, "leverage.max_margin_loss_at_stop_pct")),
-        margin_loss_tolerance_pct=num(dig(p, "leverage.margin_loss_tolerance_pct")),
+        margin_loss_aim_min_pct=num(dig(p, "leverage.margin_loss_aim_min_pct")),
         min_rr=num(dig(p, "risk.min_rr")),
         fee_share_warn=rc["fee_share_warn"], liq_buffer_warn=rc["liq_buffer_warn"],
     )
@@ -131,9 +131,20 @@ def cmd_size(kb: KB, args) -> int:
     if res.margin_loss_pct is not None:
         print(f"| Loss on margin at stop (isolated) | {res.margin_loss_pct:.1f}% |")
     if res.max_leverage_for_rule is not None:
-        print(f"| Max leverage for your {inp.max_margin_loss_pct:g}% margin-loss target | {fmt_cap(res.max_leverage_for_rule)} |")
-    if res.max_leverage_for_tolerance is not None:
-        print(f"| Max leverage within your {inp.margin_loss_tolerance_pct:g}% tolerance | {fmt_cap(res.max_leverage_for_tolerance)} |")
+        print(f"| Max leverage for your {inp.max_margin_loss_pct:g}% margin-loss limit | {fmt_cap(res.max_leverage_for_rule)} |")
+    liq_cap = res.max_leverage_liq_beyond_stop
+    if liq_cap is not None:
+        buffered = max_leverage_liq_beyond_stop(args.entry, res.stop_fill, mmr, rc["liq_buffer_warn"])
+        print(f"| Max leverage with liquidation beyond the stop (isolated, maintenance {mmr}) | {fmt_cap(liq_cap)} "
+              f"({fmt_cap(buffered)} keeps it {rc['liq_buffer_warn']:g}x the stop distance away) |")
+    if res.min_leverage_for_aim is not None and res.max_leverage_for_rule is not None:
+        top = res.max_leverage_for_rule if liq_cap is None else min(res.max_leverage_for_rule, liq_cap)
+        aim = f"{inp.margin_loss_aim_min_pct:g}-{inp.max_margin_loss_pct:g}%"
+        if top < res.min_leverage_for_aim:
+            print(f"| Leverage for your {aim} aim | not reachable: liquidation comes first above {fmt_cap(top)} |")
+        else:
+            capped = " (capped by liquidation)" if liq_cap is not None and liq_cap < res.max_leverage_for_rule else ""
+            print(f"| Leverage for your {aim} aim | {res.min_leverage_for_aim:.2f}x to {fmt_cap(top)}{capped} |")
     if res.liquidation is not None:
         print(f"| Liquidation, {margin_mode} (approx.) | {res.liquidation:,.6g} "
               f"({res.liq_to_stop_ratio:.2f}x stop distance) |")

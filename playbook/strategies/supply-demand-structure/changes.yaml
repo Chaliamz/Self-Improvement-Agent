@@ -170,3 +170,25 @@ changes:
     fields: [grading, entry_timing, risk_model, leverage_model, do_not_trade_when, checklist, open_questions]
     note: "Grades recorded on T-0001 (A), T-0003 (C), T-0006 (A). All supply-demand trades retagged 1.8."
     resulting_version: "1.8"
+  - id: CHG-009
+    kind: clarification
+    date: 2026-09-28
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-28: "it's D setup because it executed poorly (mistake) setup was good but executed early." ...
+      "B setup would be anything with decent RR but few confluences, which means it could be a risky execution." ...
+      "the longer time frame the better, the best example is T-0007" ... "on that specific example there was the green
+      box (demand level) + the bullish CH, so I didn't have to jump to LTF, or I could do it on 30M to identify extra
+      demand levels+FVG and split my size" ... "We start from 1D-4H for bias (we can execute on 4H as well only if
+      setups are great "T-0006+T-0007 are great examples), we can jump to 1H-30M for levels + confirmations as long as
+      we focus on swing trades and day trading." ... "they can resume after 1H after manipulation could stop. anything
+      resting gets cancelled too." ... "always aim for 50-60% at the stop".
+    fields: [timeframes, grading, entry_timing, split_entries, leverage_model, do_not_trade_when, checklist,
+             common_mistakes, open_questions]
+    note: >-
+      The margin rule moves from "50% target, 55% tolerated" to "aim 50-60%": the trader's latest statement of the
+      same rule, so it is recorded as a clarification; no trade changes compliance (T-0004 breaches both). T-0004
+      corrected: grade D, setup valid, loss type D -> C, entered_before_confirmation added, rescored (setup 2 -> 4,
+      execution 2 -> 1). All supply-demand trades retagged 1.9.
+    resulting_version: "1.9"

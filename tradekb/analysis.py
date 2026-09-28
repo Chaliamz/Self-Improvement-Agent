@@ -268,8 +268,8 @@ def rule_definitions(kb: KB) -> list[dict]:
     p = kb.profile
     cap, limit, floor = (dig(p, "risk.max_risk_per_trade_pct"), dig(p, "leverage.max_margin_loss_at_stop_pct"),
                          dig(p, "risk.min_rr"))
-    tol = dig(p, "leverage.margin_loss_tolerance_pct")
-    lev_rule = (f"Stop % x leverage at most {limit}% of margin" + (f" (up to {tol}% tolerated)" if tol is not None else "")
+    aim = dig(p, "leverage.margin_loss_aim_min_pct")
+    lev_rule = (f"Stop % x leverage at most {limit}% of margin" + (f" (aim {aim}-{limit}%)" if aim is not None else "")
                 if limit is not None else "Margin rule not stated")
     return [
         {"key": "top_down", "label": "Top-down", "rule": "HTF context, key levels, then LTF execution (timeframes.top_down)"},
@@ -290,9 +290,9 @@ def rule_checks(row: Row, kb: KB) -> dict[str, bool | None]:
     risk_pct, cap = num(dig(t, "risk.risk_pct")), num(dig(p, "risk.max_risk_per_trade_pct"))
     out["risk_pct"] = None if None in (risk_pct, cap) else risk_pct <= cap + 1e-9
     entry, stop, lev = entry_price(t), num(dig(t, "plan.stop")), num(dig(t, "risk.leverage"))
-    limit, tol = num(dig(p, "leverage.max_margin_loss_at_stop_pct")), num(dig(p, "leverage.margin_loss_tolerance_pct"))
+    limit = num(dig(p, "leverage.max_margin_loss_at_stop_pct"))
     out["leverage"] = (None if None in (entry, stop, lev, limit) or not entry or entry == stop
-                       else margin_status(abs(entry - stop) / entry * 100 * lev, limit, tol) != "breach")
+                       else margin_status(abs(entry - stop) / entry * 100 * lev, limit) != "breach")
     rrs, floor = [x for x in planned_rr(t) if x is not None], num(dig(p, "risk.min_rr"))
     out["min_rr"] = None if not rrs or floor is None else max(rrs) >= floor - 1e-9
     behaviors = set(dig(t, "review.behaviors") or [])

@@ -110,6 +110,11 @@ def status(kb: KB, issues) -> str:
             lines.append(f"Automation readiness: {active['name']} ({met}/{len(active['criteria'])} criteria met)")
         else:
             lines.append("Automation readiness: all stages complete")
+    incs = [i for i in kb.incidents if isinstance(i, dict)]
+    open_incs = [i for i in incs if i.get("status") == "open"]
+    lines.append(f"Incidents: {len(incs)} logged, {len(open_incs)} open" + (
+        ": " + "; ".join(f"{i.get('id')} [{i.get('severity')}] {i.get('title')}" for i in open_incs) if open_incs else "")
+        + " (playbook/incidents.yaml; terminal Health tab)")
     recurring = [e for e in analysis.error_db(kb) if e.recurring]
     lines.append("Recurring errors: " + (", ".join(
         f"{e.tag} x{e.count} (last {e.last_seen}, {e.recent} in recent window)" for e in recurring)

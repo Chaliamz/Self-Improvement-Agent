@@ -36,9 +36,10 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
 | `playbook/strategies/<slug>/` | `strategy.yaml`, immutable `v*.yaml`, append-only `changes.yaml` | from `templates/strategy/` |
 | `playbook/experiments/EXP-###.yaml` | A/B tests | from `templates/experiment.yaml` |
 | `playbook/PLAYBOOK.md` | consolidated knowledge (§27) | every entry cites trade IDs and n |
-| `playbook/automation.yaml` | gated road from journal to bot (stages, criteria, safety) | computed gates update on build; a manual gate goes `done` only with `evidence:` |
+| `playbook/automation.yaml` | gated road from journal to bot (stages, criteria, safety, bot questions, malfunction guard G1-G9) | computed gates update on build; a manual gate goes `done` only with `evidence:` |
+| `playbook/incidents.yaml` | incident log: bugs, data corruption, trader-corrected readings, near misses | **append-only** (the validator checks it against the last commit); shown in the terminal's Health tab |
 | `config.yaml` | thresholds (evidence tiers, promotion gates) | assumptions; change only with a stated reason |
-| `terminal.html` | the trader's single-file terminal (journal, stats, rule compliance, strategy + checklist, risk) | **generated** by `./tj build`; never edit by hand |
+| `terminal.html` | the trader's single-file terminal (journal, stats, rule compliance, strategy + checklist, risk, bot readiness, data gaps, health) | **generated** by `./tj build`; never edit by hand |
 | `exports/kb.json` | schema-versioned machine export: the contract for the future trading bot | **generated** by `./tj build`; never edit by hand |
 | `templates/terminal.html` | terminal source; displays only what `./tj build` computed (no math of its own) | `tests/test_render.py` walks every tab and background in headless Chromium |
 
@@ -122,6 +123,15 @@ exist, tag trades with `strategy.experiment` and `strategy.variant`, evaluate wi
 3. Update `playbook/PLAYBOOK.md` only where evidence justifies it, citing trade IDs.
 4. `./tj build`, then commit: `review: YYYY-MM-DD system review`.
 
+### I. A bug, corrupted data or a corrected reading
+The trader asked to be told about every potential bug, in the terminal. The moment one is found:
+1. Append an entry to `playbook/incidents.yaml` (next `INC-###`; area, severity, found_by, status, fix).
+   A reading the trader corrects is a `data` incident found by `trader`.
+2. Fix it, and add a test that fails without the fix. Never commit around a failing test.
+3. Set `status: fixed` (or `guarded` when a check now blocks an external cause) and name the commit in `fix`.
+   Never delete or reword a committed entry: status and fix may change, history may not.
+4. Say so in the reply, plainly, with the incident ID.
+
 ## Hard rules
 
 - `null` over a guess. Always. A plausible number is worse than a missing one.
@@ -144,4 +154,8 @@ exist, tag trades with `strategy.experiment` and `strategy.variant`, evaluate wi
 - Never accept, store, or echo exchange API keys. If the trader offers them, decline and point to the
   `safety` list in `playbook/automation.yaml`: keys live only on the bot's server, trade-only, no withdrawals.
 - No automation stage is skipped: the bot is built only after stage 1 of `./tj status` readiness is complete.
+- Test before anything ships: run the full suite (`python3 -m unittest discover -s tests -t .`, which includes the
+  headless-browser render of every tab) before every commit that touches `tradekb/`, `templates/` or `tests/`.
+- Every bug found goes into `playbook/incidents.yaml` (workflow I). YAML duplicate keys are load errors.
+- Leverage from `./tj size` must keep liquidation beyond the stop, not only inside the 50-60% margin aim.
 - Commit every knowledge-base change and push to the session's working branch.

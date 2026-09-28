@@ -12,7 +12,8 @@ import yaml
 
 from tradekb import analysis
 from tradekb.export import build_payload
-from tradekb.risk import SizingInput, exposure, fmt_cap, margin_status, size_position
+from tradekb.risk import (SizingInput, exposure, fmt_cap, liquidation_price, margin_status,
+                          max_leverage_liq_beyond_stop, size_position)
 from tradekb.store import load_kb
 from tradekb.validate import validate
 from tests.test_kb import REPO, KBTestCase
@@ -76,24 +77,53 @@ class ExposureTest(unittest.TestCase):
         res = size_position(SizingInput(entry=54.44, stop=51.02, risk_amount=100, leverage=8, max_margin_loss_pct=50))
         self.assertTrue(any("use 7.95x or less" in m for _, m in res.flags))
 
-    def test_margin_target_and_tolerance(self):
-        # trader, 2026-09-27: aim for 50% of margin at the stop, "it's okay if it goes to 55%"
-        self.assertEqual(margin_status(44.0, 50, 55), "within")
-        self.assertEqual(margin_status(50.3, 50, 55), "over_target")
-        self.assertEqual(margin_status(55.0, 50, 55), "over_target")
-        self.assertEqual(margin_status(55.1, 50, 55), "breach")
-        self.assertEqual(margin_status(50.3, 50, None), "breach")      # no tolerance: the target is the limit
-        self.assertIsNone(margin_status(None, 50, 55))
-        base = dict(entry=54.44, stop=51.02, risk_amount=100, max_margin_loss_pct=50, margin_loss_tolerance_pct=55)
-        at8 = size_position(SizingInput(leverage=8, **base))                # T-0006 at 8x: 50.3%
-        self.assertEqual([lvl for lvl, _ in at8.flags], ["WARN"])
-        self.assertIn("within your 55% tolerance", at8.flags[0][1])
-        self.assertEqual(fmt_cap(at8.max_leverage_for_tolerance), "8.75x")
-        at9 = size_position(SizingInput(leverage=9, **base))                # 56.5%
-        self.assertTrue(any(lvl == "CRITICAL" and "use 8.75x or less (7.95x for the target)" in m for lvl, m in at9.flags))
-        e = exposure(54.44, 51.02, 1.0, leverage=8, margin_mode="isolated", max_margin_loss_pct=50, margin_loss_tolerance_pct=55)
-        self.assertTrue(e["margin_loss_over_target"]); self.assertFalse(e["margin_loss_breach"])
-        self.assertAlmostEqual(e["max_leverage_for_tolerance"], 55 / (3.42 / 54.44 * 100))
+    def test_margin_aim_50_to_60(self):
+        # trader, 2026-09-28: "always aim for 50-60% at the stop". Above 60% is a breach; below 50% is not a risk problem.
+        self.assertEqual(margin_status(44.0, 60, 50), "below_aim")
+        self.assertEqual(margin_status(50.3, 60, 50), "within")
+        self.assertEqual(margin_status(60.0, 60, 50), "within")
+        self.assertEqual(margin_status(60.1, 60, 50), "breach")
+        self.assertEqual(margin_status(12.3, 60), "within")               # no aim recorded: only the limit applies
+        self.assertIsNone(margin_status(None, 60, 50))
+        base = dict(entry=54.44, stop=51.02, risk_amount=100, max_margin_loss_pct=60, margin_loss_aim_min_pct=50)
+        at8 = size_position(SizingInput(leverage=8, **base))              # T-0006 at 8x: 50.3%, inside the aim
+        self.assertEqual(at8.flags, [])
+        self.assertAlmostEqual(at8.min_leverage_for_aim, 50 / (3.42 / 54.44 * 100))
+        self.assertEqual(fmt_cap(at8.max_leverage_for_rule), "9.55x")
+        at7 = size_position(SizingInput(leverage=7, **base))              # 44.0%: a NOTE, never a warning
+        self.assertEqual([lvl for lvl, _ in at7.flags], ["NOTE"])
+        self.assertIn("below your 50-60% aim (7.96x reaches it)", at7.flags[0][1])
+        at10 = size_position(SizingInput(leverage=10, **base))            # 62.8%
+        self.assertTrue(any(lvl == "CRITICAL" and "above your 60% limit: use 9.55x or less" in m for lvl, m in at10.flags))
+        e = exposure(54.44, 51.02, 1.0, leverage=7, margin_mode="isolated", max_margin_loss_pct=60, margin_loss_aim_min_pct=50)
+        self.assertTrue(e["margin_loss_below_aim"]); self.assertFalse(e["margin_loss_breach"])
+        self.assertAlmostEqual(e["min_leverage_for_aim"], 50 / (3.42 / 54.44 * 100))
+        e8 = exposure(54.44, 51.02, 1.0, leverage=8, margin_mode="isolated", max_margin_loss_pct=60, margin_loss_aim_min_pct=50)
+        self.assertFalse(e8["margin_loss_below_aim"]); self.assertFalse(e8["margin_loss_breach"])
+
+    def test_liquidation_cap_sits_exactly_at_the_stop(self):
+        for entry, stop, side in ((100, 99.4, "long"), (100, 100.6, "short"), (54.44, 51.02, "long"), (0.01298, 0.013478, "short")):
+            for mmr in (0.0, 0.005, 0.01):
+                cap = max_leverage_liq_beyond_stop(entry, stop, mmr)
+                self.assertAlmostEqual(liquidation_price(entry, side, 1.0, leverage=cap, margin_mode="isolated", mmr_rate=mmr),
+                                       stop, delta=abs(entry - stop) * 1e-9)
+                over = liquidation_price(entry, side, 1.0, leverage=cap * 1.01, margin_mode="isolated", mmr_rate=mmr)
+                self.assertTrue(over > stop if side == "long" else over < stop, "above the cap, liquidation comes first")
+        self.assertEqual(fmt_cap(max_leverage_liq_beyond_stop(100, 99.4, 0.005)), "91.15x")
+
+    def test_tight_stop_aim_is_capped_by_liquidation(self):
+        base = dict(risk_amount=100, max_margin_loss_pct=60, margin_loss_aim_min_pct=50, mmr_rate=0.005)
+        at100 = size_position(SizingInput(entry=100, stop=99.4, leverage=100, **base))   # exactly 60%, yet liquidated first
+        self.assertTrue(any(lvl == "CRITICAL" and "BEFORE the stop" in m for lvl, m in at100.flags))
+        self.assertEqual(fmt_cap(at100.max_leverage_liq_beyond_stop), "91.15x")
+        tight = size_position(SizingInput(entry=100, stop=99.8, **base))                  # 0.2% stop: the aim needs 250x
+        self.assertTrue(any(lvl == "WARN" and "the aim cannot be met" in m for lvl, m in tight.flags))
+        e = exposure(100, 99.4, 1.0, margin_mode="isolated", mmr_rate=0.005, max_margin_loss_pct=60, margin_loss_aim_min_pct=50)
+        self.assertTrue(e["liq_binds"])
+        self.assertEqual(fmt_cap(e["max_leverage_safe"]), "91.15x")                       # not the rule's 100x
+        wide = exposure(54.44, 51.02, 1.0, margin_mode="isolated", mmr_rate=0.005, max_margin_loss_pct=60)
+        self.assertFalse(wide["liq_binds"]); self.assertEqual(wide["max_leverage_safe"], wide["max_leverage_for_rule"])
+        self.assertNotIn("max_leverage_liq", exposure(100, 99.4, 1.0, margin_mode="cross", max_margin_loss_pct=60))
 
     def test_cross_mode_has_no_isolated_liquidation(self):
         self.assertNotIn("liq_isolated", exposure(100, 98, 1.0, leverage=10, margin_mode="cross"))
@@ -160,19 +190,19 @@ class ReadinessAndRulesTest(KBTestCase):
     def test_profile_rules_flag_trades(self):
         import yaml as _yaml
         prof = _yaml.safe_load((self.tmp / "profile" / "trader.yaml").read_text())
-        prof["leverage"]["max_margin_loss_at_stop_pct"] = 50
-        prof["leverage"]["margin_loss_tolerance_pct"] = 55
+        prof["leverage"]["max_margin_loss_at_stop_pct"] = 60
+        prof["leverage"]["margin_loss_aim_min_pct"] = 50
         prof["risk"]["min_rr"] = 2.5
         (self.tmp / "profile" / "trader.yaml").write_text(_yaml.safe_dump(prof))
         self.write_trade("T-0001", result={"r": 1.0}, risk={"risk_amount": 100, "leverage": 25},
                          plan={"entry": 100, "stop": 97, "targets": [104]})
         warns = [i.msg for i in self.issues("WARN")]
-        self.assertTrue(any("above your 55% tolerance (50% target)" in m for m in warns))  # 75% of margin
+        self.assertTrue(any("above your 60% limit (max 20.00x for this stop)" in m for m in warns))  # 75% of margin
         self.assertTrue(any("below your 2.5R minimum" in m for m in warns))
 
 
 class RuleComplianceTest(KBTestCase):
-    """The trader's stated rules (live profile: 1% cap, 50% margin rule, 2.5R minimum) checked per taken trade."""
+    """The trader's stated rules (live profile: 1% cap, 60% margin limit, 2.5R minimum) checked per taken trade."""
 
     def checks(self):
         kb = load_kb()
@@ -211,23 +241,114 @@ class RuleComplianceTest(KBTestCase):
         self.assertEqual((rules["none_broken"]["n"], rules["none_broken"]["total"]), (1, 2.0))
         self.assertEqual((rules["any_broken"]["n"], rules["any_broken"]["total"]), (1, -1.0))
         self.assertEqual([d["key"] for d in rules["definitions"]], ["top_down", "setup_valid", "risk_pct", "leverage", "min_rr", "stop"])
-        self.assertIn("50% of margin", rules["definitions"][3]["rule"])
+        self.assertIn("at most 60% of margin (aim 50-60%)", rules["definitions"][3]["rule"])
 
 
-class MarginToleranceRecordsTest(KBTestCase):
-    def test_validator_and_rule_check_use_the_tolerance(self):
+class MarginAimRecordsTest(KBTestCase):
+    def test_validator_and_rule_check_use_the_limit(self):
         prof = yaml.safe_load((self.tmp / "profile" / "trader.yaml").read_text())
-        prof["leverage"].update(max_margin_loss_at_stop_pct=50, margin_loss_tolerance_pct=55)
+        prof["leverage"].update(max_margin_loss_at_stop_pct=60, margin_loss_aim_min_pct=50)
         (self.tmp / "profile" / "trader.yaml").write_text(yaml.safe_dump(prof))
         plan = {"entry": 54.44, "stop": 51.02, "targets": [66.10]}
-        self.write_trade("T-0001", plan=plan, risk={"risk_pct": 1.0, "leverage": 8}, result={"r": 3.41})   # 50.3%
-        self.write_trade("T-0002", plan=plan, risk={"risk_pct": 1.0, "leverage": 9}, result={"r": 3.41})   # 56.5%
+        self.write_trade("T-0001", plan=plan, risk={"risk_pct": 1.0, "leverage": 7}, result={"r": 3.41})    # 44.0%: below aim
+        self.write_trade("T-0002", plan=plan, risk={"risk_pct": 1.0, "leverage": 9}, result={"r": 3.41})    # 56.5%: inside
+        self.write_trade("T-0003", plan=plan, risk={"risk_pct": 1.0, "leverage": 10}, result={"r": 3.41})   # 62.8%: breach
         msgs = [(i.level, i.where, i.msg) for i in self.issues() if "of the posted margin" in i.msg]
-        self.assertIn("INFO", [lvl for lvl, w, _ in msgs if w == "T-0001.yaml"])
-        self.assertTrue(any(lvl == "WARN" and w == "T-0002.yaml" and "55% tolerance" in m for lvl, w, m in msgs))
+        self.assertEqual([w for _, w, _ in msgs], ["T-0003.yaml"])
+        self.assertEqual(msgs[0][0], "WARN")
+        self.assertIn("above your 60% limit (max 9.55x for this stop)", msgs[0][2])
         kb = load_kb()
         checks = {r.trade.id: analysis.rule_checks(r, kb)["leverage"] for r in analysis.rows(kb, analysis.TAKEN)}
-        self.assertEqual(checks, {"T-0001": True, "T-0002": False})
+        self.assertEqual(checks, {"T-0001": True, "T-0002": True, "T-0003": False})
+        exp = {t["id"]: t["derived"]["exposure"] for t in build_payload(kb)["trades"]}
+        self.assertEqual([exp[k]["margin_loss_below_aim"] for k in ("T-0001", "T-0002", "T-0003")], [True, False, False])
+
+
+class StrictYamlTest(KBTestCase):
+    """INC-013: YAML silently keeps the last of two duplicate keys. The loader must refuse them everywhere."""
+
+    def test_duplicate_key_is_a_load_error(self):
+        text = (self.tmp / "profile" / "trader.yaml").read_text()
+        (self.tmp / "profile" / "trader.yaml").write_text(text.replace("terminology:\n", "terminology:\n  POI: \"first\"\n", 1))
+        errs = [i.msg for i in self.issues("ERROR")]
+        self.assertTrue(any("duplicate key 'POI'" in m for m in errs), errs)
+
+    def test_duplicate_key_in_a_trade_is_caught(self):
+        self.write_trade("T-0001", result={"r": 1.0})
+        path = self.tmp / "journal" / "trades" / "T-0001.yaml"
+        path.write_text(path.read_text() + "direction: short\n")
+        self.assertTrue(any("duplicate key 'direction'" in i.msg for i in self.issues("ERROR")))
+
+    def test_every_repository_yaml_loads_strictly(self):
+        from tradekb.store import load_yaml
+        files = [p for p in REPO.rglob("*.y*ml") if ".git" not in p.parts]
+        self.assertGreater(len(files), 30)
+        for path in files:
+            load_yaml(path)          # raises KBError on a duplicate key
+
+    def test_merge_keys_still_work(self):
+        from tradekb.store import load_yaml
+        path = self.tmp / "m.yaml"
+        path.write_text("base: &b {a: 1}\nuse:\n  <<: *b\n  c: 2\n")
+        self.assertEqual(load_yaml(path)["use"], {"a": 1, "c": 2})
+
+
+class VersionNumberTest(KBTestCase):
+    def test_unquoted_version_is_refused(self):
+        self.write_trade("T-0001", result={"r": 1.0}, strategy={"id": None, "version": 1.10})
+        self.assertTrue(any("is a number: quote it" in i.msg for i in self.issues("ERROR")))
+        self.write_trade("T-0001", result={"r": 1.0}, strategy={"id": None, "version": "1.10"})
+        self.assertFalse(any("is a number" in i.msg for i in self.issues("ERROR")))
+
+
+INCIDENT = {"id": "INC-001", "date": "2026-09-28", "area": "data", "severity": "medium", "title": "t", "detail": "d",
+            "found_by": "agent", "status": "fixed", "fix": "f"}
+
+
+class IncidentLogTest(KBTestCase):
+    def write_incidents(self, items):
+        (self.tmp / "playbook" / "incidents.yaml").write_text(yaml.safe_dump({"incidents": items}))
+
+    def test_valid_log_exports_with_counts(self):
+        self.write_incidents([INCIDENT, {**INCIDENT, "id": "INC-002", "status": "open", "severity": "high", "fix": None}])
+        self.assertTrue(any("open high-severity incident" in i.msg for i in self.issues("WARN")))
+        self.assertFalse([i for i in self.issues("ERROR")])
+        p = build_payload(load_kb())
+        self.assertEqual([x["id"] for x in p["incidents"]], ["INC-001", "INC-002"])
+        self.assertEqual(p["health"]["by_status"]["open"], 1)
+        self.assertEqual(p["health"]["open_by_severity"], {"high": 1, "medium": 0, "low": 0})
+        from tradekb import audit
+        self.assertEqual(audit.run(load_kb(), check_outputs=False).failures, [])
+
+    def test_schema_errors(self):
+        self.write_incidents([{**INCIDENT, "id": "INC-002"}, {**INCIDENT, "id": "INC-002", "area": "vibes", "fix": ""}])
+        errs = [i.msg for i in self.issues("ERROR")]
+        self.assertTrue(any("expected INC-001" in m for m in errs))
+        self.assertTrue(any("area must be one of" in m for m in errs))
+        self.assertTrue(any("needs `fix`" in m for m in errs))
+
+    def test_append_only_against_the_last_commit(self):
+        git = ["git", "-C", str(self.tmp), "-c", "user.email=t@t", "-c", "user.name=t"]
+        self.write_incidents([INCIDENT, {**INCIDENT, "id": "INC-002", "title": "second"}])
+        subprocess.run(git + ["init", "-q"], check=True)
+        subprocess.run(git + ["add", "playbook/incidents.yaml"], check=True)
+        subprocess.run(git + ["commit", "-q", "-m", "log"], check=True)
+        self.write_incidents([{**INCIDENT, "status": "guarded"}, {**INCIDENT, "id": "INC-002", "title": "second"},
+                              {**INCIDENT, "id": "INC-003"}])
+        self.assertFalse([i for i in self.issues("ERROR") if "incidents" in i.where])     # status change + append: fine
+        self.write_incidents([INCIDENT])                                                  # INC-002 deleted
+        self.assertTrue(any("INC-002 was committed and is gone" in i.msg for i in self.issues("ERROR")))
+        self.write_incidents([INCIDENT, {**INCIDENT, "id": "INC-002", "title": "rewritten"}])
+        self.assertTrue(any("may not be rewritten" in i.msg for i in self.issues("ERROR")))
+
+    def test_guard_spec_is_validated_and_exported(self):
+        (self.tmp / "playbook" / "automation.yaml").write_text(yaml.safe_dump({"stages": [], "malfunction_guard": {
+            "status": "specified", "on_trip": "halt", "checks": [{"id": "G1", "name": "n", "trigger": "t", "action": "a"},
+                                                                 {"id": "G1", "name": "", "trigger": "t", "action": "a"}]}}))
+        errs = [i.msg for i in self.issues("ERROR")]
+        self.assertTrue(any("duplicate id G1" in m for m in errs))
+        self.assertTrue(any("name must be a non-empty text" in m for m in errs))
+        self.assertEqual(build_payload(load_kb())["readiness"]["malfunction_guard"]["checks"][0]["id"], "G1")
 
 
 class BotSpecTest(KBTestCase):

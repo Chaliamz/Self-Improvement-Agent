@@ -23,7 +23,7 @@ from . import __version__, analysis, model, readiness
 from .model import num
 from .risk import exposure
 from .stats import histogram
-from .store import KB, TAXONOMIES, dig, unresolved
+from .store import INCIDENT_ENUMS, KB, TAXONOMIES, dig, unresolved
 
 SCHEMA_VERSION = 1
 OUTPUTS = ("exports/kb.json", "terminal.html")
@@ -79,7 +79,7 @@ def _trade(row: analysis.Row, kb: KB) -> dict:
         mmr = num(dig(kb.profile, "leverage.maintenance_margin_rate")) or kb.config["risk_checks"]["default_mmr_rate"]
         exp = exposure(entry, stop, num(dig(t, "risk.risk_pct")), num(dig(t, "risk.leverage")),
                        dig(t, "risk.margin_mode"), mmr, num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct")),
-                       num(dig(kb.profile, "leverage.margin_loss_tolerance_pct")))
+                       num(dig(kb.profile, "leverage.margin_loss_aim_min_pct")))
     derived = jsonable(row.d)
     derived.update({"exposure": exp, "planned_rr": model.planned_rr(t), "holding_hours": analysis.holding_hours(row), "top_down": dig(t, "timeframes.top_down"),
                     "rule_checks": analysis.rule_checks(row, kb) if row.trade.status in analysis.TAKEN else None,
@@ -111,6 +111,18 @@ def _excursions(rs: list) -> dict:
             "winner_mae_max": max(win_mae) if win_mae else None,
             "losers": len(loss_mfe), "loser_mfe_median": median(loss_mfe) if loss_mfe else None,
             "loser_mfe_max": max(loss_mfe) if loss_mfe else None}
+
+
+def _health(kb: KB) -> dict:
+    """Incident counts for the Health tab: by status and severity, and the open ones by severity."""
+    incs = [i for i in kb.incidents if isinstance(i, dict)]
+    return {
+        "incidents": len(incs),
+        "by_status": {s: sum(i.get("status") == s for i in incs) for s in INCIDENT_ENUMS["status"]},
+        "by_severity": {s: sum(i.get("severity") == s for i in incs) for s in INCIDENT_ENUMS["severity"]},
+        "open_by_severity": {s: sum(i.get("status") == "open" and i.get("severity") == s for i in incs)
+                             for s in INCIDENT_ENUMS["severity"]},
+    }
 
 
 def build_payload(kb: KB) -> dict:
@@ -176,6 +188,8 @@ def build_payload(kb: KB) -> dict:
                                for row in analysis.counterfactuals(kb)],
         },
         "readiness": readiness.evaluate(kb),
+        "incidents": jsonable(kb.incidents),
+        "health": _health(kb),
         "gaps": {
             "unmeasurable": [{"id": row.trade.id, "needs": row.d.missing} for row in analysis.unmeasurable(kb)],
             "unreviewed": [row.trade.id for row in analysis.rows(kb, {"closed"}) if row.d.grade is None],
@@ -204,15 +218,19 @@ def _script_safe(obj: Any) -> str:
 
 
 def build(kb: KB) -> dict:
+    from . import audit
     from .validate import validate
 
     fp = fingerprint(kb.root)
     payload = build_payload(kb)
     issues = validate(kb, check_build=False)
+    recheck = audit.run(kb, check_outputs=False)     # the output-file checks run in ./tj audit, after the build
     meta = {
         "fingerprint": fp,
         "generated_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "validation": [{"level": i.level, "where": i.where, "msg": i.msg} for i in issues],
+        "validation_counts": {lvl: sum(i.level == lvl for i in issues) for lvl in ("ERROR", "WARN", "INFO")},
+        "audit": {"checks": len(recheck.results), "failures": recheck.failures, "scope": "recomputation"},
     }
     document = {"fingerprint": fp, **payload, "build": meta}
 

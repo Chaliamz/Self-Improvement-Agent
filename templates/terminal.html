@@ -99,6 +99,7 @@ tbody tr.clickable:hover td { background: var(--surface-2); }
 .linkish { background: none; border: 0; padding: 0; color: var(--brand); cursor: pointer; font-weight: 600; }
 .badge { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; font-size: 12px; white-space: nowrap; background: var(--surface-2); color: var(--ink); }
 .badge .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.inc-title { font-weight: 600; margin-bottom: 2px; }
 .badge.unstated { color: var(--ink-2); border-style: dashed; background: transparent; }
 .tag { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); margin: 0 4px 4px 0; }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: center; }
@@ -277,7 +278,7 @@ svg .draw { animation: fade .6s ease both; }
 .crit { display: grid; grid-template-columns: 22px 1fr minmax(90px, 160px); gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--grid); }
 .crit .mark { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; background: var(--neutral); }
 .crit .mark.ok { background: var(--up); }
-.crit .t { font-size: 12px; color: var(--ink-2); }
+.crit .t, .inc-detail { font-size: 12px; color: var(--ink-2); }
 .rc { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; font-size: 12px; font-weight: 700; }
 .rc.ok { background: var(--up-wash); color: var(--up-text); } .rc.bad { background: var(--down-wash); color: var(--down-text); }
 .rc.na { color: var(--muted); border: 1px dashed var(--border); font-weight: 400; }
@@ -384,6 +385,10 @@ const STATUS = {
   planned: ["var(--brand)", "◇ Planned"], open: ["var(--warning)", "◐ Open"],
   CRITICAL: ["var(--critical)", "Critical"], ERROR: ["var(--critical)", "Error"], WARN: ["var(--warning)", "Warning"],
   INFO: ["var(--neutral)", "Info"], recurring: ["var(--serious)", "Recurring"],
+  fixed: ["var(--up)", "✓ Fixed"], guarded: ["var(--brand)", "◆ Guarded"], caught: ["var(--up)", "✓ Caught before commit"],
+  high: ["var(--critical)", "High"], medium: ["var(--warning)", "Medium"], low: ["var(--neutral)", "Low"],
+  specified: ["var(--neutral)", "Specified, not built"], implemented: ["var(--brand)", "Implemented"], tested: ["var(--up)", "✓ Tested"],
+  below_aim: ["var(--neutral)", "Below aim"],
 };
 function badge(key, label) {
   const [color, text] = STATUS[key] || ["var(--neutral)", titleCase(key)];
@@ -1078,8 +1083,8 @@ function renderRisk() {
     ["Max daily loss", "risk.max_daily_loss_r", v => v + "R"], ["Max open risk", "risk.max_open_risk_pct", v => v + "% of equity"],
     ["Pause after consecutive losses", "risk.max_consecutive_losses_before_pause", v => String(v)],
     ["Max leverage", "leverage.max_leverage", v => v + "x"], ["Margin mode", "leverage.margin_mode", v => titleCase(v)],
-    ["Margin loss at stop: target", "leverage.max_margin_loss_at_stop_pct", v => `${v}% (leverage ≤ ${v} / stop %)`],
-    ["Margin loss at stop: tolerated up to", "leverage.margin_loss_tolerance_pct", v => `${v}% (a breach only beyond this)`],
+    ["Margin loss at stop: aim", "leverage.margin_loss_aim_min_pct", v => `${v}-${dig(p, "leverage.max_margin_loss_at_stop_pct")}% of margin (leverage ${v} / stop % to ${dig(p, "leverage.max_margin_loss_at_stop_pct")} / stop %)`],
+    ["Margin loss at stop: limit", "leverage.max_margin_loss_at_stop_pct", v => `${v}% (above is a breach; liquidation must also sit beyond the stop)`],
     ["Margin call", "leverage.margin_call_at_margin_loss_pct", v => `at ${v}% of margin lost`],
     ["Minimum R:R", "risk.min_rr", v => "1:" + v], ["Preferred R:R", "risk.preferred_rr", v => "1:" + v],
     ["Maintenance margin rate", "leverage.maintenance_margin_rate", v => (v * 100).toFixed(2) + "%"],
@@ -1087,7 +1092,11 @@ function renderRisk() {
     ["Account equity", "account.equity", v => fmtNum(v)],
     ["News filter", "news_filter.no_new_entries_before_minutes", v => `No new entries ${v} min before red ${(dig(p, "news_filter.currencies") || []).join("/")} events (ForexFactory); open trades kept`],
     ["Entries resume after news", "news_filter.resume_after_minutes", v => `${v} min after the release`],
+    ["Resting orders at news", "news_filter.cancel_resting_orders", v => v ? "Cancelled before the blackout" : "Kept"],
+    ["Correlated positions", "risk.max_correlated_positions", v => String(v)],
+    ["Trading hours", "sessions", v => String(v)],
     ["Bot exchange", "execution_venue.exchange", v => String(v)],
+    ["Bot scan list", "execution_venue.pairs", v => v.join(", ") + " (more to come)"],
   ].map(([label, path, f]) => ({ label, value: dig(p, path), f, source: src[path] || src[path.split(".")[0]] }));
   const profileTable = table([{ key: "label", label: "Rule" },
     { label: "Value", render: r => r.value === null || r.value === undefined ? unstated("Unresolved")
@@ -1103,16 +1112,17 @@ function renderRisk() {
     { label: "Effective lev.", num: true, render: r => fmtX(r.e.effective_leverage) },
     { label: "Lev. setting", num: true, render: r => isNum(dig(r.t, "risk.leverage")) ? r.t.risk.leverage + "x" : "—" },
     { label: "Margin posted", num: true, render: r => isNum(r.e.margin_pct) ? fmtPct(r.e.margin_pct) + " of equity" : "—" },
-    { label: "Margin loss at stop", num: true, render: r => isNum(r.e.margin_loss_pct) ? h("span", { class: r.e.margin_loss_breach ? "down" : r.e.margin_loss_over_target ? null : "up", text: fmtPct(r.e.margin_loss_pct, 1) }) : "—" },
-    { label: "Max lev. (rule)", num: true, render: r => fmtCap(r.e.max_leverage_for_rule) },
+    { label: "Margin loss at stop", num: true, render: r => isNum(r.e.margin_loss_pct) ? h("span", { class: r.e.margin_loss_breach ? "down" : r.e.margin_loss_below_aim ? null : "up", text: fmtPct(r.e.margin_loss_pct, 1) }) : "—" },
+    { label: "Max leverage", title: "The lower of the 60% margin rule and the leverage whose liquidation reaches the stop (L = liquidation binds)", num: true,
+      render: r => isNum(r.e.max_leverage_safe) ? fmtCap(r.e.max_leverage_safe) + (r.e.liq_binds ? " L" : "") : fmtCap(r.e.max_leverage_for_rule) },
     { label: "Liquidation (isolated)", num: true, render: r => isNum(r.e.liq_isolated) ? fmtNum(r.e.liq_isolated) + (r.e.liq_mode_assumed ? " *" : "") : "—" },
     { label: "Liq. / stop distance", num: true, render: r => fmtX(r.e.liq_to_stop) },
-    { label: "Check", render: r => r.e.liq_before_stop ? badge("loss", "▼ Liq. before stop") : r.e.margin_loss_breach ? badge("loss", "▼ Over margin rule") : r.e.margin_loss_over_target ? badge("WARN", "◐ Above target, tolerated") : isNum(r.e.liq_to_stop) ? badge("win", "▲ Within rules") : "—" },
+    { label: "Check", render: r => r.e.liq_before_stop ? badge("loss", "▼ Liq. before stop") : r.e.margin_loss_breach ? badge("loss", "▼ Over margin rule") : r.e.margin_loss_below_aim ? badge("below_aim", "◐ Within rules, below aim") : isNum(r.e.liq_to_stop) ? badge("win", "▲ Within rules") : "—" },
   ], expRows, { empty: "No trades with entry and stop yet." });
 
   return h("div", { class: "stack" },
     card("Risk rules", "Only what the trader has stated. Unresolved rules are gaps to fill, never defaults to assume.", profileTable),
-    card("Exposure per trade", "Leverage is not risk. With a fixed % risk, the stop distance sets the position size; leverage only changes the margin posted and the liquidation distance. * = margin mode not recorded, isolated assumed.", expTable));
+    card("Exposure per trade", "Leverage is not risk. With a fixed % risk, the stop distance sets the position size; leverage only changes the margin posted and the liquidation distance. Max leverage is the lower of the margin rule and the liquidation cap (L = liquidation binds first, at the assumed maintenance rate). * = margin mode not recorded, isolated assumed.", expTable));
 }
 
 function renderBehaviour() {
@@ -1148,6 +1158,33 @@ function renderGaps() {
       h("p", { class: "note", style: "margin-top:10px", text: KB.gaps.unreviewed.length ? `Closed trades without process scores: ${KB.gaps.unreviewed.join(", ")}` : "Every closed trade has process scores." })));
 }
 
+function renderHealth() {
+  const b = KB.build || {}, vc = b.validation_counts || {}, au = b.audit || { checks: 0, failures: [] }, hl = KB.health || {};
+  const st = hl.by_status || {}, open = hl.open_by_severity || {}, guard = dig(KB, "readiness.malfunction_guard") || {};
+  const findings = (b.validation || []).filter(i => i.level !== "INFO");
+  const tiles = h("div", { class: "tiles" },
+    tile("Validation", `${vc.ERROR || 0} errors · ${vc.WARN || 0} warnings`, `${vc.INFO || 0} info notes (missing data, never blocking)`, vc.ERROR ? "down" : "up"),
+    tile("Recomputation audit", `${au.checks - au.failures.length} of ${au.checks} passed`, "Every published number recomputed with separate code at build; ./tj audit adds the file checks before each commit", au.failures.length ? "down" : "up"),
+    tile("Open incidents", String(st.open || 0), `${open.high || 0} high · ${open.medium || 0} medium · ${open.low || 0} low`, st.open ? (open.high ? "down" : null) : "up"),
+    tile("Incidents logged", String(hl.incidents || 0), `${st.fixed || 0} fixed · ${st.guarded || 0} guarded · ${st.caught || 0} caught before commit`),
+    tile("Malfunction guard", `${(guard.checks || []).length} checks`, guard.status === "specified" ? "Specified; built and tested in stage 2, before any live order" : titleCase(guard.status || "not specified")));
+  const incTable = table([
+    { key: "id", label: "ID" }, { key: "date", label: "Found" }, { label: "Area", render: r => titleCase(r.area) },
+    { label: "Severity", render: r => badge(r.severity) },
+    { label: "What happened", wrap: true, render: r => h("div", {}, h("div", { class: "inc-title", text: r.title }), h("div", { class: "inc-detail", text: r.detail })) },
+    { label: "Found by", render: r => titleCase(r.found_by) }, { label: "Status", render: r => badge(r.status) },
+    { label: "Fix", wrap: true, render: r => r.fix || "—" }], (KB.incidents || []).slice().reverse(), { empty: "No incidents logged." });
+  const guardTable = table([{ label: "ID", render: r => h("span", { class: "guard-id", text: r.id }) }, { key: "name", label: "Guard" }, { key: "trigger", label: "Trips when", wrap: true },
+                            { key: "action", label: "Then", wrap: true }], guard.checks || [], { empty: "Not specified yet." });
+  return h("div", { class: "stack" },
+    card("System health", "Bugs, corrupted data and near misses are logged here the moment they are found, fixed or guarded, and never deleted.", tiles),
+    card("Incident log", "Newest first. High = could have produced a wrong trade decision, risk number or lost data. Append-only: the validator refuses a deleted or rewritten entry.", incTable),
+    card("Malfunction guard (bot)", guard.on_trip || "Not specified.", guardTable),
+    card("Validation findings", "Errors and warnings from the last build. Info notes are listed in Data gaps.",
+      table([{ label: "Level", render: r => badge(r.level) }, { key: "where", label: "Where" }, { key: "msg", label: "Detail", wrap: true }], findings,
+            { empty: "No errors or warnings." })));
+}
+
 function renderReadiness() {
   const rd = KB.readiness || { stages: [] };
   const stages = rd.stages.map(st => h("div", { class: "card stage", "data-status": st.status },
@@ -1166,12 +1203,30 @@ function renderReadiness() {
   return h("div", { class: "stack" },
     card("From journal to bot", "Each stage unlocks only when the previous one is complete. The journal feeds stage 1; stages 2 to 6 build and prove the bot before it touches capital.",
       h("p", { class: "prose", text: `Active stage: ${active ? active.name : "all complete"}${dig(rd, "venue.exchange") ? " · Exchange: " + rd.venue.exchange : ""}` })),
+    card("Bot specification so far", "What the trader has stated for the bot. Open points are in Data gaps.", botSpec()),
     ...stages,
     card("How many trades prove an edge", ss.note,
       table([{ label: "Win rate", num: true, render: r => fmtFrac(r.win_rate) }, { label: "Avg win", num: true, render: r => fmtR(r.avg_win) },
              { label: "Expectancy", num: true, render: r => rSpan(r.expectancy) }, { label: "SD of R", num: true, render: r => fmtNum(r.sd) },
              { label: `Trades for ${Math.round(ss.power * 100)}% power`, num: true, render: r => r.n === null ? "Cannot be proven" : String(r.n) }], ss.scenarios)),
     card("Safety rules for the bot", "Non-negotiable before any real order.", list(rd.safety)));
+}
+
+function botSpec() {
+  const p = KB.profile || {}, g = dig(KB, "readiness.malfunction_guard") || {}, orNone = v => v === null || v === undefined ? unstated("Unresolved") : v;
+  const lim = dig(p, "leverage.max_margin_loss_at_stop_pct"), aim = dig(p, "leverage.margin_loss_aim_min_pct");
+  const nf = p.news_filter || {}, tf = dig(p, "timeframes.swing_day") || {};
+  return kv([
+    ["Exchange", orNone(dig(p, "execution_venue.exchange"))],
+    ["Pairs", (dig(p, "execution_venue.pairs") || []).length ? p.execution_venue.pairs.join(", ") + " (more to come)" : unstated("Unresolved")],
+    ["Style", (dig(p, "execution_venue.styles") || []).join(", ") || unstated("Unresolved")],
+    ["Timeframes", tf.bias ? `Bias ${tf.bias} · levels and confirmations ${tf.levels_confirmations} · 4h execution ${tf.execution_4h}` : unstated("Unresolved")],
+    ["Hours", orNone(p.sessions)],
+    ["Risk per trade", isNum(dig(p, "risk.risk_per_trade_pct")) ? `${p.risk.risk_per_trade_pct}% of equity, fees inside` : unstated("Unresolved")],
+    ["Leverage", isNum(lim) ? `Isolated; ${isNum(aim) ? aim + "-" : ""}${lim}% of margin lost at the stop, never above ${lim}%; liquidation beyond the stop` : unstated("Unresolved")],
+    ["News", isNum(nf.no_new_entries_before_minutes) ? `No entries ${nf.no_new_entries_before_minutes} min before to ${isNum(nf.resume_after_minutes) ? nf.resume_after_minutes + " min after" : "?"} red ${(nf.currencies || []).join("/")} events${nf.cancel_resting_orders ? "; resting orders cancelled" : ""}; open trades kept` : unstated("Unresolved")],
+    ["Daily stop / pause / correlation cap", [dig(p, "risk.max_daily_loss_r"), dig(p, "risk.max_consecutive_losses_before_pause"), dig(p, "risk.max_correlated_positions")].every(v => v === "none") ? "None (your rules)" : "See Risk"],
+    ["Malfunction guard", g.checks ? `${g.checks.length} checks, ${g.status === "specified" ? "specified (see Health)" : g.status}` : unstated("Not specified")]]);
 }
 
 /* ---------- trade detail ---------- */
@@ -1216,7 +1271,7 @@ function openTrade(id) {
           ["Leverage setting", isNum(dig(t, "risk.leverage")) ? t.risk.leverage + "x" : null], ["Margin mode", dig(t, "risk.margin_mode") || unstated("Not recorded")],
           ["Margin posted", isNum(e.margin_pct) ? fmtPct(e.margin_pct) + " of equity" : null],
           ["Heat / run (MAE / MFE)", isNum(d.mae_r) || isNum(d.mfe_r) ? `${isNum(d.mae_r) ? d.mae_r.toFixed(2) + "R against" : "—"} · ${isNum(d.mfe_r) ? d.mfe_r.toFixed(2) + "R in favour" : "—"}` : null],
-          ["Margin loss at stop", isNum(e.margin_loss_pct) ? h("span", { class: e.margin_loss_breach ? "down" : e.margin_loss_over_target ? null : "up", text: `${fmtPct(e.margin_loss_pct, 1)}${isNum(e.max_leverage_for_rule) ? ` · max ${fmtCap(e.max_leverage_for_rule)} for the ${dig(KB.profile, "leverage.max_margin_loss_at_stop_pct")}% target` : ""}${isNum(e.max_leverage_for_tolerance) ? `, ${fmtCap(e.max_leverage_for_tolerance)} within the ${dig(KB.profile, "leverage.margin_loss_tolerance_pct")}% tolerance` : ""}` }) : null],
+          ["Margin loss at stop", isNum(e.margin_loss_pct) ? h("span", { class: e.margin_loss_breach ? "down" : e.margin_loss_below_aim ? null : "up", text: `${fmtPct(e.margin_loss_pct, 1)}${isNum(e.min_leverage_for_aim) && isNum(e.max_leverage_for_rule) ? ` · the ${dig(KB.profile, "leverage.margin_loss_aim_min_pct")}-${dig(KB.profile, "leverage.max_margin_loss_at_stop_pct")}% aim is ${e.min_leverage_for_aim.toFixed(2)}x to ${fmtCap(e.max_leverage_for_rule)}` : isNum(e.max_leverage_for_rule) ? ` · max ${fmtCap(e.max_leverage_for_rule)}` : ""}${e.liq_binds ? ` · liquidation reaches the stop above ${fmtCap(e.max_leverage_liq)}` : ""}` }) : null],
           ["Liquidation", isNum(e.liq_isolated) ? `${fmtNum(e.liq_isolated)} (isolated${e.liq_mode_assumed ? ", assumed" : ""}), ${fmtPct(e.liq_distance_pct)} away, ${fmtX(e.liq_to_stop)} the stop distance` : null]])),
         card("Confluences and confirmations", null, h("h3", { text: "Confluences" }), list(dig(t, "plan.confluences")),
           h("h3", { text: "Confirmations" }), list(dig(t, "plan.confirmations")))),
@@ -1241,7 +1296,7 @@ dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 /* ---------- shell ---------- */
 const PANELS = [["overview", "Overview", renderOverview], ["journal", "Journal", renderJournal], ["performance", "Performance", renderPerformance],
                 ["strategy", "Strategy", renderStrategy], ["risk", "Risk", renderRisk], ["behaviour", "Behaviour", renderBehaviour],
-                ["readiness", "Bot readiness", renderReadiness], ["gaps", "Data gaps", renderGaps]];
+                ["readiness", "Bot readiness", renderReadiness], ["gaps", "Data gaps", renderGaps], ["health", "Health", renderHealth]];
 const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } } };
 const tabs = document.getElementById("tabs"), main = document.getElementById("main"), rendered = {};
 function select(id) {

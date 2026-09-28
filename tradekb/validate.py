@@ -13,9 +13,11 @@ from dataclasses import dataclass
 from . import model
 from .model import COUNTERFACTUAL, REALIZED, derive, num
 from .risk import fmt_cap, liquidation_price, margin_status
-from .store import KB, STATUSES, TRADE_ID_RE, Trade, as_date, dig, unresolved
+from .store import INCIDENT_ENUMS, INCIDENTS_FILE, KB, STATUSES, TRADE_ID_RE, Trade, as_date, dig, unresolved
 
 ERROR, WARN, INFO = "ERROR", "WARN", "INFO"
+GUARD_STATES = ("specified", "implemented", "tested")
+GUARD_ID_RE = re.compile(r"^G\d+$")
 
 ENUMS = {
     "review.setup_validity": ("valid", "invalid", "uncertain"),
@@ -219,19 +221,12 @@ def _check_risk(t: dict, kb: KB, where: str, add: _Sink) -> None:
                                  f"the stop {stop}: the stop could not protect this position")
 
     max_margin_loss = num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct"))
-    tolerance = num(dig(kb.profile, "leverage.margin_loss_tolerance_pct"))
     if leverage and entry and stop and entry != stop and max_margin_loss is not None:
         stop_pct = abs(entry - stop) / entry * 100
         margin_loss = stop_pct * leverage
-        status = margin_status(margin_loss, max_margin_loss, tolerance)
-        limit = f"{tolerance:g}% tolerance ({max_margin_loss:g}% target)" if tolerance is not None else f"{max_margin_loss:g}% limit"
-        if status == "breach":
+        if margin_status(margin_loss, max_margin_loss) == "breach":
             breach("excessive_leverage", f"RISK: stop distance x leverage = {margin_loss:.1f}% of the posted margin, above your "
-                                         f"{limit} (max {fmt_cap((tolerance if tolerance is not None else max_margin_loss) / stop_pct)} "
-                                         f"for this stop)")
-        elif status == "over_target":
-            add(INFO, where, f"stop distance x leverage = {margin_loss:.1f}% of the posted margin: above your {max_margin_loss:g}% "
-                             f"target, within your {tolerance:g}% tolerance")
+                                         f"{max_margin_loss:g}% limit (max {fmt_cap(max_margin_loss / stop_pct)} for this stop)")
     min_rr = num(dig(kb.profile, "risk.min_rr"))
     rrs = [x for x in model.planned_rr(t) if x is not None]
     if min_rr is not None and rrs and max(rrs) < min_rr - 1e-9 and t.get("status") in ("planned", "open", "closed"):
@@ -352,6 +347,9 @@ def _check_trade(trade: Trade, kb: KB, add: _Sink) -> None:
         add(ERROR, where, "planned trade carries a realized result")
 
     sid, version = dig(t, "strategy.id"), dig(t, "strategy.version")
+    if _unquoted_version(version):
+        add(ERROR, where, f"strategy.version {version!r} is a number: quote it (\"1.10\" unquoted reads as 1.1 and "
+                          f"would silently count under the wrong version)")
     if sid is not None:
         strat = kb.strategies.get(str(sid))
         if strat is None:
@@ -408,6 +406,8 @@ def _check_strategies(kb: KB, add: _Sink) -> None:
         if needed and have < needed:
             add(ERROR, where, f"status '{status}' requires >= {needed} measured trades; have {have}. "
                               f"Promotion without evidence is exactly what this system forbids")
+        if _unquoted_version(meta.get("current_version")):
+            add(ERROR, where, f"current_version {meta.get('current_version')!r} is a number: quote it (1.10 unquoted reads as 1.1)")
         current = str(meta.get("current_version"))
         if current not in strat.versions:
             add(ERROR, where, f"current_version {current} has no file v{current}.yaml")
@@ -441,6 +441,8 @@ def _check_strategies(kb: KB, add: _Sink) -> None:
                 if ch.get("rule_changed"):
                     add(ERROR, cw, "a clarification cannot change a rule: record a rule_change instead")
                 resulting = ch.get("resulting_version")
+                if _unquoted_version(resulting):
+                    add(ERROR, cw, f"resulting_version {resulting!r} is a number: quote it (1.10 unquoted reads as 1.1)")
                 if resulting is None or str(resulting) not in strat.versions:
                     add(ERROR, cw, f"resulting_version {resulting} has no version file")
                 continue
@@ -496,6 +498,30 @@ def _check_automation(kb: KB, add: _Sink) -> None:
     questions = doc.get("open_questions")
     if questions is not None and (not isinstance(questions, list) or not all(isinstance(q, str) for q in questions)):
         add(ERROR, where, "open_questions must be a list of questions (text)")
+    guard = doc.get("malfunction_guard")
+    if guard is not None:
+        gw = f"{where}: malfunction_guard"
+        if not isinstance(guard, dict):
+            add(ERROR, gw, "must be a mapping with status, on_trip and checks")
+        else:
+            if guard.get("status") not in GUARD_STATES:
+                add(ERROR, gw, f"status must be one of {', '.join(GUARD_STATES)}")
+            checks = guard.get("checks")
+            if not isinstance(checks, list) or not checks:
+                add(ERROR, gw, "checks must be a non-empty list")
+            else:
+                seen: set[str] = set()
+                for k, c in enumerate(checks):
+                    cid = (c or {}).get("id") if isinstance(c, dict) else None
+                    if not isinstance(cid, str) or not GUARD_ID_RE.match(cid):
+                        add(ERROR, f"{gw}.checks[{k}]", "id must look like G1, G2, ...")
+                    elif cid in seen:
+                        add(ERROR, f"{gw}.checks[{k}]", f"duplicate id {cid}")
+                    else:
+                        seen.add(cid)
+                    for key in ("name", "trigger", "action"):
+                        if not isinstance(c, dict) or not isinstance(c.get(key), str) or not c[key].strip():
+                            add(ERROR, f"{gw}.checks[{k}]", f"{key} must be a non-empty text")
     for i, st in enumerate(doc.get("stages") or []):
         for j, c in enumerate((st or {}).get("criteria") or []):
             cw = f"{where}: stages[{i}].criteria[{j}]"
@@ -510,6 +536,67 @@ def _check_automation(kb: KB, add: _Sink) -> None:
                     add(ERROR, cw, f"manual must be one of {', '.join(MANUAL_STATES)}")
                 elif state == "done" and not c.get("evidence"):
                     add(ERROR, cw, "a manual criterion marked done must cite its evidence")
+
+
+def committed_incidents(kb: KB) -> list[dict] | None:
+    """The incident log as last committed (HEAD), or None if git or the file there is unavailable."""
+    try:
+        out = subprocess.run(["git", "-C", str(kb.root), "show", f"HEAD:{INCIDENTS_FILE}"],
+                             capture_output=True, text=True, timeout=15)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if out.returncode != 0:
+        return None
+    import yaml
+    try:
+        doc = yaml.safe_load(out.stdout) or {}
+    except yaml.YAMLError:
+        return None
+    items = doc.get("incidents") if isinstance(doc, dict) else None
+    return [x for x in items if isinstance(x, dict)] if isinstance(items, list) else None
+
+
+def _check_incidents(kb: KB, add: _Sink) -> None:
+    """The incident log is append-only: ids run INC-001, INC-002, ... with no gaps, and every committed
+    entry keeps its id, date and title. Status and fix may change; history may not."""
+    where = INCIDENTS_FILE
+    for i, inc in enumerate(kb.incidents):
+        iw = f"{where}: incidents[{i}]"
+        if not isinstance(inc, dict):
+            add(ERROR, iw, "must be a mapping")
+            continue
+        want = f"INC-{i + 1:03d}"
+        if inc.get("id") != want:
+            add(ERROR, iw, f"id is {inc.get('id')!r}, expected {want}: ids run in order with no gaps (append-only)")
+        iw = f"{where}: {inc.get('id')}"
+        try:
+            if as_date(inc.get("date")) is None:
+                add(ERROR, iw, "date is required")
+        except ValueError as exc:
+            add(ERROR, iw, f"date: {exc}")
+        for key, allowed in INCIDENT_ENUMS.items():
+            if inc.get(key) not in allowed:
+                add(ERROR, iw, f"{key} must be one of {', '.join(allowed)}")
+        for key in ("title", "detail"):
+            if not isinstance(inc.get(key), str) or not inc[key].strip():
+                add(ERROR, iw, f"{key} must be a non-empty text")
+        if inc.get("status") in ("fixed", "guarded", "caught") and not (isinstance(inc.get("fix"), str) and inc["fix"].strip()):
+            add(ERROR, iw, f"status {inc.get('status')} needs `fix`: what changed")
+        if inc.get("status") == "open" and inc.get("severity") == "high":
+            add(WARN, iw, f"open high-severity incident: {inc.get('title')}")
+    committed = committed_incidents(kb)
+    current = {inc.get("id"): inc for inc in kb.incidents if isinstance(inc, dict)}
+    for old in committed or []:
+        new = current.get(old.get("id"))
+        if new is None:
+            add(ERROR, where, f"{old.get('id')} was committed and is gone: the incident log is append-only")
+        elif str(new.get("date")) != str(old.get("date")) or new.get("title") != old.get("title"):
+            add(ERROR, where, f"{old.get('id')}: date and title are history and may not be rewritten")
+
+
+def _unquoted_version(v) -> bool:
+    """A version written as a YAML number: 1.10 parses as the float 1.1, so v1.10 and v1.1 collide."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
 
 
 def version_edits(kb: KB) -> list[str] | None:
@@ -556,6 +643,7 @@ def validate(kb: KB, allow_version_edits: bool = False, check_build: bool = True
     _check_strategies(kb, add)
     _check_experiments(kb, add)
     _check_automation(kb, add)
+    _check_incidents(kb, add)
 
     edits = version_edits(kb)
     for edit in edits or []:

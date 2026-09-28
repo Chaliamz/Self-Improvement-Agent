@@ -21,7 +21,7 @@ regime: [range, bullish]      # 4h: range about 51-77 since June; trader's bias 
 
 strategy:
   id: supply-demand-structure
-  version: "1.8"                # retagged through CHG-008 (clarifications)
+  version: "1.9"                # retagged through CHG-009 (clarifications)
   experiment: null
   variant: null
 
@@ -44,7 +44,7 @@ risk:
   account_equity: null
   risk_amount: null
   risk_pct: 1.0               # trader: "risk 1%"
-  leverage: null              # trader: "7-8X due to 6,26% invalidation"; exact setting not stated. 7x = 44.0%, 8x = 50.3% of margin: both within the 55% tolerance
+  leverage: null              # trader: "7-8X due to 6,26% invalidation"; exact setting not stated. 7x = 44.0%, 8x = 50.3% of margin: both within the 60% limit; 8x is inside the 50-60% aim (7.96x-9.55x)
   margin_mode: isolated       # the trader's standing rule
   size: null
   notional: null
@@ -96,11 +96,11 @@ evidence:
     - "The 1h candles at Aug 19 ~19:00-21:00 top out at about 62.4-62.65, at the 62.64 line. The Aug 19 ~22:00 1h candle runs from about 62.03 through 66.10 to above 69.91 (the top of the pane)."
     - "4h: one candle (Aug 19, 19:00-23:00 local) runs from about 61.51 to about 72.26, through 62.64, 66.10 and into the supply box (bottom about 70.82). Later highs: about 74.59 (Aug 20), about 82.59 (Aug 22)."
     - "RSI (1h pane): Jul 28 low about 53.97 with RSI about 22.5; Aug 2 low about 51.12 with RSI about 31.7. Price lower low, RSI higher low. No RSI pane on the 4h screenshot."
-    - "tj size: stop distance 6.282%. 7x: 44.0% of margin lost at the stop, isolated liquidation about 46.90 (2.21x the stop distance). 8x: 50.3% of margin, above the 50% target but within the 55% tolerance (caps 7.95x and 8.75x), liquidation about 47.87. Targets: 62.64 = 2.40R, 66.10 = 3.41R, 70.70 = 4.75R."
+    - "tj size: stop distance 6.282%. 7x: 44.0% of margin lost at the stop, isolated liquidation about 46.90 (2.21x the stop distance). 8x: 50.3% of margin, liquidation about 47.87. The 50-60% aim (2026-09-28) is 7.96x to 9.55x. Targets: 62.64 = 2.40R, 66.10 = 3.41R, 70.70 = 4.75R."
   interpreted:
     - "The 1h shows the trader's sequence: demand traded through (sweep to about 51.12), bullish CH by close above about 56.00, demand reclaimed, retest into the zone, long. The same CH line is drawn on the 4h."
     - "The 1h RSI shows a regular bullish divergence into the Aug 2 sweep low (lower low in price, higher low in RSI). It supports the trader's 4h divergence; the 4h reading itself is not visible in the screenshots."
-    - "Checklist (v1.4, re-checked under v1.6): items 1-4 pass (4h demand; sweep below it; CH by close on 1h and 4h; entry at the zone on the retest). Item 6 passes: 7x (44.0%) and 8x (50.3%) are both within the 55% tolerance, and the 66.10 order gives 3.41R (the trader confirmed 66.10; 62.64 was not the target). Item 5 passes: the stop sits a bit below the swing that created the confirmed CH (the Aug 2 low), the trader's stop rule ('yes exactly', 2026-09-27). Item 7 passes (no entry at an inducement)."
+    - "Checklist (v1.4, re-checked under v1.6): items 1-4 pass (4h demand; sweep below it; CH by close on 1h and 4h; entry at the zone on the retest). Item 6 passes: 7x (44.0%) and 8x (50.3%) are both within the 60% limit (8x inside the 50-60% aim), and the 66.10 order gives 3.41R (the trader confirmed 66.10; 62.64 was not the target). Item 5 passes: the stop sits a bit below the swing that created the confirmed CH (the Aug 2 low), the trader's stop rule ('yes exactly', 2026-09-27). Item 7 passes (no entry at an inducement)."
     - "The demand had been traded through (Jul 30-Aug 2) before the Aug 7 entry. Trader (2026-09-27): 'on T-0006 there wasn't any mitigation, it was a reclaim level + CH.' My earlier reading of it as a mitigated zone was wrong and is withdrawn."
     - "COUNTERFACTUAL: a TP at the supply's lower edge (70.70) would have filled in the same Aug 19 4h candle: about +4.75R instead of +3.41R. One trade; the counterfactual is only as good as that single path."
   hypotheses:
@@ -112,7 +112,7 @@ review:
     setup: 5                  # demand + sweep + CH by close + reclaim + retest (rescored 2026-09-27: a reclaim level + CH, not a mitigated zone)
     context: 4                # 4h to 1h top-down; the 4h bias was mixed (June bearish CH), which the trader named
     execution: 5              # limit at the demand on the retest, as planned
-    risk: 5                   # 1% risk, stop at the structural invalidation, 7-8x within the 55% tolerance (rescored 2026-09-27 after the trader's clarification)
+    risk: 5                   # 1% risk, stop at the structural invalidation, 7-8x within the 60% limit (rescored 2026-09-27 after the trader's clarification)
     management: 5             # held to the target, no interference
   trader_grade: "A"           # trader: 'would be A because I executed well but had to let it reach supply level so it would be an S'
   setup_validity: valid

@@ -40,6 +40,18 @@ changes:
     fields: [reactions, open_questions]
     note: "T-0003 retagged 1.2."
     resulting_version: "1.2"
+  - id: CHG-003
+    kind: clarification
+    date: 2026-09-28
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-28: "always aim for 50-60% at the stop" ... "they can resume after 1H after manipulation could
+      stop. anything resting gets cancelled too." Trader, 2026-09-27: "we avoid macroeconomic data 1 Hour before event
+      occurs. Forexfactory.com ... we focus only on USD and red symbols (high impact)."
+    fields: [leverage_model, do_not_trade_when]
+    note: "Account-wide rules restated for this strategy. T-0003 retagged 1.3."
+    resulting_version: "1.3"
 #  - id: CHG-001
 #    date: 2026-01-01
 #    current_rule: "Enter after liquidity sweep."

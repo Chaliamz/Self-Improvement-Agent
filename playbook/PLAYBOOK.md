@@ -12,8 +12,8 @@ tier. Five trades cannot separate skill from luck. Nothing below is established.
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.8 | unvalidated | 4 (T-0001, T-0004, T-0006, T-0007) | n=4: +2.77R point estimate, no CI below n=5 (LOW) |
-| key-level-sr | 1.2 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW) |
+| supply-demand-structure | 1.9 | unvalidated | 4 (T-0001, T-0004, T-0006, T-0007) | n=4: +2.77R point estimate, no CI below n=5 (LOW) |
+| key-level-sr | 1.3 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW) |
 
 ## Established rules
 _None. Requires the promotion gate in `config.yaml`._
@@ -57,9 +57,12 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
 - A stop beyond a swing whose CH is unconfirmed: that swing is liquidity (item 5; T-0004).
 - A "CH" that breaks only an internal level of a candle range: NOT CH (item 3). T-0008 was skipped for this,
   and the drawn short would have lost 1R (COUNTERFACTUAL).
-- Margin loss at the stop beyond the tolerance: target 50%, fine up to about 55%, margin call at 80% (trader,
-  2026-09-27). T-0004: 20x on a 3.84% stop = 76.7% of margin (13.03x for the target, 14.33x at most);
-  isolated liquidation about 0.013561 sat only 1.17x the stop distance away (`./tj show T-0004`).
+- Margin loss at the stop above 60%: the aim is 50-60%, margin call at 80% (trader, 2026-09-28). T-0004: 20x on a
+  3.84% stop = 76.7% of margin (the aim was 13.03x to 15.63x); isolated liquidation about 0.013561 sat only 1.17x the
+  stop distance away (`./tj show T-0004`).
+- Leverage whose liquidation comes before the stop, even inside the 50-60% aim. On tight stops the maintenance
+  margin decides: a 0.6% stop at 100x is exactly 60%, yet liquidates first above about 91x at a 0.5% maintenance
+  rate (`./tj size --entry 100 --stop 99.4`). A tool finding, not a trade (INC-015); `./tj size` prints the cap.
 - Entering at an inducement: "AVOID Inducements at all costs" (trader, 2026-09-27). Equal highs/lows are
   liquidity to be swept into the zone (T-0001), never the entry (strategy v1.4 checklist item 7).
 
@@ -78,37 +81,45 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
   guide; slightly less is fine). T-0007 is S.
 - A: a good setup executed well, one step short of S (T-0001: missed the extreme demand, took the reclaim;
   T-0006: TP short of the strongest level). C: taken without the full process, whatever the result (T-0003,
-  1m only). D: "a poor trade + mistake". B not yet defined; T-0004 not yet graded.
-- `./tj stats --by trader_grade`: S n=1 (+4.12R), A n=2 (+3.99R), C n=1 (+2.94R). Far too few to say whether
-  the grade predicts the result. Status: observation.
+  1m only). D: "a poor trade + mistake"; a good setup executed early is a D (T-0004, 2026-09-28).
+- B: "anything with decent RR but few confluences, which means it could be a risky execution" (2026-09-28). No
+  example yet.
+- `./tj stats --by trader_grade`: S n=1 (+4.12R), A n=2 (+3.99R), C n=1 (+2.94R), D n=1 (-1.00R). Far too few to
+  say whether the grade predicts the result. Status: observation.
 
 ## High-quality setups
 _None._
 
 ## Execution errors
-_None recurring (threshold 3). Source of truth: `./tj errors`: ignored_htf, stop_in_liquidity, excessive_leverage
-and false_ch x1 each (T-0004), skipped_top_down x1 (T-0003)._ The top-down rule was broken in both trades where it was recorded
+_None recurring (threshold 3). Source of truth: `./tj errors`: ignored_htf, stop_in_liquidity, excessive_leverage,
+false_ch and entered_before_confirmation x1 each (T-0004), skipped_top_down x1 (T-0003)._ T-0004 is a type C loss
+(execution error) since the trader's 2026-09-28 review: "setup was good but executed early". The top-down rule was broken in both trades where it was recorded
 (T-0003, T-0004; terminal Rule compliance). Watch item, not yet a pattern.
 
 ## Risk rules
 Stated by the trader (2026-09-26). These are the trader's rules, not performance findings.
 - 1% of equity at risk per trade, always.
-- Isolated margin. Leverage is capped so the loss on margin at the stop stays within 50%:
-  leverage <= 50 / stop %. T-0001: 3.14% x 10x = 31.4%. Leverage does not change the 1% risk.
+- Isolated margin. Leverage is set from the stop distance: "always aim for 50-60% at the stop" (2026-09-28), so
+  50 / stop % <= leverage <= 60 / stop %, and never so high that liquidation comes before the stop. Below 50% is
+  short of the aim, not a risk breach. T-0006: 6.28% x 8x = 50.3%. Leverage does not change the 1% risk.
 - Minimum R:R 2.5 for the best target; 3.0 preferred.
 - Hold until TP; break-even and partials are barely used. Good R:R setups are hunted.
 - Fees are inside the 1% risk; the bot will count them separately (trader, 2026-09-27).
-- Isolated margin: aim for 50% of margin lost at the stop, up to about 55% is fine, margin call at 80% (trader,
-  2026-09-27). `./tj` flags a breach only beyond 55%. Leverage caps are always shown rounded down.
+- The margin rule evolved: 50% (2026-09-26), 50% with 55% tolerated (2026-09-27), aim 50-60% (2026-09-28). `./tj`
+  flags a breach only above 60%. Leverage caps are always shown rounded down.
 - No daily stop, no pause after losses, no cap on open trades: "there's no stopping we stick to the plan. only
-  1% risk we ignore frequency. there's no pause" (trader, 2026-09-27). No fixed leverage cap: leverage follows the
-  stop distance (7% stop: up to 7-8x).
-- News: no new entries within 1 hour before a red (high-impact) USD event on ForexFactory; open trades are kept.
-- Entries after a CH: small, weak candles mean a limit at the zone right away; a strong recovery means wait. An
-  unfilled limit is cancelled when price reaches the TP first.
-- Bot venue: MEXC. Open bot questions (scan list, news resumption, leverage choice, correlation, malfunction guard,
-  weekends) are in `playbook/automation.yaml` and the terminal's Data gaps.
-- Unresolved: max leverage, daily loss limit, max open risk, fee rates (see `profile/trader.yaml`).
+  1% risk we ignore frequency. there's no pause" (trader, 2026-09-27). No correlation cap: "we take every valid
+  setup, bad days will happen either way" (2026-09-28). No fixed leverage cap: leverage follows the stop distance.
+- News: no new entries and no resting orders from 1 hour before to 1 hour after a red (high-impact) USD event on
+  ForexFactory; open trades are kept (2026-09-27/28). Otherwise 24/7: "we trade 24/7 regardless".
+- Entries after a CH: small, weak candles mean a limit at the zone right away; a strong recovery means wait. The
+  candles are read on the longest timeframe possible (T-0007). An unfilled limit is cancelled when price reaches the
+  TP first. Optional: split the 1% across several limits at extra 30m demand/FVG levels (2026-09-28).
+- Timeframes for swing and day trading: 1D-4h bias, 1h-30m levels and confirmations, 4h execution only for great
+  setups (T-0006, T-0007).
+- Bot: MEXC; BTC, ETH, HYPE for now; swing and day trading. The malfunction guard is mandatory (G1-G9 in
+  `playbook/automation.yaml`, shown in the terminal's Health tab). Open bot questions are in Data gaps.
+- Unresolved: fee rates, maintenance-margin rate, account equity (see `profile/trader.yaml`).
 
 ## Behavioural rules
 _None._
@@ -116,6 +127,10 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-09-28 | supply-demand-structure v1.9 clarification (CHG-009): grade B; T-0004 is the D example; 1D-4h bias and 1h-30m levels for swing/day trading; candles after a CH read on the longest timeframe; optional split limit entries; margin aim 50-60%; news window 1h before to 1h after with resting orders cancelled. No rule changed | trader's answers |
+| 2026-09-28 | key-level-sr v1.3 clarification (CHG-003): the account-wide 50-60% margin aim and news window restated; T-0003's 0.239% stop cannot reach the aim before liquidation (209.6x needed, liquidation first above 135.2x) | trader's answers; `./tj build` exposure |
+| 2026-09-28 | T-0004 corrected: grade D, setup valid, loss type D -> C, entered_before_confirmation added, rescored (setup 2 -> 4, execution 2 -> 1) | trader's correction (INC-014) |
+| 2026-09-28 | Bot specification: pairs BTC/ETH/HYPE, 24/7, no correlation cap, mandatory malfunction guard G1-G9; incident log and Health tab; YAML loader refuses duplicate keys (INC-013) | trader's answers; tool fixes |
 | 2026-09-27 | supply-demand-structure v1.8 clarification (CHG-008): grades A, C, D with the trader's examples; entry timing after a CH and the limit-cancel rule; no daily stop / pause / open-trade cap; news filter (checklist item 8). No rule changed | trader's answers; T-0001, T-0003, T-0006 graded |
 | 2026-09-27 | Automation plan: venue MEXC; the safety list no longer assumes a daily kill switch (the trader has none); a malfunction guard is proposed as open question 5 | trader's answers |
 | 2026-09-27 | supply-demand-structure v1.7 clarification (CHG-007): grading scale S-D (3.5R S guide is rough; D avoided, C maybe); the candle range is read on the HTF (a 1h pullback inside a 4h candle range is not a 4h pullback). No rule changed | trader's answers; T-0008 |

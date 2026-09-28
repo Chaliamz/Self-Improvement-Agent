@@ -21,7 +21,7 @@ regime: [bullish]             # the 30m trend was still up into the sweep; the C
 
 strategy:
   id: supply-demand-structure
-  version: "1.8"                # retagged through CHG-008 (clarifications)
+  version: "1.9"                # retagged through CHG-009 (clarifications)
   experiment: null
   variant: null
 
@@ -43,7 +43,7 @@ risk:
   account_equity: null
   risk_amount: null
   risk_pct: 1.0               # the trader's standing rule
-  leverage: null              # not stated; the 50% target allows 19.16x for this 2.61% stop (21.08x within the 55% tolerance)
+  leverage: null              # not stated; the 50-60% aim is 19.16x to 22.99x for this 2.61% stop (above 22.55x liquidation sits under 1.5x the stop distance)
   margin_mode: isolated
   size: null
   notional: null
