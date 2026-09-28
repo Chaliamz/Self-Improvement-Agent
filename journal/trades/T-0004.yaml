@@ -21,7 +21,7 @@ regime: [bullish]             # 30m: rally from about 0.0106 (Jan 4) and a fresh
 
 strategy:
   id: supply-demand-structure
-  version: "1.9"                # retagged through CHG-009 (clarifications)
+  version: "1.10"               # retagged through CHG-010 (clarifications)
   experiment: null
   variant: null
 
@@ -109,7 +109,7 @@ review:
   setup_validity: valid       # trader, 2026-09-28: "setup was good" (was invalid until then)
   followed_plan: true
   loss_type: C                # execution error (was D): "setup was good but executed early"
-  mistakes: [ignored_htf, stop_in_liquidity, excessive_leverage, false_ch, entered_before_confirmation]   # false_ch: a 5m break inside the 30m candle range (named 2026-09-27); entered_before_confirmation: "executed early" (2026-09-28)
+  mistakes: [ignored_htf, stop_in_liquidity, excessive_leverage, false_ch, early_execution]   # false_ch: a 5m break inside the 30m candle range (named 2026-09-27); early_execution: the trader's "executed early" (2026-09-28)
   behaviors: [respected_invalidation]
   outside_control: []
   lesson: >-

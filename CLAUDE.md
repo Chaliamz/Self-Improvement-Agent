@@ -57,7 +57,8 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
    Record the trader's own grade in `review.trader_grade` when they give one (scale S, A, B, C, D).
    Record `fills.worst_price` and `fills.best_price` from the chart (furthest against / in favour between entry
    and exit; the TP price when the target filled): `./tj` turns them into MAE / MFE in R.
-   Record `timeframes.chain` (highest first) and `timeframes.top_down` (true/false); record
+   Record `timeframes.chain` (highest first, ending at the execution timeframe), `timeframes.detail` (lower
+   timeframes viewed only for detail, e.g. unmitigated levels/FVGs) and `timeframes.top_down` (true/false); record
    `fills.duration_minutes` when the trader states a duration (dates alone cannot time a scalp).
    Timeframe notation is TradingView's: m minutes, h hours, D days, W weeks, M months. The trader
    may write "1M" for one minute; check the chart interval and record `1m`.
@@ -73,7 +74,9 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
    `journal.before`. **Commit it before the outcome is known**: the commit timestamp is
    the proof that the thesis was not written with hindsight (§33, §37).
 2. `./tj size --entry E --stop S [--leverage L --margin-mode M --target T]` for the risk
-   decomposition. Surface every CRITICAL/WARN flag and every "ASSUMED"/"default" input.
+   decomposition; for split limit entries add `--add-entry E2 [--add-entry E3]` (per-order risk from profile
+   `risk.split_entries`; one leverage for the position, set by the widest-stop order). Surface every CRITICAL/WARN
+   flag and every "ASSUMED"/"default" input.
 3. Run the strategy version's `checklist` item by item and report each as pass / fail / unknown with
    the evidence. T-0004 is the reference failure: a 5m CHoCH the 30m had not confirmed (item 3), entry
    below the zone (item 4), stop just beyond the obvious swing (item 5), 20x on a 3.84% stop (item 6).

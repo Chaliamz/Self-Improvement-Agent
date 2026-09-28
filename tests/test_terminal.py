@@ -13,7 +13,7 @@ import yaml
 from tradekb import analysis
 from tradekb.export import build_payload
 from tradekb.risk import (SizingInput, exposure, fmt_cap, liquidation_price, margin_status,
-                          max_leverage_liq_beyond_stop, size_position)
+                          max_leverage_liq_beyond_stop, size_position, split_plan)
 from tradekb.store import load_kb
 from tradekb.validate import validate
 from tests.test_kb import REPO, KBTestCase
@@ -291,6 +291,56 @@ class StrictYamlTest(KBTestCase):
         path = self.tmp / "m.yaml"
         path.write_text("base: &b {a: 1}\nuse:\n  <<: *b\n  c: 2\n")
         self.assertEqual(load_yaml(path)["use"], {"a": 1, "c": 2})
+
+
+class SplitEntryTest(KBTestCase):
+    """Trader, 2026-09-28: up to 3 limit orders; 1 = 1%, 2 = 0.5% each, 3 = 0.3% each; one stop and one target."""
+
+    def test_three_orders_risk_0_9_pct_and_the_first_order_sets_leverage(self):
+        plan = split_plan([52.9, 54.44, 53.5], 51.02, 30.0, leverage=9, max_margin_loss_pct=60, margin_loss_aim_min_pct=50,
+                          targets=(66.10,), min_rr=2.5)
+        self.assertEqual(plan.entries, [54.44, 53.5, 52.9])                        # fill order for a long: highest first
+        self.assertAlmostEqual(plan.fills[-1].loss_at_stop, 90.0)                  # 3 x 0.3% = 0.9%
+        for f in plan.fills:
+            self.assertAlmostEqual(f.loss_at_stop, 30.0 * f.orders)
+            self.assertAlmostEqual(f.avg_entry, f.notional / f.qty)
+        self.assertEqual(fmt_cap(plan.max_leverage_for_rule), "9.55x")             # 60 / 6.282%: the widest stop
+        self.assertAlmostEqual(plan.fills[0].margin_loss_pct, 3.42 / 54.44 * 100 * 9)
+        self.assertTrue(all(a.margin_loss_pct > b.margin_loss_pct for a, b in zip(plan.fills, plan.fills[1:])))
+        self.assertEqual(plan.flags, [])
+        over = split_plan([54.44, 53.5], 51.02, 50.0, leverage=10, max_margin_loss_pct=60)
+        self.assertTrue(any(lvl == "CRITICAL" and "use 9.55x or less" in m for lvl, m in over.flags))
+
+    def test_short_split_and_liquidation_across_fills(self):
+        plan = split_plan([100.0, 100.3], 100.6, 10.0, leverage=100, max_margin_loss_pct=60, mmr_rate=0.005)
+        self.assertEqual(plan.side, "short"); self.assertEqual(plan.entries, [100.0, 100.3])
+        self.assertTrue(plan.fills[0].liq_before_stop)                             # 0.6% stop at 100x: liquidated first
+        self.assertTrue(any(lvl == "CRITICAL" and "liquidation comes before the stop" in m for lvl, m in plan.flags))
+
+    def test_bad_inputs(self):
+        with self.assertRaises(ValueError):
+            split_plan([100, 102], 101, 10)                                        # entries on both sides of the stop
+        with self.assertRaises(ValueError):
+            split_plan([100, 100], 98, 10)
+        with self.assertRaises(ValueError):
+            split_plan([100, 99], 98, 10, targets=(99.5,))                         # target inside the first entry
+
+    def test_cli_uses_the_profile_shares(self):
+        code, out = self.run_cli("size", "--entry", "54.44", "--add-entry", "53.5", "--stop", "51.02", "--risk-amount", "100")
+        self.assertEqual(code, 0)
+        self.assertIn("0.5% of equity per order (50.00)", out)
+        code, out = self.run_cli("size", "--entry", "54.44", "--add-entry", "53.5", "--add-entry", "53", "--add-entry", "52.5",
+                                 "--stop", "51.02", "--risk-amount", "100")
+        self.assertEqual(code, 2)                                                  # 4 orders: no rule for it
+
+
+class DetailTimeframeTest(KBTestCase):
+    def test_detail_timeframes_sit_below_execution(self):
+        tf = {"htf": "4h", "execution": "4h", "chain": ["4h"], "detail": ["1h"], "top_down": True}
+        self.write_trade("T-0001", result={"r": 3.41}, timeframes=tf)
+        self.assertFalse([i for i in self.issues() if "timeframes" in i.msg or "top_down" in i.msg])
+        self.write_trade("T-0001", result={"r": 3.41}, timeframes={**tf, "detail": ["1D"]})
+        self.assertTrue(any("is not below the execution timeframe" in i.msg for i in self.issues("ERROR")))
 
 
 class VersionNumberTest(KBTestCase):

@@ -1,0 +1,132 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0009
+status: closed
+opened: 2026-04-28            # trader: "28/4/26"; the 0.3691 limit filled in the Apr 28 18:00 or 19:00 1h bar (UTC+3)
+closed: 2026-04-29            # trader: "29/4/26"; stop touched in the Apr 29 18:00 1h bar, traded through at 19:00
+asset: "TIAUSDT"
+market: "crypto perp (BloFin)"
+direction: "long"
+session: null
+timeframes:
+  htf: "4h"                   # bias, the bullish momentum and its FVG, the $$ liquidity
+  execution: "1h"             # trader: "Jumping on 1H there was a potential support/resistance level"
+  chain: ["4h", "1h"]
+  detail: []
+  top_down: true              # 4h then 1h; the 4h FVG was seen and ignored (the mistake), not skipped
+
+setups: [key_level, reclaim, choch, retest]
+regime: [bullish, range]      # trader: "Bias Bullish"; 4h: a pullback from 0.4468 ranging about 0.34-0.37 from Apr 23
+
+strategy:
+  id: supply-demand-structure
+  version: "1.10"             # recorded at v1.10 (CHG-010)
+  experiment: null
+  variant: null
+
+plan:
+  entry: 0.3691               # position-tool label
+  stop: 0.3505                # position-tool label: "SL tight this time in case of invalidation of s/r level"
+  targets: [0.4247]           # position-tool label, inside the 1h supply (red box)
+  invalidation: "The reclaimed S/R level (cyan) lost again: price back under it and through the higher low."
+  entry_model: reclaim
+  confluences:
+    - "Bullish momentum (4H) creating a FVG"
+    - "Liquidity above (yellow trendline, $$): price could hunt at least that liquidity"
+    - "Potential support/resistance level on the 1H (cyan line), proved as a potential key level"
+    - "Target: supply level (red box)"
+  confirmations:
+    - "Lower Low (LL), then a struggle to break the Lower High (start of the green line)"
+    - "Bullish CH: broke past the Lower High on the second try"
+    - "Reclaim of the cyan line; long on the retest"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # trader: "Risk 1%"
+  leverage: 10                # trader: "Leverage 10X (invalidation 4,94%)"; the drawn stop is 5.039% (tj size)
+  margin_mode: isolated       # the trader's standing rule
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits:
+    - {price: 0.3505, reason: "Stop hit (trader: LOSS)"}
+  fees: null                  # inside the 1% risk (trader, 2026-09-27)
+  duration_minutes: 1440      # measured on the 1h chart, about 23-26 h: fill in the Apr 28 18:00 or 19:00 bar, stop in the Apr 29 18:00 or 19:00 bar (trader: "trade lasted less" than the tool shows)
+  worst_price: 0.3505         # the stop filled (price ran on to about 0.3386 at 21:00)
+  best_price: 0.3809          # about: the Apr 29 07:00 1h high, +0.63R
+
+result:
+  pnl: null
+  r: null                     # derived price-based from the stop exit: -1.00
+  hypothetical_r: null
+
+journal:
+  before: |
+    Reconstructed from the trader's account on 2026-09-28 (after the outcome, so not hindsight-proof).
+    Plan long, bias bullish. There was a bullish momentum creating a FVG and some form of liquidity (yellow
+    trendline) that price could hunt. On the 1H a potential support/resistance level (cyan line) proved to be a
+    potential key level. It formed a Lower Low, struggled to break the Lower High (start of the green line,
+    "Bullish CH"), broke past it on the second try and reclaimed the cyan line. Plan: long on the retest, target
+    the supply level (red box), SL tight in case the S/R level is invalidated. Risk 1%, 10x (invalidation 4.94%).
+    Trader: "I ignored FVG on the left so I knew that this execution was risky, however setup was decent with
+    these confirmations and good RR (1:3)".
+  during: |
+    The reclaim ran to about 0.3809 (Apr 29 ~07:00), then price fell back under the cyan level (4h close about
+    0.3508 on Apr 29) and hit the stop: "It formed a deviation (fakeout) and invalidated my setup."
+  after: |
+    Trader: "I'd consider this as a mistake because price was in the middle of nowhere. I'd focus at 0.27-0.31
+    zone to consider looking for longs. Where even on that way setup would be invalidated because it went lower
+    (You can't see that here) but there was nothing we could do in that case. So mistake here was early
+    execution, ignoring FVG, regardless how worth trade was for these confirmations and RR." Grade: "Setup B
+    because of FVG ignorance but decent confirmations where could lead to good RR."
+
+evidence:
+  observed:
+    - "BloFin TIAUSDT perpetual (Celestia), 4h and 1h, chart time UTC+3, Apr-May 2026. Position tool: entry 0.3691, stop 0.3505, target 0.4247 (tj: 2.99R planned, stop distance 5.039%; trader: 4.94%)."
+    - "Prices read from chart pixels, calibrated on 18 (4h) and 19 (1h) axis ticks, max residual 0.00009 (about half a pixel). 4h bars start at 03:00 UTC+3; 4h and 1h reads agree (the Apr 28 15:00 4h bar and its four 1h bars share high 0.3701 and low 0.3519). The dotted live-price line, the tool's entry line and the right-edge price label were masked."
+    - "Structure: Apr 18 high about 0.4468 after the Apr 15-17 impulse. Yellow $$ line from about 0.3914 (Apr 20) to 0.3900 (Apr 22): equal-ish highs. Cyan level about 0.3655, at the Apr 20 and Apr 22 lows (about 0.3669 and 0.3661); lost on Apr 22-23 and retested from below (4h highs about 0.3669 on Apr 23, 0.3640 on Apr 24)."
+    - "Lower low about 0.3400 (Apr 27, 1h ~18:00). Green dashed CH line about 0.3631 from Apr 27 ~03:00. First break attempt Apr 28 ~08:00 (1h high about 0.3661, fell back); higher low about 0.3510 (Apr 28 ~12:00); second attempt: the Apr 28 15:00 4h bar closed about 0.3680, above the CH line and the cyan level (1h: the 18:00 bar, high 0.3701)."
+    - "Fill: the first bars through 0.3691 are the Apr 28 18:00 1h bar (high 0.3701) and the 19:00 bar (0.3760 to 0.3645). Best price before the stop about 0.3809 (Apr 29 ~07:00), +0.63R."
+    - "Stop: the Apr 29 15:00 4h bar closed about 0.3508, back under the cyan level. 1h: the 18:00 bar low about 0.3505 (the stop, within a pixel), the 19:00 bar about 0.3491, the 21:00 bar about 0.3386, below the 0.3400 lower low."
+    - "The stop sat about 0.0005 under the 0.3510 higher low (about 0.14% of price), the swing the CH broke from, and about 0.0105 above the 0.3400 lower low."
+    - "Unmitigated 4h FVGs from the Apr 15-16 impulse below the entry: about 0.3141-0.3160 and 0.3230-0.3249 (untouched by chart end), and about 0.3340-0.3410 (partly filled: 0.3400 before the entry, 0.3386 after). Pre-impulse base about 0.28-0.315 (Apr 1-14). Rising cyan trendline about 0.2707 at the trade."
+    - "1h red box (supply) about 0.4184-0.4345 from Apr 18. After the stop: lows about 0.3410 on May 4, then a rally; 0.4247 was first reached in the May 8 ~15:00 4h bar (high about 0.4342); chart high about 0.4571 (May 9)."
+    - "tj size: 10x = 50.4% of the margin at the stop (inside the 50-60% aim: 9.92x-11.90x); isolated liquidation about 0.33386 (1.89x the stop distance)."
+  interpreted:
+    - "The chart matches the trader's sequence: equal lows at the cyan level swept, a lower low, a CH by close on the 1h and the 4h, the reclaim and the retest. Then a deviation: price held above the level for about a day and closed back under it."
+    - "Location: the entry sat in the middle of a 4h pullback, about 17% below the 0.4468 high and above every unmitigated 4h FVG of the impulse. No 4h demand zone was at the entry: checklist items 1 (HTF zone) and 4 (entry at the zone) fail. The trader's diagnosis ('price was in the middle of nowhere', 'ignoring FVG') is what the chart shows. After the stop, price wicked into the 0.3340-0.3410 FVG (about 0.3386)."
+    - "Checklist v1.10: 1 fail (no HTF zone; unmitigated FVGs below); 2 pass on the 1h (the equal lows at the cyan level were swept on Apr 23); 3 pass (CH by close on the 1h and the 4h, about 0.3680 vs the 0.3631 line); 4 fail (entry at a reclaimed 1h level, not a demand zone); 5 pass (stop just under the 0.3510 higher low that launched the CH, 'very close to that swing point'); 6 pass (50.4% of margin, liquidation 1.89x the stop distance, 2.99R); 7 pass (the equal lows were already swept and reclaimed: the reclaim model, not an entry at a live inducement); 8 unknown (the ForexFactory calendar for Apr 28-29 was not given)."
+    - "Loss type C (execution error): the trader grades the setup B ('decent confirmations', 'good RR') and names the mistake as early execution and ignoring the FVG. Price was not yet at the HTF zone where the strategy takes longs."
+    - "COUNTERFACTUAL: a stop under the 0.3400 lower low would also have been hit (about 0.3386 on Apr 29). The trader adds that longs in the 0.27-0.31 zone would later have been invalidated too ('it went lower'), which is not visible on these charts."
+    - "Same word, second loss: T-0004 was also 'executed early' (before the 30m confirmed); here, before price reached the HTF zone. Both losses so far carry the trader's own early-execution diagnosis (n=2, below the recurring threshold of 3)."
+  hypotheses:
+    - "A 1h reclaim with a real CH fails more often in the middle of a 4h pullback with unmitigated FVGs below it than at a 4h demand zone (n=1)."
+    - "The trader's B grade (decent R:R, few confluences) carries more risk of a deviation than S/A (n=1 B, a loss)."
+  charts: [journal/charts/T-0009-tia-4h.png, journal/charts/T-0009-tia-1h.png]
+
+review:
+  scores:
+    setup: 3                  # real CH by close on the 1h and 4h, reclaim and retest, 2.99R; no HTF zone ("few confluences")
+    context: 2                # middle of a 4h pullback, unmitigated FVGs below: "price was in the middle of nowhere"
+    execution: 2              # early: before price reached the HTF zone; entered as planned on the retest
+    risk: 5                   # 1%, 10x = 50.4% of margin, stop very close to the swing that launched the CH, liquidation 1.89x away
+    management: 4             # the stop was respected: -1R taken
+  trader_grade: "B"           # trader: "Setup B because of FVG ignorance but decent confirmations where could lead to good RR"
+  setup_validity: valid       # trader: "setup was decent"; the mistake is the execution
+  followed_plan: true
+  loss_type: C
+  mistakes: [early_execution, ignored_fvg]   # trader: "mistake here was early execution, ignoring FVG"
+  behaviors: [waited_for_confirmation, respected_invalidation, correct_sizing, did_top_down]
+  outside_control: []
+  lesson: >-
+    Confirmations do not make a location. A real CH, a clean reclaim, a tight structural stop and 3R still failed
+    as a deviation in the middle of a 4h pullback with unmitigated FVGs below it (trader: "regardless how worth trade
+    was for these confirmations and RR"). Checklist items 1 and 4 already say it: no HTF zone at the entry, no trade.
+  actionable_change: "Run checklist items 1 and 4 first: if price is not at a 4h demand zone or FVG, the 1h confirmations are not evaluated."
+  strategy_change: "no"
+  evidence_strength: low

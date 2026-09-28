@@ -12,16 +12,17 @@ direction: "long"
 session: null
 timeframes:
   htf: "4h"                   # bias, demand, divergence, resistance
-  execution: "1h"             # trader: "(2) which is on 1H to understand more how we execute on lower time frames"
-  chain: ["4h", "1h"]
-  top_down: true              # 4h context and zone, then 1h CH, reclaim, retest and entry
+  execution: "4h"             # corrected 2026-09-28 (INC-017): the green box + bullish CH decided the entry; was "1h"
+  chain: ["4h"]
+  detail: ["1h"]              # trader: "1H is shown more detailed data if there's any demand level or FVG that didn't get mitigated"
+  top_down: true              # 4h context, zone and CH; the 1h for detail (the CH line is drawn on both)
 
 setups: [demand_level, liquidity_sweep, choch, reclaim, retest, divergence]
 regime: [range, bullish]      # 4h: range about 51-77 since June; trader's bias bullish, with the June bearish 4h CH as the caveat
 
 strategy:
   id: supply-demand-structure
-  version: "1.9"                # retagged through CHG-009 (clarifications)
+  version: "1.10"               # retagged through CHG-010 (clarifications)
   experiment: null
   variant: null
 
@@ -99,6 +100,7 @@ evidence:
     - "tj size: stop distance 6.282%. 7x: 44.0% of margin lost at the stop, isolated liquidation about 46.90 (2.21x the stop distance). 8x: 50.3% of margin, liquidation about 47.87. The 50-60% aim (2026-09-28) is 7.96x to 9.55x. Targets: 62.64 = 2.40R, 66.10 = 3.41R, 70.70 = 4.75R."
   interpreted:
     - "The 1h shows the trader's sequence: demand traded through (sweep to about 51.12), bullish CH by close above about 56.00, demand reclaimed, retest into the zone, long. The same CH line is drawn on the 4h."
+    - "Trader, 2026-09-28: the entry came from the 4h (the green box + the bullish CH: 'I didn't have to jump to LTF'); the 1h shows unmitigated demand levels and FVGs. An extra order at the unmitigated 1h FVG on the lowest side 'wouldnt be wrong if I did'; the trader skipped it thinking that losing the green box would weaken and invalidate the setup, and asks that this reasoning not be copied ('Don't copy me on last sentence')."
     - "The 1h RSI shows a regular bullish divergence into the Aug 2 sweep low (lower low in price, higher low in RSI). It supports the trader's 4h divergence; the 4h reading itself is not visible in the screenshots."
     - "Checklist (v1.4, re-checked under v1.6): items 1-4 pass (4h demand; sweep below it; CH by close on 1h and 4h; entry at the zone on the retest). Item 6 passes: 7x (44.0%) and 8x (50.3%) are both within the 60% limit (8x inside the 50-60% aim), and the 66.10 order gives 3.41R (the trader confirmed 66.10; 62.64 was not the target). Item 5 passes: the stop sits a bit below the swing that created the confirmed CH (the Aug 2 low), the trader's stop rule ('yes exactly', 2026-09-27). Item 7 passes (no entry at an inducement)."
     - "The demand had been traded through (Jul 30-Aug 2) before the Aug 7 entry. Trader (2026-09-27): 'on T-0006 there wasn't any mitigation, it was a reclaim level + CH.' My earlier reading of it as a mitigated zone was wrong and is withdrawn."

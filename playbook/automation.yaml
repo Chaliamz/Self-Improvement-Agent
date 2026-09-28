@@ -15,6 +15,9 @@ open_questions:
   - "2. Alerts: where should the bot send a halt or malfunction alert (Telegram, email, both)? After a halt, does it restart only when you restart it?"
   - "3. Pairs: are BTC, ETH and HYPE the USDT-margined perpetual futures on MEXC (BTC_USDT, ETH_USDT, HYPE_USDT)?"
   - "4. Scope: the bot focuses on swing and day trading (1D-4h bias, 1h-30m levels and confirmations). Are 1m-5m scalps like T-0003 outside the bot, left to you by hand?"
+  - "5. Split entries: on MEXC one position carries one leverage setting, whatever fills. The bot would set it from the first order (the widest stop), so no combination of fills goes above 60% of the margin at the stop; if all three fill, the share is lower (tj size --add-entry shows each case). Agreed?"
+  - "6. Split entries and R: if only 1 of 3 orders (0.3%) fills and the stop is hit, does that count as -1R of the risk actually taken, or -0.3R of the planned 1%? It decides how split trades enter your statistics."
+  - "7. The bot runs the checklist, so a trade like T-0009 (graded B, but no 4h zone at the entry: items 1 and 4 fail) would be skipped. Is that what you want, or should some B setups outside a zone still be taken?"
 
 # Mandatory (trader, 2026-09-28: "Yes that's a huge MUST. We need to avoid these types of actions at all costs.
 # Protecting our capital is important."). Separate from the trading rules, which have no daily stop and no pause:
@@ -32,7 +35,7 @@ malfunction_guard:
       action: "Place the planned stop at once; if the exchange refuses it, close the position at market. Then halt."
     - id: G2
       name: "Risk above 1%"
-      trigger: "Size x (entry to stop distance) plus fees is above 1% of equity, checked before sending and again on the fill."
+      trigger: "Size x (entry to stop distance) plus fees is above 1% of equity for the setup (all its split orders together; 0.9% for three), checked before sending and again on every fill."
       action: "Refuse the order; if already filled, reduce the position to 1% risk. Halt."
     - id: G3
       name: "Leverage above the margin rule"
@@ -44,7 +47,7 @@ malfunction_guard:
       action: "Refuse the order. Halt."
     - id: G5
       name: "Order burst or duplicate"
-      trigger: "More orders in a window than the strategy can produce (limit set from the backtest's highest signal rate), or a second order for a setup already ordered."
+      trigger: "More orders in a window than the strategy can produce (limit set from the backtest's highest signal rate), or more orders for one setup than its split plan (at most 3 limits, one stop, one target)."
       action: "Cancel the extra orders. Halt."
     - id: G6
       name: "Order inside the news window"

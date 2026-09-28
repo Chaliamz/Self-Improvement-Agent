@@ -192,3 +192,21 @@ changes:
       corrected: grade D, setup valid, loss type D -> C, entered_before_confirmation added, rescored (setup 2 -> 4,
       execution 2 -> 1). All supply-demand trades retagged 1.9.
     resulting_version: "1.9"
+  - id: CHG-010
+    kind: clarification
+    date: 2026-09-28
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-28: "In that case, entry was on 4H chart. Ignore small and weak candles." ... "Usually it's going
+      to be until 3 limit orders. 1 order only = 1% (Full size), 2 orders= 0,5% each, 3 orders= 0,3% (it's okay if
+      it's 0.9% total risk) and yes SL and TP are the same for all orders." ... "1H is shown more detailed data if
+      there's any demand level or FVG that didn't get mitigated. When we get confirmation we execute hunting extreme
+      demand levels or FVGs." ... "(Don't copy me on last sentence)" ... "just very close to that swing point or
+      demand/supply level". T-0009: "Setup B because of FVG ignorance but decent confirmations".
+    fields: [timeframes, grading, entry_timing, split_entries, stop_model, common_mistakes, open_questions]
+    note: >-
+      The candle-size condition in entry_timing is withdrawn by the trader ("Ignore small and weak candles"); it was
+      never a measurable rule. T-0006 re-recorded: execution 4h, the 1h as detail. T-0004's entered_before_confirmation
+      replaced by the trader's own term early_execution (also T-0009). All supply-demand trades retagged "1.10".
+    resulting_version: "1.10"

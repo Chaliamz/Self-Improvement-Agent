@@ -39,6 +39,13 @@ EXPERIMENT_ID_RE = re.compile(r"^EXP-\d{3,}$")
 VERSION_FILE_RE = re.compile(r"^playbook/strategies/[^/]+/v[^/]+\.yaml$")
 # TradingView notation: m minutes, h hours, D days, W weeks, M months. "1M" is a month, never a minute.
 TIMEFRAME_RE = re.compile(r"^\d+(m|h|D|W|M)$")
+TF_MINUTES = {"m": 1, "h": 60, "D": 1440, "W": 10080, "M": 43200}
+
+
+def tf_minutes(tf) -> int | None:
+    """A timeframe in minutes, for ordering only (a month counts as 30 days)."""
+    m = TIMEFRAME_RE.match(str(tf))
+    return int(str(tf)[:-1]) * TF_MINUTES[m.group(1)] if m else None
 
 
 @dataclass
@@ -144,12 +151,21 @@ def _check_timeframes(t: dict, where: str, add: _Sink, opened, closed) -> None:
     for value in chain:
         if not TIMEFRAME_RE.match(str(value)):
             add(ERROR, where, f"timeframes.chain entry '{value}' is not a timeframe (m/h/D/W/M)")
+    detail = dig(t, "timeframes.detail", [])
+    if not isinstance(detail, list):
+        add(ERROR, where, "timeframes.detail must be a list of lower timeframes viewed for detail, not execution")
+        detail = []
+    execution = dig(t, "timeframes.execution")
+    for value in detail:
+        if not TIMEFRAME_RE.match(str(value)):
+            add(ERROR, where, f"timeframes.detail entry '{value}' is not a timeframe (m/h/D/W/M)")
+        elif tf_minutes(execution) is not None and tf_minutes(value) >= tf_minutes(execution):
+            add(ERROR, where, f"timeframes.detail entry '{value}' is not below the execution timeframe ({execution})")
     top_down = dig(t, "timeframes.top_down")
     if top_down is not None and not isinstance(top_down, bool):
         add(ERROR, where, "timeframes.top_down must be true, false or null")
-    elif top_down is True and len(chain) < 2:
-        add(WARN, where, "top_down is true but timeframes.chain lists fewer than two timeframes")
-    execution = dig(t, "timeframes.execution")
+    elif top_down is True and len(chain) + len(detail) < 2:
+        add(WARN, where, "top_down is true but timeframes.chain and detail list fewer than two timeframes")
     if execution is not None and str(execution).endswith("M"):
         add(WARN, where, f"timeframes.execution '{execution}' means {str(execution)[:-1]} month(s). For minutes write "
                          f"'{str(execution)[:-1]}m'")

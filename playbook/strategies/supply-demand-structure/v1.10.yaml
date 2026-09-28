@@ -1,0 +1,242 @@
+# Strategy version file (§5, §21). IMMUTABLE once committed.
+#
+# v1.10 is a CLARIFICATION of v1.9 (CHG-010): candle size is not an entry criterion, the split-entry sizes, the
+# 1h as a detail timeframe (T-0006), how close the stop sits, and T-0009 as the B example (trader, 2026-09-28).
+# No rule changed; no performance claim.
+
+version: "1.10"
+date: 2026-09-28
+source: "Trader's answers on entry timing, split entries, T-0006 and the stop buffer, and the T-0009 review, 2026-09-28. Clarifies v1.9 (CHG-010)."
+supersedes: "1.9"
+
+direction: "Both. Longs from demand, shorts from supply. Every rule mirrors (trader: '6) yes')."
+
+timeframes:
+  statement: >-
+    "We start from 1D-4H for bias (we can execute on 4H as well only if setups are great "T-0006+T-0007 are great
+    examples), we can jump to 1H-30M for levels + confirmations as long as we focus on swing trades and day
+    trading" (trader, 2026-09-28).
+  bias: ["1D", "4h"]
+  levels_and_confirmations: ["1h", "30m"]   # swing and day trading
+  execution_4h: "Only when the setup is great (T-0006, T-0007)."
+  detail: >-
+    "1H is shown more detailed data if there's any demand level or FVG that didn't get mitigated. When we get
+    confirmation we execute hunting extreme demand levels or FVGs" (trader, 2026-09-28). T-0006's entry was decided
+    on the 4h (the green box + the bullish CH); the 1h showed the detail.
+  key_levels: "4h"
+  structure_confirmation: ["15m", "30m", "1h"]
+  execution: ["4h", "1h", "30m", "5m"]   # T-0001 and T-0007 4h, T-0006 1h, T-0005 30m, T-0004 5m
+  combinations:
+    - "4h zone, 4h execution with a limit at the zone (T-0001, T-0007)"
+    - "4h zone, divergence and 4h CH; the 1h shows unmitigated demand levels and FVGs for the limits; entry at the zone (T-0006)"
+    - "4h bias, 1h S/R reclaim with a CH, away from any 4h zone (T-0009: graded B, -1R, 'early execution')"
+    - "4h key level, 15m-30m confirmation, 5m execution (T-0004 lesson)"
+    - "Swing and day trading: 1D-4h bias, 1h-30m levels and confirmations; 4h execution only for great setups (trader, 2026-09-28)"
+
+timeframe_alignment: >-
+  A lower-timeframe CHoCH counts only when the 15m-30m structure confirms it. On the 30m, a potential CH
+  is a 30m candle that closes below the previous bullish 30m candle's low (bearish) or above the previous
+  bearish 30m candle's high (bullish) (trader, 2026-09-27). Until then a 5m CHoCH is only 30m consolidation
+  (T-0004: "the 5M CH was a 30M consolidation"). This is the candle-range rule (see market_structure) applied
+  on the 30m. For a 4h zone executed on the 1h, the CH line is drawn on both charts (T-0006: about 56.00);
+  the 1h is used only after the 4h shows a true CH (T-0008: "If there was a pullback and would see a true CH
+  for potential short, we could jump to (2) 1H time frame").
+
+market_structure:
+  - "Lower low: a candle must CLOSE below the previous low (its wick). A wick below without a close is not a lower low."
+  - "Higher high: a candle must CLOSE above the previous high (its wick)."
+  - "Bullish CHoCH: a candle CLOSE above the last lower high."
+  - "Bearish CHoCH: a candle CLOSE below the last higher low (mirror, confirmed). T-0007: after a new higher high, a lower low broke the previous higher low."
+  - "Candle range (4H candle range): price inside the range of the impulsive candle that made the high is consolidation. A pullback needs a CLOSE below that candle's low (above a bearish candle's high for the mirror). A break of a level inside the range is NOT a CH (trader, T-0008: 'to form a pull back from that price it had to break the lowest line and close below')."
+  - "The candle range is read on the HTF first (4h): its high and low are the cyan lines. A lower-timeframe move inside it can be a 1h pullback, but it is not a 4h pullback; only a 4h close beyond the range changes the story, and only then may a trade be considered (trader, 2026-09-27)."
+  - "Continuation in a bearish environment (lower highs, lower lows): after a pullback, a new lower low must CLOSE below the previous low including its wick; mirror for bullish (trader, 2026-09-27)."
+  - "T-0001: the market was bearish; the 4H reversal (bullish CHoCH) was the confirmation, with confluences (trader, 2026-09-27)."
+
+market_conditions: []         # not stated
+
+trend_context: >-
+  Counter-trend trades are graded like any other setup; they are just a bit riskier (trader, 2026-09-27).
+  T-0007: short at ATH levels while the bias was bullish, "definitely worth the risk" at 4.12R. An FVG in the
+  trend's direction between entry and target is a warning: price may close the gap or continue (T-0007).
+
+grading:
+  scale: [S, A, B, C, D]
+  trade: "S, A and B are tradeable; C maybe; D avoided: 'we can consider trading S,A,B,C trading setups. We would avoid D setups and maybe C ones as well' (trader, 2026-09-27)."
+  S: >-
+    "Having proper confluences, clear confirmations, sniper entries leading to TP and a high RR (3.5RR and
+    higher)". The 3.5R is a rough guide: "it doesnt matter if that's 3.5R it could be slightly less" (trader,
+    2026-09-27). T-0007 (4.12R) was graded S; the avoided POL short (T-0008, 3.40R) "would be perfectly S" had a
+    true CH formed.
+  separated_by: "The quality of the setup (trader, 2026-09-27)."
+  A: >-
+    A good setup executed well, one step short of S. T-0001: "would be A because I missed extreme demand level
+    but I got the reclaim support level ... it would be S if I would get extreme demand and get higher RR".
+    T-0006: "would be A because I executed well but had to let it reach supply level so it would be an S".
+  B: >-
+    "B setup would be anything with decent RR but few confluences, which means it could be a risky execution"
+    (trader, 2026-09-28). T-0009: "Setup B because of FVG ignorance but decent confirmations where could lead to
+    good RR" (-1R).
+  C: >-
+    A setup taken without the full process, whatever the result. T-0003: "would be C because I focused only on
+    1M time frame regardless of win".
+  D: >-
+    "D would definitely be a poor trade+mistake" (trader, 2026-09-27). T-0004: "it's D setup because it executed
+    poorly (mistake) setup was good but executed early" (trader, 2026-09-28): a good setup can be a D when the
+    execution is the mistake.
+
+required_conditions:
+  - "CHoCH on the 4H in the trade's direction, close-based (see market_structure)."
+
+confirmation:
+  - "Reversal on the 4H (bullish for longs, bearish for shorts)"
+  - "Extreme demand level (longs) / extreme supply level (shorts)"
+  - "Demand reclaimed after being traded through, then retested (T-0006)"
+  - "Supply/demand level not yet retested: limit order placed at it (T-0007)"
+
+confluences:
+  - "Liquidity sweep"
+  - "Strong momentum + volume in the trade's direction"
+  - "Inducement swept into the zone (equal lows below for longs, equal highs above for shorts). Never trade the inducement itself (see inducements)."
+  - "Potential opposing level (used for the target)"
+  - "Divergence at the swing (see divergence). A confluence only."
+  - "Fair value gap (FVG) left by the move that created the zone (trader, 2026-09-27)."
+  - "Key S/R level with many reactions as the target (T-0007: the red ray at 7,574)"
+
+zones:
+  definition: >-
+    A supply/demand level is drawn where price created a CH: a bearish CH leaves a supply, a bullish CH
+    leaves a demand. It is stronger when the move also left an FVG. Trader, 2026-09-27: "we draw supply
+    demand levels which form a FVG +CH". The zone is the level that created the reversal, not a sweep candle
+    (trader, 2026-09-27). T-0005: the level that created the reversal left the new supply; the short was its
+    retest. T-0007: the level that created the CH, close to the swing high, so it could also act as an
+    inducement: that is why the stop went above the swing high.
+  freshness: >-
+    "A supply/demand level is high probability when it's not retested (mitigated)." "The more a
+    supply/demand level mitigates the weaker it becomes." T-0001's demand kept an FVG that was not filled
+    (trader, 2026-09-27). Unlike support/resistance, where more reactions make a level stronger. A zone that
+    price trades through and then reclaims with a CH is a reclaim level, not a mitigated zone (T-0006: "there
+    wasn't any mitigation, it was a reclaim level + CH"). T-0007's supply is the trader's mitigation example.
+  extreme_demand: >-
+    The full wick-to-wick range of the candle at the lower low that formed massive volume and a
+    point of interest (trader, 2026-09-26). T-0001: 85.61 to 88.05. Massive volume: the volume bar
+    "exploded", much more than 2x; the trader asks not to focus on this (2026-09-27).
+  extreme_supply: "Mirror: the full wick-to-wick range of the high-volume candle at the higher high."
+
+inducements: >-
+  "AVOID Inducements at all costs" (trader, 2026-09-27). Equal lows/highs are resting liquidity (AAVE,
+  T-0001: the equal lows were the inducement). There is no fixed tolerance for "equal": they may take
+  longer to form and still count as a liquidity level likely to be swept (trader, 2026-09-27). Price is
+  expected to sweep them into the zone: do not enter at them, and do not leave the stop just beyond them
+  (T-0004: "I became the liquidity").
+
+divergence:
+  regular_bullish: "Price lower low, indicator higher low: buy."
+  regular_bearish: "Price higher high, indicator lower high: sell (T-0007: 7,793.9 -> 7,817.6 with RSI 81.1 -> 70.5)."
+  hidden_bullish: "Price higher low, indicator lower low: buy."
+  hidden_bearish: "Price lower high, indicator higher high: sell."
+  timeframe: "Most timeframes work; the higher the timeframe, the stronger (trader, 2026-09-27)."
+  reading: "Swings on the RSI and on the chart are read on wicks. The RSI length is irrelevant (trader, 2026-09-27)."
+  role: "Just a confluence (trader). Never required."
+  source: "Reference chart the trader supplied to memorize, 2026-09-27 (four panels: regular and hidden, bullish and bearish)."
+
+entry_timing: >-
+  After a CH, the limit goes at the zone on the timeframe the setup is read on, the longer the better: "the longer
+  time frame the better, the best example is T-0007" ("In that case, entry was on 4H chart"). Candle size after the
+  CH is not a criterion: "Ignore small and weak candles" (trader, 2026-09-28). T-0006: the green box (demand) + the
+  bullish CH were enough, "so I didn't have to jump to LTF". An unfilled limit is cancelled when price reaches the TP
+  level first ("I cancel limit when hasnt filled when price reaches TP level", 2026-09-27).
+
+split_entries: >-
+  Optional. On the 1h or 30m, find extra unmitigated demand levels + FVGs and split the size across limit orders:
+  "Usually it's going to be until 3 limit orders. 1 order only = 1% (Full size), 2 orders= 0,5% each, 3 orders=
+  0,3% (it's okay if it's 0.9% total risk) and yes SL and TP are the same for all orders" (trader, 2026-09-28).
+  Supply mirrors. An unfilled order is cancelled like any limit when price reaches the TP first. T-0006: an order
+  at the unmitigated 1h FVG under the green box "wouldnt be wrong if I did"; the trader's reason for skipping it
+  (that losing the green box would weaken and invalidate the setup) is NOT a rule: "Don't copy me on last
+  sentence". Sizing: tj size --add-entry.
+
+entry_models:
+  extreme_demand: "Primary (long): at the extreme demand level."
+  extreme_supply: "Primary (short): at the extreme supply level (mirror)."
+  supply_level: >-
+    Short at a supply level created by a bearish CH: sell limit at the unretested supply (T-0007), or the
+    short on its first retest (T-0005, the level that created the reversal).
+  demand_level: "Mirror of supply_level: long at a demand level created by a bullish CH, on its first retest."
+  reclaim: >-
+    Longs when price reclaims a swept level or a demand it traded through and retests it as support;
+    shorts mirror. T-0001: a swept level, used when the primary entry was missed. T-0006: a reclaim level +
+    CH (the 4h demand traded through, reclaimed, and the long taken on its retest).
+
+stop_model: >-
+  Placed where the setup is invalidated. Longs: below the demand zone, the swing low, or a liquidity
+  level. Shorts: above the supply zone, the swing high, or a liquidity level (trader, 2026-09-26).
+  T-0001: at a liquidity level from the left that had been reclaimed as support. A return there means
+  price reverses lower or goes into consolidation, and the setup is invalid.
+  Not just beyond an obvious swing high/low: that is liquidity price sweeps before reversing, and the
+  valid entry forms exactly there (trader, T-0004: "valid short position would be exactly on where I
+  put my SL"). The stop goes beyond the zone that forms from the sweep (T-0005: above the new supply).
+  T-0006: "placed SL on the last swing low it created" (51.02, under the Aug 2 sweep low of about 51.12).
+  T-0007: "Our SL would obviously be our latest swing high in case level gets invalidated" (7,818.4,
+  about 0.8 above the ATH that created the bearish CH).
+  How close: "just very close to that swing point or demand/supply level" (trader, 2026-09-28): no fixed buffer.
+  T-0006 about 0.10 under the low (0.18% of price), T-0007 about 0.8 over the high (0.01%), T-0009 about 0.0005 under
+  the higher low (0.14%).
+  The rule (trader, 2026-09-27: "yes exactly"): the stop goes a bit beyond the swing that created the
+  confirmed CH: a bit lower than the swing low for longs, a bit higher than the lower high / swing high for
+  shorts. T-0006 and T-0007 are the examples. T-0004's stop sat beyond a high whose 5m CH the 30m never
+  confirmed, so that high was liquidity. At liquidity levels (equal highs/lows, trendlines) wait for the
+  break-sweep and the reclaim, then take the retest (T-0001, AAVE).
+target_model: >-
+  Opposing levels. "Both are ideal but it's more preferable to hunt strongest levels" (trader,
+  2026-09-27): the strongest opposing level (e.g. the next supply/demand zone; T-0006: the 70.70 supply)
+  is preferred over the first level that gives at least 2.5R, which is acceptable. High R:R is hunted:
+  1:3 minimum preferred, 1:2.5 accepted. T-0006's order was 66.10 (3.41R): "I was happy with RR".
+  T-0007: the key S/R level at 7,574 (4.12R).
+filters:
+  min_rr: 2.5
+  preferred_rr: 3.0
+risk_model: >-
+  1% of equity per trade, always. Fees are inside the 1% (trader, 2026-09-27); the bot will count them separately.
+  No daily stop, no pause after losses, no cap on the number of open trades: "there's no stopping we stick to the
+  plan. only 1% risk we ignore frequency. there's no pause" (trader, 2026-09-27).
+leverage_model: >-
+  Isolated margin. Leverage is chosen from the stop distance so that the loss on the posted margin at the
+  stop (stop distance % x leverage) is 50-60%: "always aim for 50-60% at the stop" (trader, 2026-09-28),
+  because "margin call occurs on 80%" (2026-09-27). Above 60% is a breach; below 50% is only short of the aim
+  (the loss at the stop is still 1%). Liquidation must also sit beyond the stop: on tight stops the aim's top
+  can liquidate first (0.6% stop: 100x is 60%, but a 0.5% maintenance rate liquidates first above about 91x;
+  tj size prints the cap). T-0001: 3.14% x 10x = 31.4%. T-0006: 6.28% x 7-8x = 44-50.3%.
+  T-0007: 0.615% x 20x = 12.3%. No fixed leverage cap: "with invalidation we can adjust leverage so we won't be
+  close to margin call (80%). for example having 7% invalidation we can use until 7-8X" (trader, 2026-09-27).
+  Leverage never changes the 1% risk.
+
+management:
+  default: "Hold until TP hits."
+  breakeven: "Barely used."
+  partials: "Barely used."
+  trailing: null
+  reentry: null
+  max_hold: null
+  early_exit: null
+  invalidation: "Stop at the invalidation level (see stop_model)."
+
+do_not_trade_when:
+  - "Best target gives less than 2.5R."
+  - "The lower-timeframe CHoCH is not confirmed on 15m-30m (T-0004)."
+  - "The entry would be at an inducement ('AVOID Inducements at all costs')."
+  - "A high-impact (red) USD event on ForexFactory is due within the next hour: no new entry, and resting orders are cancelled. Entries resume 1 hour after the release: 'they can resume after 1H after manipulation could stop. anything resting gets cancelled too' (trader, 2026-09-28). Open trades are kept (2026-09-27)."
+
+checklist:                     # run item by item in every pre-trade analysis (workflow B)
+  - "1. HTF key level or supply/demand zone identified (4h): drawn from a CH, stronger with an FVG, fresh (unmitigated) preferred."
+  - "2. Liquidity swept into the zone (equal highs/lows or an obvious swing)."
+  - "3. CHoCH by candle close, beyond the range of the impulsive candle that made the swing, read on the HTF (4H candle range): a break inside that range is NOT a CH, even if the 1h shows a pullback (T-0008). On the 30m: a close below the previous bullish 30m candle's low (shorts) / above the previous bearish 30m candle's high (longs); a 5m CHoCH alone does not count."
+  - "4. Entry at the zone (supply for shorts, demand for longs), not at a lower-timeframe CHoCH below/above it."
+  - "5. Stop a bit beyond the swing that created the confirmed CH (beyond the zone too); never beyond a swing whose CH is unconfirmed, which is liquidity (T-0004)."
+  - "6. Margin loss at the stop 50-60% of isolated margin (never above 60%) with liquidation beyond the stop, and best target >= 2.5R (3R preferred; the strongest level preferred)."
+  - "7. No entry at an inducement: equal highs/lows are liquidity to be swept into the zone."
+  - "8. No red USD event on ForexFactory within the next hour or released within the last hour (new entries; resting orders are cancelled for that window)."
+
+common_mistakes: [ignored_htf, stop_in_liquidity, excessive_leverage, false_ch, early_execution, ignored_fvg]   # T-0004, T-0009
+
+open_questions:
+  - "1. T-0004 and T-0009 were both 'executed early', yet T-0004 is a D and T-0009 a B. Is the difference that T-0009's CH was real (closes on the 1h and the 4h) and its risk inside your rules, while T-0004's CH was false (a 5m break the 30m never confirmed) and its leverage 76.7% of margin?"

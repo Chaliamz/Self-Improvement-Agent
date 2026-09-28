@@ -21,6 +21,10 @@ risk:
   preferred_rr: 3.0                   # 'I prefer hunting 1:3RR minimum'
   max_correlated_positions: "none"    # "no, we take every valid setup, bad days will happen either way" (2026-09-28)
   fees_inside_risk: true              # 'Everything is inside them' (fees within the 1%); the bot counts them separately
+  split_entries:                      # optional split limit entries, one stop and one target (trader, 2026-09-28)
+    max_orders: 3
+    risk_pct_per_order: {1: 1.0, 2: 0.5, 3: 0.3}   # 3 x 0.3% = 0.9%: "it's okay if it's 0.9% total risk"
+    same_stop_and_target: true
 
 leverage:
   max_leverage: "none"                # no fixed cap: leverage is set from the stop distance by the margin rule below
@@ -50,7 +54,7 @@ timeframes:                           # notation: m minutes, h hours, D days, W 
   swing:
     structure: "4h"                   # T-0001
     execution: "4h"                   # T-0001
-    execution_ltf: "1h"               # T-0006: 4h zone, 1h CH, reclaim, retest and entry
+    detail_ltf: "1h"                  # detail only: unmitigated demand levels and FVGs; T-0006's entry was on the 4h (2026-09-28)
   scalp:
     structure: "30m-1h"               # bias and structure (trader, 2026-09-27)
     key_levels: "15m"                 # key levels + liquidity
@@ -70,10 +74,10 @@ grading:
   s_criteria: "Proper confluences, clear confirmations, sniper entries leading to TP and a high RR (3.5RR and higher)."
   separated_by: "The quality of the setup (trader, 2026-09-27)."
   a_criteria: "A good setup executed well, one step short of S: a better entry or a stronger target would have made it S (T-0001, T-0006)."
-  b_criteria: "Decent R:R but few confluences: 'it could be a risky execution'."
+  b_criteria: "Decent R:R but few confluences: 'it could be a risky execution'. T-0009: 'Setup B because of FVG ignorance but decent confirmations'."
   c_criteria: "A setup taken without the full process, 'regardless of win' (T-0003: only the 1m timeframe)."
   d_criteria: "A poor trade plus a mistake: 'D would definitely be a poor trade+mistake'."
-  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S}
+  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B}
 
 # News filter (trader, 2026-09-27). Applies to NEW entries only: open trades are kept.
 news_filter:
@@ -130,6 +134,9 @@ terminology:
   4H candle range: "The range of the impulsive candle that made the high/low (cyan lines). Inside it = consolidation. A pullback must CLOSE beyond its opposite end."
   NOT CH: "A break of a level inside a candle range. Consolidation, not a change of character (T-0008)."
   pullback: "From a high, price must break and CLOSE below the low of the candle range, read on the HTF (4h); otherwise it is consolidation. A 1h pullback inside a 4h candle range is not a 4h pullback (trader, T-0008)."
+  early execution: "Entering before the setup's confirmation or location is reached: 'setup was good but executed early' (T-0004); 'mistake here was early execution' (T-0009)."
+  ignoring FVG: "Taking a trade with an unmitigated FVG left behind it: 'I ignored FVG on the left so I knew that this execution was risky' (T-0009)."
+  middle of nowhere: "Price away from any HTF zone: 'price was in the middle of nowhere. I'd focus at 0.27-0.31 zone to consider looking for longs' (T-0009)."
   counter-trend: "Trading against the HTF trend (T-0007: short at ATH levels). Graded like any other setup; just a bit riskier (trader, 2026-09-27)."
 
 # Where each resolved value came from: {path: "stated 2026-09-26 in T-0003 review"}
@@ -144,7 +151,7 @@ sources:
   process.top_down: "Trader: 'memorize Top Down analysis', 2026-09-26"
   timeframes.intraday: "Trader, T-0004: 4H key level, 15-30M ignored (the mistake), 5M execution"
   timeframes.scalp.structure: "Trader, 2026-09-27: 'We prefer starting 30M-1H time frame to identify bias and structure then we go to 15M to identify key levels+liquidity and we can find confirmations on 1M-5M'"
-  timeframes.swing.execution_ltf: "Trader, T-0006: '(2) which is on 1H to understand more how we execute on lower time frames'"
+  timeframes.swing.detail_ltf: "Trader, 2026-09-28: '1H is shown more detailed data if there's any demand level or FVG that didn't get mitigated.' (T-0006: '(2) which is on 1H to understand more how we execute on lower time frames')"
   risk.fees_inside_risk: "Trader, 2026-09-27: 'Everything is inside them ... When we open the AI Bot we will count them separately.'"
   instruments.HYPEUSDT: "T-0006 chart (Bybit HYPEUSDT perpetual), 2026-09-27"
   instruments.SPX500: "T-0007 chart (Capital.com S&P 500 index CFD, 4h), 2026-09-27"
@@ -171,4 +178,6 @@ sources:
   leverage.margin_mode: "Trader: 'which means I use an isolated margin', 2026-09-26"
   leverage.max_margin_loss_at_stop_pct: "Trader, 2026-09-28: 'always aim for 50-60% at the stop' (the latest statement; 50% on 2026-09-26, up to 55% on 2026-09-27)"
   risk.min_rr: "Trader: 'I could enter a trade with 1:2,5RR as well', 2026-09-26"
+  risk.split_entries: "Trader, 2026-09-28: 'Usually it's going to be until 3 limit orders. 1 order only = 1% (Full size), 2 orders= 0,5% each, 3 orders= 0,3% (it's okay if it's 0.9% total risk) and yes SL and TP are the same for all orders'"
+  grading.examples.T-0009: "Trader, 2026-09-28: 'Setup B because of FVG ignorance but decent confirmations where could lead to good RR'"
   risk.preferred_rr: "Trader: 'I prefer hunting 1:3RR minimum', 2026-09-26"

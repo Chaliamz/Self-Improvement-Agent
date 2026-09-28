@@ -193,3 +193,31 @@ incidents:
     found_by: agent
     status: fixed
     fix: "The validator refuses a numeric strategy.version, current_version or resulting_version; a test proves it."
+
+  - id: INC-017
+    date: 2026-09-28
+    area: data
+    severity: medium
+    title: "T-0006 execution timeframe recorded as 1h; the entry was decided on the 4h"
+    detail: >-
+      The record followed the trader's chart caption ("how we execute on lower time frames"). The trader: the green
+      box + the bullish CH were enough ("I didn't have to jump to LTF"); the 1h shows unmitigated demand levels and
+      FVGs. The trade schema could not say "execute on the 4h, look at the 1h for detail": the validator wanted the
+      timeframe chain to end at the lowest timeframe viewed.
+    found_by: trader
+    status: fixed
+    fix: "T-0006 execution 4h with detail [1h]; a new timeframes.detail field, validated to sit below the execution timeframe, with a test."
+
+  - id: INC-018
+    date: 2026-09-28
+    area: data
+    severity: low
+    title: "Two chart-read errors on T-0009, caught before recording"
+    detail: >-
+      The grey price-label box at the right edge of the 1h chart was read as candles, which put a false 0.4247 touch
+      on May 6 (the 1h never went above about 0.394); and the first FVG fill check counted the gap's own closing
+      candle as a later touch. Both contradicted other reads and were traced before anything was written.
+    found_by: agent
+    status: caught
+    fix: "Label boxes masked, the FVG check rewritten on candle indices; the 4h and 1h reads cross-checked (same high and low for the Apr 28 15:00 4h bar)."
+

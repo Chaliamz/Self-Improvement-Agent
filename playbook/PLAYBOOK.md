@@ -4,15 +4,15 @@ Consolidated knowledge (system prompt §27). Every entry must cite the evidence 
 trade IDs, n, and the `./tj` output it rests on. An entry without evidence does not belong
 here; it belongs in a trade record's `evidence.hypotheses`.
 
-Status: **INITIALIZATION.** 5 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007), 1 missed (T-0002), 2 not
-taken (T-0005, T-0008; counterfactual only). Overall (`./tj stats`): +2.81R expectancy, 95% CI [+0.81, +4.16], n=5, LOW
-tier. Five trades cannot separate skill from luck. Nothing below is established.
+Status: **INITIALIZATION.** 6 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009), 1 missed (T-0002), 2
+not taken (T-0005, T-0008; counterfactual only). Overall (`./tj stats`): +2.17R expectancy, 95% CI [+0.39, +3.91], n=6,
+LOW tier. Six trades cannot separate skill from luck. Nothing below is established.
 
 ## Strategies
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.9 | unvalidated | 4 (T-0001, T-0004, T-0006, T-0007) | n=4: +2.77R point estimate, no CI below n=5 (LOW) |
+| supply-demand-structure | 1.10 | unvalidated | 5 (T-0001, T-0004, T-0006, T-0007, T-0009) | n=5: +2.02R, 95% CI [-0.12, +4.16] (LOW) |
 | key-level-sr | 1.3 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW) |
 
 ## Established rules
@@ -24,8 +24,8 @@ _None._
 ## Hypotheses
 - **Top-down vs lower-timeframe-only.** The trader flags LTF-only entries as risky (T-0003) and names skipping the
   15m-30m as the cause of T-0004. Evidence (`./tj stats --by top_down`): n=2 without complete top-down (T-0003
-  +2.94R, T-0004 -1.00R), n=1 with it (T-0006 +3.41R), T-0001 not recorded. T-0005 had it (+3.09R) but is a
-  counterfactual and excluded. Test: `./tj compare top_down yes no`, from n=5 per side for an interval.
+  +2.94R, T-0004 -1.00R), n=2 with it (T-0006 +3.41R, T-0009 -1.00R: top-down done, but the 4h FVG it showed was
+  ignored), T-0001 and T-0007 not recorded. T-0005 had it (+3.09R) but is a counterfactual and excluded. Test: `./tj compare top_down yes no`, from n=5 per side for an interval.
   Status: observation.
 - **Target the strongest opposing level.** Now the trader's stated preference (v1.5 target model: "more
   preferable to hunt strongest levels"). Whether it pays is untested: T-0006's order was 66.10 (3.41R); the
@@ -33,7 +33,7 @@ _None._
   future trades. Status: hypothesis (performance), rule (preference).
 - **Counter-trend trades.** The trader calls T-0007 (short at ATH, bullish bias) risky but worth it for a very
   solid setup at 4.12R; graded like any other setup, "just a bit riskier" (2026-09-27). `./tj stats --by
-  trend`: with-trend n=3 (+3.64R), counter-trend n=2 (T-0004 -1.00R, T-0007 +4.12R). The trend label is derived
+  trend`: with-trend n=4 (+2.48R; T-0009 -1.00R added), counter-trend n=2 (T-0004 -1.00R, T-0007 +4.12R). The trend label is derived
   from the regime tag, so T-0004 counts as counter-trend against its bullish 30m regime. Far too few to
   compare. Status: observation.
 - **A break inside the impulsive candle's range is consolidation, not a CH ("NOT CH").** Now a rule (v1.6
@@ -41,11 +41,18 @@ _None._
   a break inside the 4h candle range, recognised and skipped, -1.00R COUNTERFACTUAL. n=2 (1 realized). Whether
   the filter pays is untested. Status: rule (stated); hypothesis (performance).
 - **Stop beyond the swing that created the confirmed CH.** Now a rule (v1.6 checklist item 5; trader: "yes
-  exactly"). T-0006 and T-0007 kept it; T-0004's stop sat beyond a high whose CH was never confirmed and was
-  swept. Status: rule (stated).
+  exactly"). T-0006, T-0007 and T-0009 kept it; T-0004's stop sat beyond a high whose CH was never confirmed and was
+  swept. How close: "just very close to that swing point or demand/supply level" (2026-09-28): 0.01-0.18% of price
+  so far (T-0007, T-0009, T-0006). T-0009 shows its limit: a correct stop does not rescue a wrong location.
+  Status: rule (stated).
 - **Entry precision (heat on winners).** `./tj build` excursions: median MAE on winners 0.13R (worst 0.33R, n=4:
-  T-0001 0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R); the one loser (T-0004) ran +0.28R before its stop. This
-  measures the trader's "sniper entries" (S criterion). Descriptive only, n=5. Status: observation.
+  T-0001 0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R); the losers ran +0.28R (T-0004) and +0.63R (T-0009) before
+  their stops. This measures the trader's "sniper entries" (S criterion). Descriptive only, n=6. Status: observation.
+- **Location before confirmation.** Both losses were "executed early" by the trader's own review: T-0004 before the
+  30m confirmed, T-0009 before price reached a 4h zone ("price was in the middle of nowhere"). T-0009 had a real
+  CH by close on the 1h and 4h, a structural stop and 2.99R, and still failed as a deviation above unmitigated 4h
+  FVGs. `./tj errors`: early_execution x2 (-2.00R), below the recurring threshold of 3. Checklist items 1 and 4
+  already encode it. Status: observation (n=2).
 - **Fees on tight-stop scalps.** T-0003's stop was 0.239%. With HYPOTHETICAL fees of 0.02-0.05% per side, 2.94R
   gross becomes 2.38-1.78R net, below the 2.5R minimum, and fee-free sizing would really risk 1.17-1.42%.
   Answered (trader, 2026-09-27): fees are inside the 1% risk and will be counted separately by the bot.
@@ -82,18 +89,20 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
 - A: a good setup executed well, one step short of S (T-0001: missed the extreme demand, took the reclaim;
   T-0006: TP short of the strongest level). C: taken without the full process, whatever the result (T-0003,
   1m only). D: "a poor trade + mistake"; a good setup executed early is a D (T-0004, 2026-09-28).
-- B: "anything with decent RR but few confluences, which means it could be a risky execution" (2026-09-28). No
-  example yet.
-- `./tj stats --by trader_grade`: S n=1 (+4.12R), A n=2 (+3.99R), C n=1 (+2.94R), D n=1 (-1.00R). Far too few to
-  say whether the grade predicts the result. Status: observation.
+- B: "anything with decent RR but few confluences, which means it could be a risky execution" (2026-09-28). T-0009:
+  "Setup B because of FVG ignorance but decent confirmations" (-1.00R).
+- Open: T-0004 (D) and T-0009 (B) were both executed early; what separates them is strategy v1.10 open question 1.
+- `./tj stats --by trader_grade`: S n=1 (+4.12R), A n=2 (+3.99R), B n=1 (-1.00R), C n=1 (+2.94R), D n=1 (-1.00R). Far
+  too few to say whether the grade predicts the result. Status: observation.
 
 ## High-quality setups
 _None._
 
 ## Execution errors
-_None recurring (threshold 3). Source of truth: `./tj errors`: ignored_htf, stop_in_liquidity, excessive_leverage,
-false_ch and entered_before_confirmation x1 each (T-0004), skipped_top_down x1 (T-0003)._ T-0004 is a type C loss
-(execution error) since the trader's 2026-09-28 review: "setup was good but executed early". The top-down rule was broken in both trades where it was recorded
+_None recurring (threshold 3). Source of truth: `./tj errors`: early_execution x2 (T-0004, T-0009; -2.00R), ignored_htf,
+stop_in_liquidity, excessive_leverage and false_ch x1 each (T-0004), ignored_fvg x1 (T-0009), skipped_top_down x1
+(T-0003)._ Both losses are type C (execution errors) in the trader's own words. early_execution is one occurrence
+from the recurring flag. The top-down rule was broken in both trades where it was recorded
 (T-0003, T-0004; terminal Rule compliance). Watch item, not yet a pattern.
 
 ## Risk rules
@@ -127,6 +136,8 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-09-28 | supply-demand-structure v1.10 clarification (CHG-010): candle size is not an entry criterion ("Ignore small and weak candles"); split entries of up to 3 limits (1% / 0.5% each / 0.3% each, one stop and target; `tj size --add-entry`); the 1h as a detail timeframe; stops "just very close" to the swing or level; T-0009 is the B example. No rule changed | trader's answers; T-0009 |
+| 2026-09-28 | T-0009 TIAUSDT long -1.00R (reclaim, 1h, grade B, loss type C: early execution, FVG ignored). T-0006 execution re-recorded 4h with the 1h as detail (INC-017). T-0004's entered_before_confirmation replaced by the trader's own term early_execution | T-0009 charts; trader's answers |
 | 2026-09-28 | supply-demand-structure v1.9 clarification (CHG-009): grade B; T-0004 is the D example; 1D-4h bias and 1h-30m levels for swing/day trading; candles after a CH read on the longest timeframe; optional split limit entries; margin aim 50-60%; news window 1h before to 1h after with resting orders cancelled. No rule changed | trader's answers |
 | 2026-09-28 | key-level-sr v1.3 clarification (CHG-003): the account-wide 50-60% margin aim and news window restated; T-0003's 0.239% stop cannot reach the aim before liquidation (209.6x needed, liquidation first above 135.2x) | trader's answers; `./tj build` exposure |
 | 2026-09-28 | T-0004 corrected: grade D, setup valid, loss type D -> C, entered_before_confirmation added, rescored (setup 2 -> 4, execution 2 -> 1) | trader's correction (INC-014) |

@@ -7,7 +7,7 @@ import sys
 
 from . import analysis, report
 from .model import num
-from .risk import CRITICAL, SizingInput, fmt_cap, max_leverage_liq_beyond_stop, size_position
+from .risk import CRITICAL, SizingInput, fmt_cap, max_leverage_liq_beyond_stop, size_position, split_plan
 from .stats import compare
 from .store import KB, KBError, create_trade, dig, load_kb
 from .validate import validate
@@ -99,6 +99,9 @@ def cmd_size(kb: KB, args) -> int:
     if args.slippage_pct:
         sources.append(("stop slippage", f"{args.slippage_pct}%", "argument"))
 
+    if args.add_entry:
+        return _split_report(p, args, rc, sources, risk_amount, fee_rate, mmr)
+
     inp = SizingInput(
         entry=args.entry, stop=args.stop, risk_amount=risk_amount, side=args.side, equity=equity,
         leverage=args.leverage, margin_mode=margin_mode or "isolated", mmr_rate=mmr, fee_rate=fee_rate,
@@ -164,6 +167,60 @@ def cmd_size(kb: KB, args) -> int:
     print("\nLiquidation is a single-tier approximation (no fees, funding, or tiered MMR); the exchange figure "
           "is authoritative. Linear contracts / spot only.")
     return 1 if any(level == CRITICAL for level, _ in res.flags) else 0
+
+
+def _split_report(p: dict, args, rc: dict, sources: list, risk_amount: float, fee_rate: float, mmr: float) -> int:
+    """Split limit entries (trader, 2026-09-28): the per-order risk comes from profile risk.split_entries."""
+    entries = [args.entry, *args.add_entry]
+    shares = dig(p, "risk.split_entries.risk_pct_per_order") or {}
+    base = num(dig(p, "risk.risk_per_trade_pct"))
+    share = num(shares.get(len(entries), shares.get(str(len(entries)))))
+    if share is None or not base:
+        print(f"error: no per-order risk for {len(entries)} orders in profile risk.split_entries "
+              f"(have: {', '.join(map(str, shares)) or 'none'}; max {dig(p, 'risk.split_entries.max_orders')})", file=sys.stderr)
+        return 2
+    order_risk = risk_amount * share / base
+    plan = split_plan(entries, args.stop, order_risk, leverage=args.leverage, mmr_rate=mmr, fee_rate=fee_rate,
+                      max_margin_loss_pct=num(dig(p, "leverage.max_margin_loss_at_stop_pct")),
+                      margin_loss_aim_min_pct=num(dig(p, "leverage.margin_loss_aim_min_pct")),
+                      targets=tuple(args.target or ()), min_rr=num(dig(p, "risk.min_rr")))
+    if args.side and args.side != plan.side:
+        raise ValueError(f"the stop makes this a {plan.side}, not a {args.side}")
+    print(f"## Split entry — {plan.side.upper()}, {len(entries)} limit orders, one stop and one target\n")
+    print("| Input | Value | Source |\n|---|---|---|")
+    print(f"| entries / stop | {' / '.join(f'{e:g}' for e in plan.entries)} / {args.stop:g} | argument |")
+    for name, value, src in sources:
+        print(f"| {name} | {value} | {src} |")
+    print(f"| risk per order | {share:g}% of equity per order ({order_risk:,.2f}) | profile risk.split_entries |")
+    print("\n| Order (fill order) | Entry | Stop distance | Quantity |\n|---|---:|---:|---:|")
+    for i, (e, q) in enumerate(zip(plan.entries, plan.order_qty), 1):
+        print(f"| {i} | {e:g} | {abs(e - args.stop) / e * 100:.3f}% | {q:.8g} |")
+    head = "| Filled | Avg entry | Quantity | Notional | Loss at stop | Stop from avg |"
+    if args.leverage:
+        head += f" Margin lost at {args.leverage:g}x | Liquidation |"
+    for t in args.target or []:
+        head += f" R:R to {t:g} |"
+    print("\n" + head)
+    print("|" + "---:|" * (head.count("|") - 1))
+    for f in plan.fills:
+        row = f"| {f.orders} | {f.avg_entry:.6g} | {f.qty:.8g} | {f.notional:,.2f} | {f.loss_at_stop:,.2f} | {f.stop_distance_pct:.3f}% |"
+        if args.leverage:
+            row += f" {f.margin_loss_pct:.1f}% | {f.liquidation:,.6g}{' (BEFORE the stop)' if f.liq_before_stop else ''} |"
+        row += "".join(f" {r:.2f} |" for r in f.rr)
+        print(row)
+    print("\nOne leverage setting covers the whole position. The first order alone has the widest stop, so it decides:")
+    if plan.max_leverage_for_rule is not None:
+        rng = f"{plan.min_leverage_for_aim:.2f}x to " if plan.min_leverage_for_aim is not None else "up to "
+        top = min(plan.max_leverage_for_rule, plan.max_leverage_liq_beyond_stop)
+        print(f"- margin rule: {rng}{fmt_cap(plan.max_leverage_for_rule)}; liquidation beyond the stop up to "
+              f"{fmt_cap(plan.max_leverage_liq_beyond_stop)} (maintenance {mmr}); use at most {fmt_cap(top)}")
+    if plan.flags:
+        print("\nFlags:")
+        for level, msg in plan.flags:
+            print(f"- **{level}** {msg}")
+    print("\nUnfilled orders are cancelled when price reaches the target first (the strategy's limit rule). "
+          "Liquidation is a single-tier approximation; the exchange figure is authoritative.")
+    return 1 if any(level == CRITICAL for level, _ in plan.flags) else 0
 
 
 def _scoped(kb: KB, args) -> list:
@@ -266,6 +323,8 @@ def build_parser() -> argparse.ArgumentParser:
     z.add_argument("--slippage-pct", type=float, default=0.0, help="adverse stop slippage, percent")
     z.add_argument("--qty-step", type=float, help="exchange quantity step; size is floored to it")
     z.add_argument("--target", type=float, action="append", help="repeatable")
+    z.add_argument("--add-entry", type=float, action="append",
+                   help="another limit order for a split entry (repeatable); risk per order from profile risk.split_entries")
 
     for name, helptext in (("stats", "performance summary, optionally grouped"),
                            ("report", "full quantitative review (input to the periodic review)")):
