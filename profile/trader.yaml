@@ -7,7 +7,7 @@
 # Units: *_pct fields are PERCENT (1.0 = 1%). *_rate fields are DECIMAL (0.0005 = 5 bps).
 
 account:
-  base_currency: null
+  base_currency: "USDT"               # "we are trading on perpetuals and USDT as our stable coin" (2026-09-28)
   equity: null
   equity_as_of: null
 
@@ -25,6 +25,10 @@ risk:
     max_orders: 3
     risk_pct_per_order: {1: 1.0, 2: 0.5, 3: 0.3}   # 3 x 0.3% = 0.9%: "it's okay if it's 0.9% total risk"
     same_stop_and_target: true
+    r_unit: "the full 1% (risk_per_trade_pct): 1 of 3 orders filled at 3R = +0.9R; the stop is reached only after every order fills"
+    leverage_policy: "first order's stop (the widest), agreed 2026-09-28"
+reporting:
+  measures: [USDT, R]                 # "On trading we will count $ not only RR" (2026-09-28)
 
 leverage:
   max_leverage: "none"                # no fixed cap: leverage is set from the stop distance by the margin rule below
@@ -92,8 +96,9 @@ news_filter:
 # Automation venue (trader, 2026-09-27).
 execution_venue:
   exchange: "MEXC"                    # "I'm expecting to use MEXC as an exchange to use the bot placing orders"
-  pairs: [BTC, ETH, HYPE]             # "The certain ones will be BTC-ETH-HYPE"; more to come. Contract type: bot question 3
+  pairs: [BTC_USDT, ETH_USDT, HYPE_USDT]   # MEXC USDT-margined perpetuals: "yes, we are trading on perpetuals and USDT as our stable coin"; more to come
   styles: [swing, day trading]        # "as long as we focus on swing trades and day trading"
+  scalps: false                       # "for now we don't focus on scalps" (2026-09-28); may be analysed later
 
 # How the trader analyses, in their words.
 process:
@@ -170,8 +175,13 @@ sources:
   news_filter.resume_after_minutes: "Trader, 2026-09-28: 'they can resume after 1H after manipulation could stop. anything resting gets cancelled too.'"
   news_filter.cancel_resting_orders: "Trader, 2026-09-28: 'anything resting gets cancelled too.'"
   sessions: "Trader, 2026-09-28: 'no, no we trade 24/7 regardless.'"
+  account.base_currency: "Trader, 2026-09-28: 'yes, we are trading on perpetuals and USDT as our stable coin.'"
+  execution_venue.scalps: "Trader, 2026-09-28: 'I'm going to analyze further in the future if we go to scalps too, for now we don't focus on scalps.'"
+  reporting: "Trader, 2026-09-28: 'On trading we will count $ not only RR'"
+  risk.split_entries.r_unit: "Trader, 2026-09-28: 'it's impossible to hit SL when only 1 of 3 orders filled. the actual opposite. if 1 order of 3 fills and reaches TP, for example 3RR it's going to be a profit of 0.9R'"
+  risk.split_entries.leverage_policy: "Trader, 2026-09-28: 'Agreed.' (leverage from the first order, the widest stop)"
   risk.max_correlated_positions: "Trader, 2026-09-28: 'no, we take every valid setup, bad days will happen either way.'"
-  execution_venue.pairs: "Trader, 2026-09-28: 'Im going to tell you soon about pairs. The certain ones will be BTC-ETH-HYPE.'"
+  execution_venue.pairs: "Trader, 2026-09-28: 'The certain ones will be BTC-ETH-HYPE.' ... 'yes, we are trading on perpetuals and USDT as our stable coin.' (MEXC BTC_USDT, ETH_USDT, HYPE_USDT)"
   execution_venue.styles: "Trader, 2026-09-28: 'as long as we focus on swing trades and day trading.'"
   timeframes.swing_day: "Trader, 2026-09-28: 'We start from 1D-4H for bias (we can execute on 4H as well only if setups are great \"T-0006+T-0007 are great examples), we can jump to 1H-30M for levels + confirmations as long as we focus on swing trades and day trading.'"
   leverage.margin_call_at_margin_loss_pct: "Trader, 2026-09-27: 'margin call occurs on 80%'"

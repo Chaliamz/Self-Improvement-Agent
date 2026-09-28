@@ -33,6 +33,8 @@ plan:
   targets: []
   invalidation: null          # in words: what proves the thesis wrong
   entry_model: null           # key from the strategy version's entry_models (e.g. extreme_demand, reclaim)
+  split_entries: []           # split entry only: the other limit orders beyond plan.entry (up to 3 orders, one stop, one target)
+  split_share: null           # split entry only: each order's share of 1R (2 orders = 0.5, 3 orders = 0.3)
   confluences: []             # the trader's confluences, in their words
   confirmations: []           # the trader's confirmations, in their words
 
@@ -50,6 +52,7 @@ fills:
   exits: []                   # - {price: 0, qty: 0, reason: "tp1"}   (or fraction: 0.5 instead of qty)
   fees: null                  # total fees paid
   duration_minutes: null      # time in the trade: stated, or measured on the chart (say which)
+  orders_filled: null         # split entry only: how many orders filled (the stop is reached only after all of them)
   worst_price: null           # furthest price AGAINST the position between entry and exit (chart-measured): gives MAE in R
   best_price: null            # furthest price IN FAVOUR between entry and exit (the TP price if the target filled): gives MFE
 

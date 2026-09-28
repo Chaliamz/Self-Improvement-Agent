@@ -53,6 +53,16 @@ def _independent_r(t: dict) -> float | None:
     stop = _num(plan.get("stop"))
     sign = {"long": 1, "short": -1}.get(t.get("direction"))
     exits = fills.get("exits") or []
+    if plan.get("split_entries"):
+        # split entry: filled orders are the ones nearest the first entry; each adds share x its own R
+        prices = [_num(plan.get("entry"))] + [_num(x) for x in plan["split_entries"]]
+        share, n = _num(plan.get("split_share")), fills.get("orders_filled")
+        pxs = {_num(e.get("price")) for e in exits}
+        if None in prices or None in (stop, sign, share) or not isinstance(n, int) or len(pxs) != 1 or None in pxs:
+            return None
+        px = pxs.pop()
+        near_first = sorted(prices, key=lambda e: -sign * e)[:n]
+        return sum(share * sign * (px - e) / abs(e - stop) for e in near_first) if n >= 1 and stop not in prices else None
     if None in (entry, stop, sign) or entry == stop or not exits:
         return None
     if len(exits) == 1:

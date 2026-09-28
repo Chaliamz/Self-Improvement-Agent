@@ -1215,9 +1215,10 @@ function renderReadiness() {
 
 const splitText = v => !v || !v.risk_pct_per_order ? "—" : `Up to ${v.max_orders} limit orders: ` +
   Object.entries(v.risk_pct_per_order).map(([n, r]) => `${n} = ${r}%${Number(n) > 1 ? " each" : ""}`).join(", ") +
-  (v.same_stop_and_target ? "; one stop and one target" : "");
+  (v.same_stop_and_target ? "; one stop and one target" : "") + (v.r_unit ? `. R unit: ${v.r_unit}` : "") +
+  (v.leverage_policy ? `. Leverage: ${v.leverage_policy}` : "");
 function botSpec() {
-  const p = KB.profile || {}, g = dig(KB, "readiness.malfunction_guard") || {}, orNone = v => v === null || v === undefined ? unstated("Unresolved") : v;
+  const p = KB.profile || {}, g = dig(KB, "readiness.malfunction_guard") || {}, al = dig(KB, "readiness.alerts") || {}, orNone = v => v === null || v === undefined ? unstated("Unresolved") : v;
   const lim = dig(p, "leverage.max_margin_loss_at_stop_pct"), aim = dig(p, "leverage.margin_loss_aim_min_pct");
   const nf = p.news_filter || {}, tf = dig(p, "timeframes.swing_day") || {};
   return kv([
@@ -1231,7 +1232,10 @@ function botSpec() {
     ["Leverage", isNum(lim) ? `Isolated; ${isNum(aim) ? aim + "-" : ""}${lim}% of margin lost at the stop, never above ${lim}%; liquidation beyond the stop` : unstated("Unresolved")],
     ["News", isNum(nf.no_new_entries_before_minutes) ? `No entries ${nf.no_new_entries_before_minutes} min before to ${isNum(nf.resume_after_minutes) ? nf.resume_after_minutes + " min after" : "?"} red ${(nf.currencies || []).join("/")} events${nf.cancel_resting_orders ? "; resting orders cancelled" : ""}; open trades kept` : unstated("Unresolved")],
     ["Daily stop / pause / correlation cap", [dig(p, "risk.max_daily_loss_r"), dig(p, "risk.max_consecutive_losses_before_pause"), dig(p, "risk.max_correlated_positions")].every(v => v === "none") ? "None (your rules)" : "See Risk"],
-    ["Malfunction guard", g.checks ? `${g.checks.length} checks, ${g.status === "specified" ? "specified (see Health)" : g.status}` : unstated("Not specified")]]);
+    ["Malfunction guard", g.checks ? `${g.checks.length} checks, ${g.status === "specified" ? "specified (see Health)" : g.status}; blocks or repairs the faulty action, never halts the bot` : unstated("Not specified")],
+    ["Trade alerts", al.events ? `${al.events.join(", ")}: ${(al.content || []).join(", ")}${al.channel ? " · via " + al.channel : " · channel open (Data gaps)"}` : unstated("Not specified")],
+    ["Scalps", dig(p, "execution_venue.scalps") === false ? "Not for now (day trading and swings only)" : dig(p, "execution_venue.scalps") ? "Yes" : unstated("Unresolved")],
+    ["Results counted in", (dig(p, "reporting.measures") || []).join(" and ") || unstated("Unresolved")]]);
 }
 
 /* ---------- trade detail ---------- */

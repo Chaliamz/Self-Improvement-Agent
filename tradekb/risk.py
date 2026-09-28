@@ -287,7 +287,8 @@ class SplitFill:
     stop_distance_pct: float     # from the average entry
     margin_loss_pct: float | None
     liquidation: float | None    # isolated, at the given leverage
-    liq_before_stop: bool | None
+    survives_to: float           # the next order's price, or the stop once every order has filled
+    liq_first: bool | None       # liquidation comes before `survives_to`
     rr: list[float]              # gross R:R per target, from the average entry
 
 
@@ -298,9 +299,10 @@ class SplitPlan:
     order_risk: float            # money at risk per order
     order_qty: list[float]
     fills: list[SplitFill]
-    max_leverage_for_rule: float | None
-    min_leverage_for_aim: float | None
-    max_leverage_liq_beyond_stop: float | None
+    max_leverage_full_fill: float | None       # margin limit on the full position (the only one a stop can hit)
+    min_leverage_full_fill_aim: float | None   # aim's lower edge on the full position
+    max_leverage_first_order: float | None     # the agreed policy: the first order's stop sets the leverage
+    max_leverage_liq: float                    # liquidation behind every next order and the stop
     flags: list[tuple[str, str]] = field(default_factory=list)
 
 
@@ -309,9 +311,14 @@ def split_plan(entries: list[float], stop: float, order_risk: float, *, leverage
                margin_loss_aim_min_pct: float | None = None, targets: tuple[float, ...] = (),
                min_rr: float | None = None) -> SplitPlan:
     """Split limit entries sharing one stop and one target (trader, 2026-09-28: up to 3 orders; 1 = 1%, 2 = 0.5% each,
-    3 = 0.3% each). Each order is sized from its own risk share. Fills merge into ONE isolated position with ONE
-    leverage setting, so the binding case is the first order filling alone: it has the widest stop distance. A
-    leverage that keeps that case within the margin limit and beyond liquidation keeps every fill combination so."""
+    3 = 0.3% each). Each order is sized from its own risk share, and fills merge into ONE isolated position with ONE
+    leverage setting.
+
+    The stop sits beyond every order, so price reaches it only after every order has filled ("it's impossible to hit
+    SL when only 1 of 3 orders filled", trader). The margin rule therefore applies to the full position. Liquidation
+    is checked at every step: a partly filled position must survive until price reaches the next order, and the
+    full position until the stop. The trader agreed (2026-09-28) to set leverage from the first order's stop, the
+    widest; that cap is reported separately and never exceeds the full-position cap."""
     if not entries:
         raise ValueError("split_plan needs at least one entry")
     _require_positive("stop", stop)
@@ -325,38 +332,46 @@ def split_plan(entries: list[float], stop: float, order_risk: float, *, leverage
     order = sorted(entries, reverse=(side == "long"))
     if len(set(order)) != len(order):
         raise ValueError("two split orders at the same price: merge them into one")
+    for t in targets:
+        if (side == "long" and t <= order[0]) or (side == "short" and t >= order[0]):
+            raise ValueError(f"target {t} is not on the profit side of the first entry {order[0]} for a {side}")
     per_unit = [abs(e - stop) + fee_rate * (e + stop) for e in order]
     qtys = [order_risk / u for u in per_unit]
-    flags: list[tuple[str, str]] = []
     fills: list[SplitFill] = []
+    caps: list[float] = []
     for n in range(1, len(order) + 1):
         q = sum(qtys[:n]); notional = sum(qq * e for qq, e in zip(qtys[:n], order[:n]))
         avg = notional / q
         loss = sum(qq * u for qq, u in zip(qtys[:n], per_unit[:n]))
+        nxt = order[n] if n < len(order) else stop
+        caps.append(max_leverage_liq_beyond_stop(avg, nxt, mmr_rate))
         mloss = loss * leverage / notional * 100 if leverage else None
         liq = liquidation_price(avg, side, q, leverage=leverage, margin_mode="isolated", mmr_rate=mmr_rate) if leverage else None
-        before = None if liq is None else (liq >= stop if side == "long" else liq <= stop)
+        first = None if liq is None else (liq >= nxt if side == "long" else liq <= nxt)
         rr = [abs(t - avg) / abs(avg - stop) for t in targets]
-        fills.append(SplitFill(n, avg, q, notional, loss, abs(avg - stop) / avg * 100, mloss, liq, before, rr))
-    widest = per_unit[0] / order[0] * 100
-    rule = max_margin_loss_pct / widest if max_margin_loss_pct is not None else None
-    aim = margin_loss_aim_min_pct / widest if margin_loss_aim_min_pct is not None and rule is not None else None
-    liq_cap = max_leverage_liq_beyond_stop(order[0], stop, mmr_rate)
-    for t in targets:
-        if (side == "long" and t <= order[0]) or (side == "short" and t >= order[0]):
-            raise ValueError(f"target {t} is not on the profit side of the first entry {order[0]} for a {side}")
+        fills.append(SplitFill(n, avg, q, notional, loss, abs(avg - stop) / avg * 100, mloss, liq, nxt, first, rr))
+    full = fills[-1]
+    full_loss_pct = full.loss_at_stop / full.notional * 100          # loss at the stop as % of notional, fees included
+    first_loss_pct = per_unit[0] / order[0] * 100
+    rule = max_margin_loss_pct / full_loss_pct if max_margin_loss_pct is not None else None
+    aim = margin_loss_aim_min_pct / full_loss_pct if margin_loss_aim_min_pct is not None and rule is not None else None
+    first_cap = max_margin_loss_pct / first_loss_pct if max_margin_loss_pct is not None else None
+    liq_cap = min(caps)
+    flags: list[tuple[str, str]] = []
     if leverage:
-        worst = fills[0]
-        if max_margin_loss_pct is not None and worst.margin_loss_pct > max_margin_loss_pct + 1e-9:
-            flags.append((CRITICAL, f"if only the first order fills, {worst.margin_loss_pct:.1f}% of the margin is lost at the stop, "
-                                    f"above your {max_margin_loss_pct:g}% limit: use {fmt_cap(rule)} or less for the whole position"))
-        bad = [f.orders for f in fills if f.liq_before_stop]
+        if max_margin_loss_pct is not None and full.margin_loss_pct > max_margin_loss_pct + 1e-9:
+            flags.append((CRITICAL, f"with every order filled (the only way the stop is hit), {full.margin_loss_pct:.1f}% of the "
+                                    f"margin is lost at the stop, above your {max_margin_loss_pct:g}% limit: use {fmt_cap(rule)} or less"))
+        bad = [f.orders for f in fills if f.liq_first]
         if bad:
-            flags.append((CRITICAL, f"liquidation comes before the stop with {', '.join(map(str, bad))} order(s) filled: "
-                                    f"use {fmt_cap(liq_cap)} or less"))
+            flags.append((CRITICAL, f"liquidation comes before the next order or the stop with {', '.join(map(str, bad))} order(s) "
+                                    f"filled: use {fmt_cap(liq_cap)} or less"))
+        if first_cap is not None and leverage > first_cap + 1e-9 and len(order) > 1:
+            flags.append((WARN, f"{leverage:g}x is above the agreed first-order cap ({fmt_cap(first_cap)}); within the margin "
+                                f"rule on the full position (bot question pending)"))
     if min_rr is not None and targets and max(fills[0].rr) < min_rr - 1e-9:
         flags.append((WARN, f"if only the first order fills, the best target gives {max(fills[0].rr):.2f}R, below your {min_rr:g}R minimum"))
-    return SplitPlan(side, order, order_risk, qtys, fills, rule, aim, liq_cap, flags)
+    return SplitPlan(side, order, order_risk, qtys, fills, rule, aim, first_cap, liq_cap, flags)
 
 
 def exposure(entry: float, stop: float, risk_pct: float | None, leverage: float | None = None,

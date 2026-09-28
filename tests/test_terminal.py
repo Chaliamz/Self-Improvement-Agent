@@ -294,9 +294,10 @@ class StrictYamlTest(KBTestCase):
 
 
 class SplitEntryTest(KBTestCase):
-    """Trader, 2026-09-28: up to 3 limit orders; 1 = 1%, 2 = 0.5% each, 3 = 0.3% each; one stop and one target."""
+    """Trader, 2026-09-28: up to 3 limit orders; 1 = 1%, 2 = 0.5% each, 3 = 0.3% each; one stop and one target.
+    The stop is beyond every order, so it is hit only once all have filled: the margin rule applies to the full position."""
 
-    def test_three_orders_risk_0_9_pct_and_the_first_order_sets_leverage(self):
+    def test_three_orders_risk_0_9_pct_and_the_full_position_carries_the_margin_rule(self):
         plan = split_plan([52.9, 54.44, 53.5], 51.02, 30.0, leverage=9, max_margin_loss_pct=60, margin_loss_aim_min_pct=50,
                           targets=(66.10,), min_rr=2.5)
         self.assertEqual(plan.entries, [54.44, 53.5, 52.9])                        # fill order for a long: highest first
@@ -304,18 +305,27 @@ class SplitEntryTest(KBTestCase):
         for f in plan.fills:
             self.assertAlmostEqual(f.loss_at_stop, 30.0 * f.orders)
             self.assertAlmostEqual(f.avg_entry, f.notional / f.qty)
-        self.assertEqual(fmt_cap(plan.max_leverage_for_rule), "9.55x")             # 60 / 6.282%: the widest stop
-        self.assertAlmostEqual(plan.fills[0].margin_loss_pct, 3.42 / 54.44 * 100 * 9)
-        self.assertTrue(all(a.margin_loss_pct > b.margin_loss_pct for a, b in zip(plan.fills, plan.fills[1:])))
+        full = plan.fills[-1]
+        self.assertAlmostEqual(plan.max_leverage_full_fill, 60 / full.stop_distance_pct)
+        self.assertAlmostEqual(plan.min_leverage_full_fill_aim, 50 / full.stop_distance_pct)
+        self.assertEqual(fmt_cap(plan.max_leverage_first_order), "9.55x")          # the agreed policy: the widest stop
+        self.assertLess(plan.max_leverage_first_order, plan.max_leverage_full_fill)
+        self.assertEqual([f.survives_to for f in plan.fills], [53.5, 52.9, 51.02])  # next order, next order, the stop
         self.assertEqual(plan.flags, [])
-        over = split_plan([54.44, 53.5], 51.02, 50.0, leverage=10, max_margin_loss_pct=60)
-        self.assertTrue(any(lvl == "CRITICAL" and "use 9.55x or less" in m for lvl, m in over.flags))
+        warn = split_plan([54.44, 53.5], 51.02, 50.0, leverage=10, max_margin_loss_pct=60)   # full position: 53.4%
+        self.assertEqual([lvl for lvl, _ in warn.flags], ["WARN"])
+        self.assertIn("above the agreed first-order cap (9.55x)", warn.flags[0][1])
+        over = split_plan([54.44, 53.5], 51.02, 50.0, leverage=12, max_margin_loss_pct=60)   # full position: 64.0%
+        self.assertTrue(any(lvl == "CRITICAL" and "with every order filled" in m for lvl, m in over.flags))
 
-    def test_short_split_and_liquidation_across_fills(self):
-        plan = split_plan([100.0, 100.3], 100.6, 10.0, leverage=100, max_margin_loss_pct=60, mmr_rate=0.005)
-        self.assertEqual(plan.side, "short"); self.assertEqual(plan.entries, [100.0, 100.3])
-        self.assertTrue(plan.fills[0].liq_before_stop)                             # 0.6% stop at 100x: liquidated first
-        self.assertTrue(any(lvl == "CRITICAL" and "liquidation comes before the stop" in m for lvl, m in plan.flags))
+    def test_liquidation_is_checked_at_every_step(self):
+        for entries, stop, mmr in (([54.44, 53.5, 52.9], 51.02, 0.005), ([100.0, 100.3], 100.6, 0.005), ([0.3691, 0.36], 0.3505, 0.01)):
+            plan = split_plan(entries, stop, 10.0, mmr_rate=mmr)
+            at = split_plan(entries, stop, 10.0, leverage=plan.max_leverage_liq * 0.999, mmr_rate=mmr)
+            self.assertFalse(any(f.liq_first for f in at.fills))
+            over = split_plan(entries, stop, 10.0, leverage=plan.max_leverage_liq * 1.01, mmr_rate=mmr)
+            self.assertTrue(any(f.liq_first for f in over.fills))
+            self.assertTrue(any(lvl == "CRITICAL" and "liquidation comes before" in m for lvl, m in over.flags))
 
     def test_bad_inputs(self):
         with self.assertRaises(ValueError):
@@ -329,9 +339,43 @@ class SplitEntryTest(KBTestCase):
         code, out = self.run_cli("size", "--entry", "54.44", "--add-entry", "53.5", "--stop", "51.02", "--risk-amount", "100")
         self.assertEqual(code, 0)
         self.assertIn("0.5% of equity per order (50.00)", out)
+        self.assertIn("full position, margin rule", out)
         code, out = self.run_cli("size", "--entry", "54.44", "--add-entry", "53.5", "--add-entry", "53", "--add-entry", "52.5",
                                  "--stop", "51.02", "--risk-amount", "100")
         self.assertEqual(code, 2)                                                  # 4 orders: no rule for it
+
+
+class SplitTradeRTest(KBTestCase):
+    """R of a split trade is counted on the full 1R: 1 of 3 orders filled at 3R = +0.9R (trader, 2026-09-28)."""
+    PLAN = {"entry": 54.44, "stop": 51.02, "targets": [64.70], "split_entries": [53.5, 52.9], "split_share": 0.3}
+
+    def r(self, tid):
+        from tradekb.model import r_multiple
+        return r_multiple(load_kb().trade(tid).data)
+
+    def test_one_of_three_filled_at_3r_is_0_9r(self):
+        self.write_trade("T-0001", plan=self.PLAN, fills={"exits": [{"price": 64.70}], "orders_filled": 1})
+        r, src = self.r("T-0001")
+        self.assertAlmostEqual(r, 0.3 * (64.70 - 54.44) / 3.42)            # 3.0R on the first order x 0.3 = 0.9R
+        self.assertAlmostEqual(r, 0.9)
+        self.assertFalse([i for i in self.issues("ERROR")])
+
+    def test_full_stop_is_0_9r_and_the_audit_agrees(self):
+        self.write_trade("T-0001", plan=self.PLAN, fills={"exits": [{"price": 51.02}], "orders_filled": 3})
+        self.assertAlmostEqual(self.r("T-0001")[0], -0.9)
+        from tradekb import audit
+        self.assertEqual(audit.run(load_kb(), check_outputs=False).failures, [])
+
+    def test_split_records_are_checked(self):
+        self.write_trade("T-0001", plan=self.PLAN, fills={"exits": [{"price": 51.02}], "orders_filled": 1})
+        self.assertTrue(any("price reaches the stop only through every order" in i.msg for i in self.issues("WARN")))
+        self.write_trade("T-0001", plan={**self.PLAN, "split_share": None}, fills={"exits": [{"price": 64.70}], "orders_filled": 1})
+        self.assertTrue(any("plan.split_share is required" in i.msg for i in self.issues("ERROR")))
+        self.assertIsNone(self.r("T-0001")[0])                              # no silent single-entry R
+        self.write_trade("T-0001", plan={**self.PLAN, "split_entries": [53.5, 52.9, 52.0]}, fills={"exits": [{"price": 64.70}], "orders_filled": 1})
+        self.assertTrue(any("allows up to 3" in i.msg for i in self.issues("ERROR")))
+        self.write_trade("T-0001", plan={**self.PLAN, "split_entries": [50.0]}, fills={"exits": [{"price": 64.70}], "orders_filled": 1})
+        self.assertTrue(any("at or beyond the stop" in i.msg for i in self.issues("ERROR")))
 
 
 class DetailTimeframeTest(KBTestCase):
@@ -410,6 +454,14 @@ class BotSpecTest(KBTestCase):
         rd = build_payload(load_kb())["readiness"]
         self.assertEqual(rd["venue"], {"exchange": "MEXC"})
         self.assertEqual(rd["open_questions"], ["1. Scan list?"])
+
+    def test_alerts_spec_is_validated_and_exported(self):
+        import yaml as _yaml
+        spec = {"channel": None, "events": ["entry filled", "exit at stop loss"], "content": ["risk in USDT"]}
+        (self.tmp / "playbook" / "automation.yaml").write_text(_yaml.safe_dump({"stages": [], "alerts": spec}))
+        self.assertEqual(build_payload(load_kb())["readiness"]["alerts"], spec)
+        (self.tmp / "playbook" / "automation.yaml").write_text(_yaml.safe_dump({"stages": [], "alerts": {**spec, "events": []}}))
+        self.assertTrue(any("events must be a non-empty list" in i.msg for i in self.issues("ERROR")))
 
     def test_bot_questions_must_be_text(self):
         import yaml as _yaml

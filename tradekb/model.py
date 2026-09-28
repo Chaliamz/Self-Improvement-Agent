@@ -104,7 +104,37 @@ def realized_pnl(t: dict) -> tuple[float | None, str | None]:
     return gross - fees, "from exits net of fills.fees"
 
 
+def split_orders(t: dict) -> tuple[list[float], float | None, int | None] | None:
+    """A split entry (trader, 2026-09-28: up to 3 limit orders, one stop, one target): (entries in fill order, each
+    order's share of 1R, orders filled). None for a single entry or when an entry price is missing."""
+    extra = dig(t, "plan.split_entries") or []
+    if not isinstance(extra, list) or not extra:
+        return None
+    entries = [num(dig(t, "plan.entry"))] + [num(x) for x in extra]
+    sign = side_sign(t)
+    if sign is None or any(e is None for e in entries):
+        return None
+    filled = dig(t, "fills.orders_filled")
+    filled = filled if isinstance(filled, int) and not isinstance(filled, bool) else None
+    return sorted(entries, reverse=(sign == 1)), num(dig(t, "plan.split_share")), filled
+
+
+def split_r(t: dict) -> float | None:
+    """R of a split entry in the trader's unit, the full 1R: each filled order contributes its share x its own R.
+    Trader: "if 1 order of 3 fills and reaches TP, for example 3RR it's going to be a profit of 0.9R"."""
+    split, stop, exits, sign = split_orders(t), num(dig(t, "plan.stop")), resolved_exits(t), side_sign(t)
+    if split is None or stop is None or not exits or len({p for p, _ in exits}) != 1:
+        return None
+    entries, share, filled = split
+    if share is None or filled is None or not 1 <= filled <= len(entries) or any(e == stop for e in entries):
+        return None
+    px = exits[0][0]
+    return sum(share * sign * (px - e) / abs(e - stop) for e in entries[:filled])
+
+
 def price_r(t: dict) -> float | None:
+    if split_orders(t) is not None:
+        return split_r(t)
     sign, entry, stop, exits = side_sign(t), entry_price(t), num(dig(t, "plan.stop")), resolved_exits(t)
     if sign is None or entry is None or stop is None or entry == stop or not exits:
         return None
@@ -144,6 +174,12 @@ def missing_for_r(t: dict) -> list[str]:
         need.append("fills.exits[].price or result.pnl")
     if num(dig(t, "result.pnl")) is not None and initial_risk(t)[0] is None:
         need.append("risk.risk_amount (or size + stop)")
+    split = split_orders(t)
+    if split is not None and num(dig(t, "result.pnl")) is None:
+        if split[1] is None:
+            need.append("plan.split_share")
+        if split[2] is None:
+            need.append("fills.orders_filled")
     return need or ["result.r"]
 
 
@@ -193,8 +229,8 @@ def excursions(t: dict) -> tuple[float | None, float | None]:
     """MAE / MFE in R from the chart-measured fills.worst_price and fills.best_price (between entry and exit).
     A price on the wrong side of the entry counts as 0 here; the validator reports it as an error."""
     entry, stop, sign = entry_price(t), num(dig(t, "plan.stop")), side_sign(t)
-    if None in (entry, stop, sign) or entry == stop:
-        return None, None
+    if None in (entry, stop, sign) or entry == stop or split_orders(t) is not None:
+        return None, None                       # split entries: excursions per order are not defined yet
     risk = abs(entry - stop)
     worst, best = num(dig(t, "fills.worst_price")), num(dig(t, "fills.best_price"))
     mae = max(0.0, sign * (entry - worst)) / risk if worst is not None else None

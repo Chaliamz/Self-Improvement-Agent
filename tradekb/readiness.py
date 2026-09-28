@@ -78,4 +78,4 @@ def evaluate(kb: KB) -> dict:
                             "scenarios": scenarios, "note": sizing.get("note")},
             "safety": doc.get("safety") or [], "venue": doc.get("venue") or {},
             "open_questions": [str(q) for q in doc.get("open_questions") or []],
-            "malfunction_guard": doc.get("malfunction_guard") or {}}
+            "malfunction_guard": doc.get("malfunction_guard") or {}, "alerts": doc.get("alerts") or {}}

@@ -57,6 +57,8 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
    Record the trader's own grade in `review.trader_grade` when they give one (scale S, A, B, C, D).
    Record `fills.worst_price` and `fills.best_price` from the chart (furthest against / in favour between entry
    and exit; the TP price when the target filled): `./tj` turns them into MAE / MFE in R.
+   Split entries: `plan.entry` is the first order, `plan.split_entries` the others, `plan.split_share` each order's
+   share of 1R (profile `risk.split_entries`), `fills.orders_filled` how many filled; `./tj` counts R on the full 1R.
    Record `timeframes.chain` (highest first, ending at the execution timeframe), `timeframes.detail` (lower
    timeframes viewed only for detail, e.g. unmitigated levels/FVGs) and `timeframes.top_down` (true/false); record
    `fills.duration_minutes` when the trader states a duration (dates alone cannot time a scalp).

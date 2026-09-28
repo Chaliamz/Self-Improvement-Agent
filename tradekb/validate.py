@@ -306,6 +306,51 @@ def _check_excursions(t: dict, where: str, add: _Sink, d) -> None:
         add(WARN, where, f"best price reaches {d.mfe_r:.2f}R but the result is {d.r:.2f}R: best_price is short of the exit")
 
 
+def _check_split(t: dict, where: str, add: _Sink, kb: KB) -> None:
+    """Split entries (trader, 2026-09-28): up to max_orders limits, one stop, one target; R in the full 1R unit."""
+    extra = dig(t, "plan.split_entries", [])
+    if extra is None or extra == []:
+        if dig(t, "fills.orders_filled") is not None or dig(t, "plan.split_share") is not None:
+            add(ERROR, where, "fills.orders_filled / plan.split_share are for split entries only: plan.split_entries is empty")
+        return
+    if not isinstance(extra, list) or any(model.num(x) is None for x in extra):
+        add(ERROR, where, "plan.split_entries must be a list of limit prices")
+        return
+    entry, stop, sign = model.num(dig(t, "plan.entry")), model.num(dig(t, "plan.stop")), model.side_sign(t)
+    prices = [entry] + [model.num(x) for x in extra]
+    n = len(prices)
+    max_orders = model.num(dig(kb.profile, "risk.split_entries.max_orders"))
+    if max_orders is not None and n > max_orders:
+        add(ERROR, where, f"{n} split orders: the trader's rule allows up to {max_orders:g}")
+    if len(set(prices)) != n:
+        add(ERROR, where, "two split orders at the same price")
+    if None not in (entry, stop, sign) and any(p is not None and sign * (p - stop) <= 0 for p in prices):
+        add(ERROR, where, "a split order sits at or beyond the stop: one stop must serve every order")
+    share = model.num(dig(t, "plan.split_share"))
+    shares = dig(kb.profile, "risk.split_entries.risk_pct_per_order") or {}
+    base = model.num(dig(kb.profile, "risk.risk_per_trade_pct"))
+    want = model.num(shares.get(n, shares.get(str(n))))
+    if share is None:
+        add(ERROR if t.get("status") == "closed" else WARN, where,
+            "plan.split_share is required for a split entry: each order's share of 1R (2 orders = 0.5, 3 = 0.3)")
+    elif not 0 < share <= 1:
+        add(ERROR, where, "plan.split_share must be in (0, 1]")
+    elif want is not None and base and abs(share - want / base) > 1e-9:
+        add(WARN, where, f"plan.split_share {share:g} differs from the trader's rule for {n} orders ({want / base:g})")
+    filled = dig(t, "fills.orders_filled")
+    if filled is not None and (not isinstance(filled, int) or isinstance(filled, bool) or not 1 <= filled <= n):
+        add(ERROR, where, f"fills.orders_filled must be a whole number from 1 to {n}")
+    elif filled is None and t.get("status") == "closed":
+        add(ERROR, where, "fills.orders_filled is required for a closed split entry")
+    exits = dig(t, "fills.exits", []) or []
+    prices_out = {model.num(e.get("price")) for e in exits if isinstance(e, dict)}
+    if len(prices_out) > 1:
+        add(WARN, where, "a split entry has one stop and one target: several exit prices cannot be priced per order")
+    if isinstance(filled, int) and filled < n and stop is not None and prices_out == {stop}:
+        add(WARN, where, f"exit at the stop with {filled} of {n} orders filled: price reaches the stop only through every "
+                         f"order (trader). Check the fills")
+
+
 def _check_trade(trade: Trade, kb: KB, add: _Sink) -> None:
     t, where = trade.data, trade.path.name
     tid = t.get("id")
@@ -345,6 +390,7 @@ def _check_trade(trade: Trade, kb: KB, add: _Sink) -> None:
     d = derive(t, kb.config)
     _check_review(t, kb, where, add, d.outcome)
     _check_excursions(t, where, add, d)
+    _check_split(t, where, add, kb)
 
     has_result = num(dig(t, "result.pnl")) is not None or num(dig(t, "result.r")) is not None
     if status == REALIZED:
@@ -514,6 +560,15 @@ def _check_automation(kb: KB, add: _Sink) -> None:
     questions = doc.get("open_questions")
     if questions is not None and (not isinstance(questions, list) or not all(isinstance(q, str) for q in questions)):
         add(ERROR, where, "open_questions must be a list of questions (text)")
+    alerts = doc.get("alerts")
+    if alerts is not None:
+        if not isinstance(alerts, dict):
+            add(ERROR, f"{where}: alerts", "must be a mapping with channel, events and content")
+        else:
+            for key in ("events", "content"):
+                v = alerts.get(key)
+                if not isinstance(v, list) or not v or not all(isinstance(x, str) and x.strip() for x in v):
+                    add(ERROR, f"{where}: alerts", f"{key} must be a non-empty list of text")
     guard = doc.get("malfunction_guard")
     if guard is not None:
         gw = f"{where}: malfunction_guard"

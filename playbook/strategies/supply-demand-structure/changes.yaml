@@ -210,3 +210,18 @@ changes:
       never a measurable rule. T-0006 re-recorded: execution 4h, the 1h as detail. T-0004's entered_before_confirmation
       replaced by the trader's own term early_execution (also T-0009). All supply-demand trades retagged "1.10".
     resulting_version: "1.10"
+  - id: CHG-011
+    kind: clarification
+    date: 2026-09-28
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-28: "T-0004 execution was on 5M when on 30M there wasn't any CH (On T-0004 leverage was 20X
+      invalidation was low) that was the reason why it was a D setup. Poorly executed." ... "it's impossible to hit SL
+      when only 1 of 3 orders filled. the actual opposite. if 1 order of 3 fills and reaches TP, for example 3RR it's
+      going to be a profit of 0.9R (On trading we will count $ not only RR)" ... split leverage from the first order:
+      "Agreed." ... "when we are in a middle of nowhere, it's more preferable not to execute. there wasn't any demand
+      there or key level, even though there were confluences later on."
+    fields: [grading, split_entries, do_not_trade_when, open_questions]
+    note: "No open strategy questions remain. All supply-demand trades retagged \"1.11\"."
+    resulting_version: "1.11"

@@ -13,7 +13,7 @@ LOW tier. Six trades cannot separate skill from luck. Nothing below is establish
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
 | supply-demand-structure | 1.10 | unvalidated | 5 (T-0001, T-0004, T-0006, T-0007, T-0009) | n=5: +2.02R, 95% CI [-0.12, +4.16] (LOW) |
-| key-level-sr | 1.3 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW) |
+| key-level-sr | 1.4 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
 _None. Requires the promotion gate in `config.yaml`._
@@ -62,6 +62,8 @@ _None._
 Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules, not performance findings (n=1).
 - Entering on a lower-timeframe CHoCH that the 15m-30m has not confirmed (strategy v1.3 checklist item 3).
 - A stop beyond a swing whose CH is unconfirmed: that swing is liquidity (item 5; T-0004).
+- Price in the middle of nowhere: no demand/supply level or key level at the entry, whatever the confluences
+  ("it's more preferable not to execute", 2026-09-28; T-0009, -1.00R).
 - A "CH" that breaks only an internal level of a candle range: NOT CH (item 3). T-0008 was skipped for this,
   and the drawn short would have lost 1R (COUNTERFACTUAL).
 - Margin loss at the stop above 60%: the aim is 50-60%, margin call at 80% (trader, 2026-09-28). T-0004: 20x on a
@@ -91,7 +93,8 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
   1m only). D: "a poor trade + mistake"; a good setup executed early is a D (T-0004, 2026-09-28).
 - B: "anything with decent RR but few confluences, which means it could be a risky execution" (2026-09-28). T-0009:
   "Setup B because of FVG ignorance but decent confirmations" (-1.00R).
-- Open: T-0004 (D) and T-0009 (B) were both executed early; what separates them is strategy v1.10 open question 1.
+- D vs B (2026-09-28): T-0004 is a D because it was executed on a 5m CH when the 30m showed no CH ("Poorly
+  executed"); T-0009's CH was real, so the early execution made it a risky B, not a D.
 - `./tj stats --by trader_grade`: S n=1 (+4.12R), A n=2 (+3.99R), B n=1 (-1.00R), C n=1 (+2.94R), D n=1 (-1.00R). Far
   too few to say whether the grade predicts the result. Status: observation.
 
@@ -121,14 +124,19 @@ Stated by the trader (2026-09-26). These are the trader's rules, not performance
   setup, bad days will happen either way" (2026-09-28). No fixed leverage cap: leverage follows the stop distance.
 - News: no new entries and no resting orders from 1 hour before to 1 hour after a red (high-impact) USD event on
   ForexFactory; open trades are kept (2026-09-27/28). Otherwise 24/7: "we trade 24/7 regardless".
-- Entries after a CH: small, weak candles mean a limit at the zone right away; a strong recovery means wait. The
-  candles are read on the longest timeframe possible (T-0007). An unfilled limit is cancelled when price reaches the
-  TP first. Optional: split the 1% across several limits at extra 30m demand/FVG levels (2026-09-28).
+- Entries after a CH: the limit goes at the zone on the longest timeframe possible (T-0007: the 4h); candle size is
+  not a criterion ("Ignore small and weak candles"). An unfilled limit is cancelled when price reaches the TP first.
+- Split entries (2026-09-28): up to 3 limits, 1% / 0.5% each / 0.3% each, one stop and one target. The stop is
+  reached only after every order fills, so a full stop costs 0.9% (-0.9R); 1 of 3 filled at 3R = +0.9R (R on the full
+  1%). Results count in USDT as well as R. Leverage: one setting per position, from the first order's stop (agreed);
+  whether to aim 50-60% on the full position instead is bot question 4. `./tj size --add-entry` computes it all.
 - Timeframes for swing and day trading: 1D-4h bias, 1h-30m levels and confirmations, 4h execution only for great
   setups (T-0006, T-0007).
-- Bot: MEXC; BTC, ETH, HYPE for now; swing and day trading. The malfunction guard is mandatory (G1-G9 in
-  `playbook/automation.yaml`, shown in the terminal's Health tab). Open bot questions are in Data gaps.
-- Unresolved: fee rates, maintenance-margin rate, account equity (see `profile/trader.yaml`).
+- Bot: MEXC USDT-margined perpetuals BTC_USDT, ETH_USDT, HYPE_USDT for now; day trading and swings, no scalps for
+  now. The malfunction guard is mandatory (G1-G9 in `playbook/automation.yaml`, shown in the Health tab) and never
+  halts the bot: it blocks or repairs the faulty action. Every entry and exit sends a trade alert (execution analysis,
+  prices, risk in USDT, leverage, setup type). Open bot questions are in Data gaps.
+- Unresolved: fee rates, maintenance-margin rate, account equity (see `profile/trader.yaml`). Base currency: USDT.
 
 ## Behavioural rules
 _None._
@@ -136,6 +144,8 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-09-28 | supply-demand-structure v1.11 (CHG-011): why T-0004 is D; no trade in the middle of nowhere; split fills, R unit (+0.9R for 1 of 3 at 3R) and leverage policy. key-level-sr v1.4 (CHG-004): scoped to day trading and swings (no scalps for now); one open question on its targets there | trader's answers |
+| 2026-09-28 | Bot spec: USDT perpetuals on MEXC, trade alerts on entry and exit, no halts (the guard blocks or repairs the faulty action). Split-entry sizing corrected: the margin rule applies to the full position (INC-019); journal R for split trades in the trader's unit | trader's answers; tests |
 | 2026-09-28 | supply-demand-structure v1.10 clarification (CHG-010): candle size is not an entry criterion ("Ignore small and weak candles"); split entries of up to 3 limits (1% / 0.5% each / 0.3% each, one stop and target; `tj size --add-entry`); the 1h as a detail timeframe; stops "just very close" to the swing or level; T-0009 is the B example. No rule changed | trader's answers; T-0009 |
 | 2026-09-28 | T-0009 TIAUSDT long -1.00R (reclaim, 1h, grade B, loss type C: early execution, FVG ignored). T-0006 execution re-recorded 4h with the 1h as detail (INC-017). T-0004's entered_before_confirmation replaced by the trader's own term early_execution | T-0009 charts; trader's answers |
 | 2026-09-28 | supply-demand-structure v1.9 clarification (CHG-009): grade B; T-0004 is the D example; 1D-4h bias and 1h-30m levels for swing/day trading; candles after a CH read on the longest timeframe; optional split limit entries; margin aim 50-60%; news window 1h before to 1h after with resting orders cancelled. No rule changed | trader's answers |

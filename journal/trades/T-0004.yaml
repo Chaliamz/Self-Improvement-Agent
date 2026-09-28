@@ -21,7 +21,7 @@ regime: [bullish]             # 30m: rally from about 0.0106 (Jan 4) and a fresh
 
 strategy:
   id: supply-demand-structure
-  version: "1.10"               # retagged through CHG-010 (clarifications)
+  version: "1.11"               # retagged through CHG-011 (clarifications)
   experiment: null
   variant: null
 
@@ -75,6 +75,8 @@ journal:
     exactly where the stop sat. (b) Ignored the 15-30M timeframes and focused only on the 5M.
     The proper trade is T-0005.
     Trader, 2026-09-28: "it's D setup because it executed poorly (mistake) setup was good but executed early."
+    Trader, 2026-09-28: "T-0004 execution was on 5M when on 30M there wasn't any CH (On T-0004 leverage was 20X
+    invalidation was low) that was the reason why it was a D setup. Poorly executed."
 
 evidence:
   observed:
@@ -95,6 +97,7 @@ evidence:
   hypotheses:
     - "A 5m CHoCH that the 30m does not confirm may be consolidation, not a reversal (n=1, trader-diagnosed)."
     - "Stops just beyond an obvious swing are swept before the move (n=1)."
+    - "On 'invalidation was low' (trader, 2026-09-28): the drawn stop is 3.837% (tj size). Under the 50-60% margin aim, 20x fits a stop of 2.5-3.0%; a 3.84% stop fits 13.03x-15.63x. At 20x the stop cost 76.7% of the margin."
     - "Loss type, corrected 2026-09-28 from D (invalid setup) to C (execution error) on the trader's statement that the setup was good and the entry early. The 4H key level and the supply above it were a valid short location; the 5m entry before the 30m confirmed is the error."
   charts: [journal/charts/T-0004-pengu-30m.png]
 

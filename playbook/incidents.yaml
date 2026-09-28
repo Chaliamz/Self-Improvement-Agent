@@ -221,3 +221,23 @@ incidents:
     status: caught
     fix: "Label boxes masked, the FVG check rewritten on candle indices; the 4h and 1h reads cross-checked (same high and low for the Apr 28 15:00 4h bar)."
 
+  - id: INC-019
+    date: 2026-09-28
+    area: risk
+    severity: medium
+    title: "Split-entry leverage was built on a case that cannot happen"
+    detail: >-
+      tj size --add-entry and bot question 5 treated "only the first order filled, then stopped" as the worst case and
+      set leverage from it. The trader: "it's impossible to hit SL when only 1 of 3 orders filled": the stop sits beyond
+      every order, so it is reached only through all of them. The margin rule belongs on the full position, and
+      liquidation must be checked at every fill (the position has to survive to the next order). The old reading was
+      never riskier, only lower than the trader's 50-60% aim (41% of the margin in the T-0006 example), and its
+      CRITICAL flag fired on a stop-out that cannot occur.
+    found_by: trader
+    status: fixed
+    fix: >-
+      split_plan applies the margin rule to the full position, checks liquidation against the next order and the stop at
+      every fill, and reports the agreed first-order cap separately (a WARN above it, never a CRITICAL); tests cover
+      both. Journal R for split trades follows the trader's unit (1 of 3 filled at 3R = +0.9R) in the model, the
+      validator and the audit. Which leverage the bot uses is bot question 4.
+
