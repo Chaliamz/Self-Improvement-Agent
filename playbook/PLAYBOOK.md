@@ -5,7 +5,7 @@ trade IDs, n, and the `./tj` output it rests on. An entry without evidence does 
 here; it belongs in a trade record's `evidence.hypotheses`.
 
 Status: **INITIALIZATION.** 7 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009, T-0010), 1 missed
-(T-0002), 2 not taken (T-0005, T-0008; counterfactual only). Overall (`./tj stats`): +1.72R expectancy, 95% CI [-0.20,
+(T-0002), 3 not taken (T-0005, T-0008, T-0011; counterfactual only). Overall (`./tj stats`): +1.72R expectancy, 95% CI [-0.20,
 +3.38], n=7, LOW tier: the interval now includes zero. Seven trades cannot separate skill from luck. Nothing below is
 established.
 
@@ -13,7 +13,7 @@ established.
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.14 | unvalidated | 6 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010) | n=6: +1.52R, 95% CI [-0.27, +3.41] (LOW) |
+| supply-demand-structure | 1.15 | unvalidated | 6 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010) | n=6: +1.52R, 95% CI [-0.27, +3.41] (LOW) |
 | key-level-sr | 1.5 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -37,10 +37,15 @@ _None._
   trend`: with-trend n=4 (+2.48R; T-0009 -1.00R added), counter-trend n=2 (T-0004 -1.00R, T-0007 +4.12R). The trend label is derived
   from the regime tag, so T-0004 counts as counter-trend against its bullish 30m regime. Far too few to
   compare. Status: observation.
-- **A break inside the impulsive candle's range is consolidation, not a CH ("NOT CH").** Now a rule (v1.6
-  checklist item 3). Evidence: T-0004 taken on a 5m break inside the 30m candle range, -1.00R (false_ch); T-0008
-  a break inside the 4h candle range, recognised and skipped, -1.00R COUNTERFACTUAL. n=2 (1 realized). Whether
-  the filter pays is untested. Status: rule (stated); hypothesis (performance).
+- **A break inside the impulsive candle's range is consolidation, not a CH ("NOT CH", "fake CH").** Now a rule
+  (checklist item 3). Evidence: T-0004 taken on a 5m break inside the 30m candle range, -1.00R (false_ch); T-0008 a
+  break inside the 4h candle range, skipped, -1.00R COUNTERFACTUAL; T-0011 a 30m CH inside the 1h range (about
+  82,579-85,220), skipped, -1.00R COUNTERFACTUAL. n=3 (1 realized). Counterfactuals are excluded from statistics, so
+  whether the filter pays is untested. Status: rule (stated); hypothesis (performance).
+- **Front-run cancel.** T-0011: price ran about 3.4R toward the target without retesting the 30m supply, and the
+  trader cancelled the limit. Under the older cancel-at-TP rule it would have filled in the Sep 30 15:30 spike and
+  been stopped within about 10 minutes (-1.00R COUNTERFACTUAL). Rule stated (v1.15); its exact trigger is the open
+  strategy question. n=1.
 - **Stop beyond the swing that created the confirmed CH.** Now a rule (v1.6 checklist item 5; trader: "yes
   exactly"). T-0006, T-0007 and T-0009 kept it; T-0004's stop sat beyond a high whose CH was never confirmed and was
   swept. How close: "just very close to that swing point or demand/supply level" (2026-09-28): 0.01-0.18% of price
@@ -158,6 +163,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-09-30 | T-0011 BTCUSD short not taken (fake CH on the 30m; front run cancelled), -1.00R COUNTERFACTUAL. supply-demand-structure v1.15 (CHG-015): HTF (4H-1D) CH first, fake CH, front-run cancel, leverage from the invalidation %. New tags: cancelled_front_run; fake_ch as an alias of false_ch. Bot question on leverage for tight stops | T-0011 charts; trader's review |
 | 2026-09-28 | supply-demand-structure v1.14 (CHG-014): macro release results are the trader's call, not a bot input; the 60% margin rule is the only leverage ceiling. Bot default leverage recorded. T-0010: the CPI printed at 15:30 UTC+3, about 2 hours after the fill. Terminal: more statistics, a two-scenario 100-trade outlook, weekday breakdown, five new backgrounds | trader's answers; tests |
 | 2026-09-28 | T-0010 NEARUSD short -1.00R (supply_level, 1h, grade A, loss type E: NEAR news). supply-demand-structure v1.13 (CHG-013): macro news in the trade's direction as a confluence; T-0010 is an A that lost. Bot question on reading release results | T-0010 chart; trader's review |
 | 2026-09-28 | supply-demand-structure v1.12 (CHG-012): the 50-60% aim is a preference; split entries take the first order's leverage (at most 60% on its stop) for every order. key-level-sr v1.5 (CHG-005): day/swing target at least 2.5R, further when possible. Bot: alerts by Telegram and email, errors reported with an explanation, no halts. No strategy questions open | trader's answers |

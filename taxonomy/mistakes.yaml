@@ -15,7 +15,7 @@ tags:
   ignored_htf:                 {label: Ignored higher timeframe}
   skipped_top_down:            {label: Skipped top-down analysis (LTF only), introduced_in: T-0003}
   stop_in_liquidity:           {label: "Stop in the liquidity beyond an obvious swing, where the valid entry forms ('I became the liquidity')", introduced_in: T-0004}
-  false_ch:                    {label: "Treated a break inside a candle range (consolidation) as a CH: 'NOT CH'", introduced_in: T-0008}
+  false_ch:                    {label: "Treated a break inside a candle range (consolidation) as a CH: 'NOT CH'", introduced_in: T-0008, aliases: [fake_ch]}
   early_execution:             {label: "Early execution: entered before the setup's confirmation or location was reached ('setup was good but executed early')", introduced_in: T-0004}
   ignored_fvg:                 {label: "Ignored an unmitigated FVG left behind the entry ('I ignored FVG on the left')", introduced_in: T-0009}
   low_quality_setup:           {label: Traded a low-quality setup}

@@ -1,0 +1,120 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0011
+status: not_taken
+opened: 2026-09-30            # the date the resting sell limit would have filled (the 15:30 bar, UTC+3); cancelled on Sep 29 as front-run
+closed: null
+asset: "BTCUSD"
+market: "crypto (chart: TradingView CRYPTO BTCUSD index; exchange not stated)"
+direction: "short"
+session: null
+timeframes:
+  htf: "4h"                   # "4H was bullish making slight pullbacks"
+  execution: "30m"            # trader: "Time Duration: 30M (30/9/26 15:30)"
+  chain: ["4h", "1h", "30m"]
+  detail: ["5m"]              # the 5m shows the Sep 30 spike into the 4h FVG
+  top_down: true              # the 1h and 4h read is what rejected the 30m CH
+
+setups: [supply_level, choch, fvg]
+regime: [bullish, range]      # 4h bullish (trader); 1h consolidation range about 82,579-85,220 since Sep 24
+
+strategy:
+  id: supply-demand-structure
+  version: "1.15"             # recorded at v1.15
+  experiment: null
+  variant: null
+
+plan:
+  entry: 84143.26             # position-tool label: sell limit at the lower edge of the 30M supply
+  stop: 84519.37              # position-tool label: above the supply
+  targets: [82143.95]         # position-tool label: 5.32R (trader: "5,32RR")
+  invalidation: "Price back above the 30M supply."
+  entry_model: supply_level
+  split_entries: []
+  split_share: null
+  confluences:
+    - "30M CH"
+    - "Supply level (orange box) that created the CH"
+  confirmations:
+    - "30M CH (fake: no CH on the 1H or 4H)"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # trader: "Risk 1%"
+  leverage: 20                # trader: "Leverage 20X (Invalidation 0,46%)"; tj: 0.447%, 8.9% of margin at the stop
+  margin_mode: isolated
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits: []
+  fees: null
+  duration_minutes: null
+  orders_filled: null
+  worst_price: null
+  best_price: null
+
+result:
+  pnl: null
+  r: null
+  hypothetical_r: -1.0        # COUNTERFACTUAL: a limit left resting fills in the Sep 30 15:30 5m bar (high about 84,460) and is stopped in the 15:35 bar (about 84,822)
+
+journal:
+  before: |
+    Recorded 2026-09-30 from the trader's review, after the Sep 30 spike (the idea was cancelled, never taken).
+    30M: a CH and the supply level (orange box) that created it; "Ideally that would be the best scenario for Price to
+    reclaim that level." Plan: sell limit at the supply, 5.32R, risk 1%, 20x on a 0.46% invalidation.
+  during: |
+    "after forming CH, it didn't retest and move even lower to 82800-82900 so it was a front run" ... "in this case we
+    got front runned so we cancel our entry, since there wasn't any retest".
+  after: |
+    Trader: "Here's a great example of how to avoid fake CH." (2) "moving on 1H there's no CH, it was just a pullback on
+    a consolidation range". (3) "It's even proven on 4H where there was a FVG (Yellow box) "It didn't give any retest by
+    the way (4), considering a limit order there would be ideal"". Pros: "Setup was very good 30M CH + 5,32RR". Cons:
+    no retest (front run, entry cancelled); "Higher Time Frame Ignorance (1H-4H) ... Practically on HTF we didn't have
+    any CH". "Setup: B, because we had good RR with LTF confirmation, but HTF was against our bias". "Result: Not
+    taken (Loss avoided)". Tips: "You can measure invalidation level from entry price to SL price. You grab that %
+    gap that invalidation has and you measure the proper leverage so you can stick to our rules." "When we have HTF
+    confirmations 4H-1D, For example a CH, we can jump on lower time frames eg 30M-1H and identify liquidity levels,
+    RSI divergences, supply/demand levels and FVGs that can work in our favor".
+
+evidence:
+  observed:
+    - "TradingView BTCUSD (CRYPTO index), 30m, 1h, 4h and 5m, chart time UTC+3, screenshots Sep 30 18:19-18:24. Position tool: entry 84,143.26, stop 84,519.37, target 82,143.95 (tj: stop distance 0.447%, 5.32R). Red line 81,224.54."
+    - "Prices read from chart pixels, calibrated on 28 axis labels on the 30m and 1h (residual about $22, one pixel) and 23 on the 5m (about $2); the live-price line and the tool's entry line were masked."
+    - "30m: higher low about 83,727 (Sep 29 12:00; the red dashed CH line is drawn at about 83,742, 12:00-16:40), rally to about 84,494 (16:00), then closes back under the line at 17:30-18:00 and a low about 82,882 (18:00): the 30m CH. The orange 30M supply is about 84,098-84,489, drawn from Sep 29 about 15:00."
+    - "No retest: from the CH until Sep 30 15:00 the highest 30m high was about 83,944 (14:30 on Sep 30), under the 84,143 entry. Lows about 82,877 (Sep 29 19:30) and 82,931 (Sep 30 10:00): the trader's 82,800-82,900. The 82,144 target was not reached."
+    - "1h: a range since Sep 24, about 82,579 (Sep 28 12:00) to 85,220 (Sep 25 14:00). Swing lows about 82,579 (Sep 28) and 82,742 (Sep 29 04:00); the Sep 29 drop stopped about 82,876, above both: no lower low, no 1h CH."
+    - "4h: the yellow FVG is about 85,225-85,656, left by the Sep 23 drop (1h: about 86,002 to 83,524). Shaded black band about 82,140-82,891; the target sits at its lower edge."
+    - "Sep 30 5m: the 15:30 bar reached about 84,460 (through the entry), the 15:35 bar about 84,822 (through the stop); the spike peaked about 85,597 at 16:05, inside the 4h FVG, and fell to about 83,350 by 17:30. 30m: the 15:30 bar about 83,861-85,473, the 16:00 bar high about 85,601."
+    - "tj size: 20x = 8.9% of the margin at the stop; isolated liquidation about 87,911 (10.0x the stop distance). The bot's default rule gives 85x on this stop (liquidation about 84,707, 1.5x the stop distance)."
+  interpreted:
+    - "The chart matches the trader's reading: the 30m CH broke only a 30m higher low inside the 1h range; the 1h swing lows held, so on the 1h it was a pullback in consolidation, a fake CH. This is the same pattern as T-0004 (a 5m CH the 30m never confirmed) and T-0008 (a break inside the 4h candle range), one timeframe up."
+    - "Checklist v1.15: 1 pass (30m supply from the CH, fresh); 3 fail (no CH on the 1h or 4h: a fake CH); 4 pass (the limit at the supply's edge); 5 pass (stop above the supply); 6 pass (8.9% of margin, 5.32R); 8 unknown (the ForexFactory calendar for Sep 30 was not given; the spike began at 15:30 UTC+3, 08:30 New York, a US release time). Item 3 alone makes it a no-trade."
+    - "Front run: price moved about 3.4R toward the target without retesting the entry, and the trader cancelled. Under the written rule (cancel only when price reaches the TP) the limit would have stayed open and been stopped on Sep 30 within about 10 minutes: -1R COUNTERFACTUAL. The cancel is recorded as the trader's rule; its exact trigger is an open question."
+    - "The spike that would have stopped the short ran into the unretested 4h FVG and reversed there, which is the trader's point that a limit at the 4h FVG would have been the better location. No hypothetical R is computed for it: no plan was given."
+  hypotheses:
+    - "Lower-timeframe CHs that the next timeframe up does not confirm fail (n=3: T-0004 taken -1R, T-0008 and T-0011 avoided, both -1R COUNTERFACTUAL)."
+    - "Cancelling a limit after a front run avoids retests that come back with force (n=1)."
+  charts: [journal/charts/T-0011-btc-30m.png, journal/charts/T-0011-btc-1h.png, journal/charts/T-0011-btc-4h.png, journal/charts/T-0011-btc-5m.png]
+
+review:
+  scores: {setup: null, context: null, execution: null, risk: null, management: null}
+  trader_grade: "B"           # trader: "B, because we had good RR with LTF confirmation, but HTF was against our bias"
+  setup_validity: invalid     # no HTF CH: checklist item 3
+  followed_plan: true         # cancelled on the front run; the HTF read confirmed the skip
+  loss_type: null
+  mistakes: []
+  behaviors: [cancelled_front_run, followed_htf, did_top_down, avoided_low_quality]
+  outside_control: []
+  lesson: >-
+    A CH counts only when the next timeframe up agrees: a 30m CH inside a 1h consolidation range is a fake CH. And a
+    limit that price runs away from without a retest is cancelled (front run): the late retest here came through the
+    supply with force and would have cost -1R (COUNTERFACTUAL).
+  actionable_change: null
+  strategy_change: "no"
+  evidence_strength: low

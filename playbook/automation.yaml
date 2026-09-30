@@ -10,7 +10,8 @@ venue:
   exchange: "MEXC"                    # trader, 2026-09-27: "I'm expecting to use MEXC as an exchange to use the bot placing orders"
 
 # Questions the bot's specification still needs answered (shown in the terminal's Data gaps).
-open_questions: []                    # all answered by 2026-09-28
+open_questions:
+  - "1. Leverage on tight stops (T-0011): the default (the highest leverage within 60% of margin, liquidation 1.5x the stop distance away) gives 85x on this 0.447% stop, liquidation about 84,710. You used 20x (liquidation about 87,911). In the Sep 30 15:35 spike price reached about 84,822: a stop that slipped that far at 85x ends in liquidation, which loses the whole margin, about 2.6% of equity instead of 1%. Keep the highest leverage within 60%, or cap it (for example at 20x, as in every trade you have recorded)?"
 
 # Trade alerts (trader, 2026-09-28): "you can send alerts when we entered on a trade or exited on SL or TP. Trade will
 # be full analyzed about how you executed, entry and exit prices, risk on $ and leverage, and type of setup."

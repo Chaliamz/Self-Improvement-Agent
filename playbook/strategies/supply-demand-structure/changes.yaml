@@ -258,3 +258,17 @@ changes:
     fields: [confluences, leverage_model]
     note: "All supply-demand trades retagged \"1.14\"."
     resulting_version: "1.14"
+  - id: CHG-015
+    kind: clarification
+    date: 2026-09-30
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-09-30 (T-0011): "Here's a great example of how to avoid fake CH" ... "moving on 1H there's no CH, it
+      was just a pullback on a consolidation range" ... "in this case we got front runned so we cancel our entry, since
+      there wasn't any retest" ... "When we have HTF confirmations 4H-1D, For example a CH, we can jump on lower time
+      frames eg 30M-1H and identify liquidity levels, RSI divergences, supply/demand levels and FVGs that can work in our
+      favor" ... "You can measure invalidation level from entry price to SL price ... so you can stick to our rules."
+    fields: [timeframe_alignment, grading, entry_timing, do_not_trade_when, leverage_model, checklist, common_mistakes, open_questions]
+    note: "All supply-demand trades retagged \"1.15\"."
+    resulting_version: "1.15"

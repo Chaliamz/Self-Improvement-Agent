@@ -140,6 +140,8 @@ terminology:
   S setup: "Proper confluences, clear confirmations, a sniper entry that runs to TP, and a high R:R (about 3.5R; a rough guide) (trader, 2026-09-27). T-0007."
   grades: "S, A, B, C, D. S-B tradeable, C maybe, D avoided. Criteria for each in grading (all stated by 2026-09-28)."
   4H candle range: "The range of the impulsive candle that made the high/low (cyan lines). Inside it = consolidation. A pullback must CLOSE beyond its opposite end."
+  fake CH: "A lower-timeframe CH the next timeframe up does not confirm: '30M CH' while on the '1H there wasn't any CH, it was just a pullback on a consolidation range' (T-0011). Same as NOT CH."
+  front run: "Price moves toward the target without retesting the entry level first; the limit is cancelled: 'we got front runned so we cancel our entry, since there wasn't any retest' (T-0011)."
   NOT CH: "A break of a level inside a candle range. Consolidation, not a change of character (T-0008)."
   pullback: "From a high, price must break and CLOSE below the low of the candle range, read on the HTF (4h); otherwise it is consolidation. A 1h pullback inside a 4h candle range is not a 4h pullback (trader, T-0008)."
   early execution: "Entering before the setup's confirmation or location is reached: 'setup was good but executed early' (T-0004); 'mistake here was early execution' (T-0009)."
