@@ -1,0 +1,143 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0012
+status: closed
+opened: 2026-08-14            # trader: "14/8/26 15:00" (UTC+3); price first touched the 0.04564 limit in the 13:00 bar (see evidence)
+closed: 2026-08-16            # the target filled in the Aug 16 10:30 30m bar (UTC+3); trader: "16/8/26 14:00" (the position tool's right edge)
+asset: "OPNUSDT"
+market: "crypto perp (BloFin)"
+direction: "long"
+session: null
+timeframes:
+  htf: "4h"                   # the bullish reversal CH
+  execution: "1h"             # trader: "place a buy limit on the 1H demand level"
+  chain: ["4h", "1h"]         # 4H CH first, then the 1H demand and the equal-lows inducement
+  detail: []                  # a 30m chart of the trade was shared; the trader's account does not use it
+  top_down: true              # HTF confirmation (4H CH) first, then the 1H for the level and the liquidity
+
+setups: [demand_level, choch, inducement, liquidity_sweep, fvg]
+regime: [bullish]             # trader: "a 4H reversal CH showing a high possibility of continuation"
+
+strategy:
+  id: supply-demand-structure
+  version: "1.16"
+  experiment: null
+  variant: null
+
+plan:
+  entry: 0.04564              # position-tool label: buy limit at the top of the 1H demand (green box)
+  stop: 0.04452               # position-tool label: below the Jul 30 swing low (about 0.0446) that created the CH
+  targets: [0.05312]          # position-tool label: the supply level at about 0.053 (Oct 10 chart, red box)
+  invalidation: "Price below the Jul 30 swing low that created the 4H bullish CH (stop 0.04452): 'in case setup gets invalidated'."
+  entry_model: demand_level
+  split_entries: []
+  split_share: null
+  confluences:
+    - "Demand 1H level which didn't get tested yet (a slight FVG remained)"
+    - "Equal lows which formed a liquidity level before making CH (inducement on the 0.047 area)"
+  confirmations:
+    - "Bullish CH (4H reversal)"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # trader: "Risk 1%"
+  leverage: null              # not stated. tj size: 60% cap 24.45x, 50-60% aim 20.37x-24.45x, bot default 24x
+  margin_mode: isolated       # the trader's standing rule
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits:
+    - {price: 0.05312, reason: "Target (position-tool label). Trader: 'Target: Profit', 'Risk/Reward 6.68'."}
+  fees: null                  # inside the 1% risk (trader, 2026-09-27)
+  duration_minutes: 2610      # measured: the trader's 15:00 fill (Aug 14) to the target bar (Aug 16 10:30, 30m, UTC+3), +/- 30 min; 2730 if the limit filled at the first touch (13:00 bar)
+  orders_filled: null
+  worst_price: null           # depends on the fill: about 0.04521 (0.38R against) if the limit filled at the first touch in the 13:00 bar; about 0.04564 (the entry) if it filled at 15:00. Asked.
+  best_price: 0.05312         # the target filled
+
+result:
+  pnl: null
+  r: null                     # derived price-based from the 0.05312 exit: matches the trader's 6.68
+  hypothetical_r: null
+
+journal:
+  before: |
+    Reconstructed from the trader's account on 2026-10-10 (after the outcome, so not hindsight-proof).
+    (1) A 4H reversal "CH" showing a high possibility of continuation. The green box is the demand level, formed on
+    the 1H. (2) On the 1H, a form of inducement on the 0.047 area making equal lows: a liquidity level, highly likely
+    to be swept in the future. The green box is the demand that did not get tested yet, with a slight FVG remaining:
+    a zone that could be strong enough to push higher. Plan: buy limit on the 1H demand level, SL below that swing
+    low in case the setup gets invalidated. Target: the 0.053 level, where there is a supply level. Confluences: the
+    untested 1H demand; equal lows that formed a liquidity level before the CH. Confirmation: bullish CH. Risk 1%,
+    Risk/Reward 6.68.
+  during: |
+    Aug 14: the 12:00 30m bar swept the equal lows; the 13:00 bar traded through the 0.04564 limit to about 0.0452
+    (0.61R above the stop) and price based at the zone until 15:00, then rose. Aug 15-16: a steady climb; the target
+    filled in the Aug 16 10:30 30m bar. The stop was never approached.
+  after: |
+    Trader: "Im going to show you another one great example on how to perform to hunt high RR." "Setup was
+    definitely S, because it met our criteria (CH+DEMAND+ Avoiding inducement) + Very good RR." Result: profit at
+    the target, 6.68RR. Duration as stated: "14/8/26 15:00 - 16/8/26 14:00".
+
+evidence:
+  observed:
+    - "BloFin OPNUSDT perpetual (OPINION/USD Tether), chart time UTC+3: 4h, 1h and 30m screenshots taken Aug 16 2026 13:42, and a 1h screenshot taken Oct 10 2026. Position tool on all four: entry 0.04564, stop 0.04452, target 0.05312 (tj: 6.68R planned, stop distance 2.454%; trader: 6.68)."
+    - "Prices read from chart pixels, calibrated on 16-19 axis ticks per chart (max residual 0.00002, under one pixel); times from 7-18 date labels (residual 0.05 h on the 30m, 0.24-0.30 h on the 1h charts, 1.1 h on the 4h). The position-tool labels agree with the calibration to within a pixel. The zone and tool overlays are semi-transparent over the candles, so wicks inside them were read by colour difference, not by candle colour."
+    - "Swing low about 0.0446 (Jul 30 ~22:00, 1h; the 4h agrees). Green demand box about 0.0450-0.0456 (its top is the 0.04564 entry), drawn on the Jul 31 base candles (lows about 0.0450-0.0453), the base of the rally that made the CH."
+    - "Green dashed CH line at about 0.0502 on the 4h and 1h, from the Jul 30 ~01:00 lower high to Aug 3 ~16:00. The 1h traded above it from about Aug 3 19:00-20:00 and reached about 0.0561 on Aug 4 ~10:00."
+    - "Equal lows on the 1h: about 0.0463-0.0465 (Jul 31 17:00; Aug 1 09:00-13:00; Aug 2 04:00-09:00), with a dip to about 0.0461 on Aug 3 ~10:00-11:00 before the CH (the trader: 'on that 0.047 area')."
+    - "After the CH: a pullback low about 0.0490 (Aug 4 ~19:00), a lower high about 0.0553 (Aug 8 ~09:00), then a decline: 1h bars entirely below 0.0490 by Aug 12 ~20:00, about 0.0470 on Aug 13."
+    - "Aug 14, 30m: the 12:00 bar is the first below the equal lows (low about 0.0462); 12:30 about 0.0459; the 13:00 bar traded through 0.04564 to about 0.0452 (about 0.04521-0.04522 on both 1h screenshots too). Later lows: 13:30 about 0.0455; 14:00 and 14:30 about 0.0457; 15:00 about 0.04563-0.04569 (at the entry within one pixel); 15:30 about 0.0458; then higher."
+    - "The position tool starts at the 15:00 bar on all three Aug 16 charts and ends at about 14:00 on Aug 16 (30m 13:56, 1h 13:48, Oct 10 chart 14:10): the trader's '14/8/26 15:00 - 16/8/26 14:00'. The tool's profit shading ends at about Aug 16 10:20-10:40 on the 30m, the 1h and the Oct 10 chart: the bar where TradingView marks the target hit."
+    - "Target: the Aug 16 10:30 30m bar (a tall purple candle from about 0.0514) reached about 0.0532, through 0.05312; the 11:00, 12:00 and 13:00 bars also reached about 0.0532. 4h header at 13:42: the 11:00 bar O 0.05310 H 0.05320 L 0.05180 C 0.05300 (-0.00020), so the 07:00-11:00 bar closed at 0.05320."
+    - "The stop was never approached: the lowest price after the 13:00 touch was about 0.0452, 0.61R above the stop; from 15:00 to the target, about 0.0456."
+    - "Oct 10 chart (1h): red supply about 0.0526-0.0531, drawn from about Aug 10 21:00 (the start of the decline into the demand); the 0.05312 target sits at its upper edge. After the target: a low about 0.0508 (Aug 17 ~01:00), then above 0.0553 (Aug 18 ~06:00) and 0.0561 (Aug 18 ~07:30), and above the pane top (about 0.0574) by Aug 18-19."
+    - "tj size: stop distance 2.454%. 60% cap 24.45x; the 50-60% aim is 20.37x-24.45x; bot default 24x (liquidation about 0.04396, 1.50x the stop distance). At 20x: 49.1% of margin, liquidation about 0.04358 (1.84x). Targets: 0.05312 = 6.68R; 0.05262 (the supply's lower edge) = 6.23R; 0.0561 (the Aug 4 high) = 9.34R."
+    - "News: web search results (the ForexFactory calendar itself could not be reached from this environment) list US Retail Sales (July) at 08:30 New York on Friday Aug 14 2026, which is 15:30 UTC+3. Its ForexFactory impact colour was not verified."
+    - "Leverage: not stated."
+  interpreted:
+    - "The chart matches the trader's sequence: a 4H bullish CH by close above about 0.0502 (Aug 3), born from the Jul 30 low; an untested 1H demand at the base of that move; equal lows above it (the inducement), swept in the Aug 14 12:00 bar and carried into the demand by 13:00. The limit sat at the demand, below the equal lows: the strategy's inducement rule exactly (swept into the zone, never traded)."
+    - "Stop 0.04452 about 0.0001 under the 0.0446 swing low that created the CH (0.2% of price): the trader's stop rule, 'just very close to that swing point'."
+    - "Fill time is not settled. The plan was a buy limit at the demand; a limit resting there fills on the first touch, the 13:00 bar, which then wicked to about 0.0452 (0.38R against). The trader's 15:00 is the position tool's start; the 15:00 bar's low is at the entry within one pixel, so a limit placed only at 15:00 may not have filled at all. worst_price stays null until the trader says which."
+    - "Close: TradingView marks the target in the Aug 16 10:30 bar on three charts; the trader's '14:00' is the tool's right edge, not the fill. Duration is recorded from the stated 15:00 fill to 10:30 (43.5 h); 45.5 h if the fill was at 13:00."
+    - "Structure: after the CH the 4h/1h made a lower high (about 0.0553 under the 0.0561 high) and closed below the 0.0490 pullback low on Aug 12. If that low counts as 'the last higher low', the close-based rule reads a bearish CH before the entry. The trader treated the whole decline as the pullback into the demand that created the CH, with the Jul 30 low as invalidation. That is the usual reading (0.0490 never produced a higher high, so it never became a confirmed higher low), but the strategy does not state it: v1.16 open question 2."
+    - "News: if Retail Sales was red on ForexFactory, the no-entry window ran 14:30-16:30 UTC+3. A limit resting since before 13:00 filled outside it, and open trades are kept; a fill at 15:00 would sit inside it, where the rule cancels resting orders. The fill time decides whether checklist item 8 passed."
+    - "Checklist v1.16: 1 pass (a 1H demand drawn from the CH, untested, after the 4H CH; the trader: 'Green box is our demand level but formed on 1H time frame'); 2 pass (equal lows swept into the zone at 12:00-13:00); 3 pass on the 4H (close above about 0.0502), with open question 2 on the post-CH break; 4 pass (limit at the demand); 5 pass (about 0.0001 under the CH's swing low); 6 partly unknown: 6.68R passes the 2.5R floor and the 3R preference, leverage not stated so the 60% rule and liquidation cannot be checked; 7 pass (no entry at the equal lows); 8 unknown (the fill time and the Retail Sales colour)."
+    - "Target placement: the 0.05312 TP sits at the supply's upper (far) edge, as T-0011's 82,144 sat at the far edge of its 82,140-82,891 zone; T-0010's TP sat inside its zone. Where in the opposing zone the TP goes is not written down: v1.16 open question 3."
+    - "COUNTERFACTUAL: a TP at the 0.0561 Aug 4 high (the top of the post-CH range) would have filled on Aug 18 ~07:30 after a dip to about 0.0508 (+4.6R, never near the stop): about 9.34R instead of 6.68R. One path; the trader's target was the first opposing supply."
+    - "Grade S fits the stated S criteria: proper confluences (untested demand, inducement swept into it), a clear confirmation (4H CH), a limit at the zone that ran to the TP, and 6.68R (above the 3.5R guide)."
+  hypotheses:
+    - "Limits at an untested lower-timeframe demand placed beyond an equal-lows inducement, after an HTF CH, may produce the high-R winners (T-0012: 6.68R). n=1 for this exact combination; T-0001 (AAVE) also had the equal lows as inducement."
+    - "A deep pullback that breaks the post-CH internal low can still deliver at the CH's origin demand (T-0012). n=1; how the bot separates this from a real bearish CH is open question 2."
+  charts: [journal/charts/T-0012-opn-4h.png, journal/charts/T-0012-opn-1h.png, journal/charts/T-0012-opn-30m.png, journal/charts/T-0012-opn-1h-after.png]
+
+review:
+  scores:
+    setup: 5                  # 4H CH by close, untested 1H demand that created it, equal-lows inducement swept into it, 6.68R
+    context: 4                # 4H CH in the trade's direction, but a lower high and a close below the post-CH pullback low before the entry (open question 2)
+    execution: 5              # buy limit at the demand as planned, stop under the swing low; assumes the fill was outside the news window (asked)
+    risk: null                # not assessable: leverage not stated. The 1% risk and the stop at the structural invalidation pass
+    management: 5             # held to the target, no interference
+  trader_grade: "S"           # trader: "Setup was definitely S, because it met our criteria (CH+DEMAND+ Avoiding inducement) + Very good RR"
+  setup_validity: valid
+  followed_plan: true
+  loss_type: null
+  mistakes: []
+  behaviors: [waited_for_confirmation, waited_for_liquidity, avoided_inducement, followed_htf, did_top_down, followed_setup, correct_sizing, took_planned_profits]
+  outside_control: []
+  lesson: >-
+    The S-grade long: the 4H CH first, then the 1H demand that created it, below the equal lows that were the
+    inducement. The limit sat at the demand, the stop just under the CH's swing low, the target at the opposing
+    supply: 6.68R. The R came from waiting at the origin of the move instead of at the inducement above it.
+  actionable_change: null
+  strategy_change: "no"       # documentation only: v1.16 clarifies item 1 (a 1h-30m zone after the HTF CH) and adds T-0012 as the S example
+  evidence_strength: low
+
+open_questions:
+  - "Fill and close times: price first touched your 0.04564 buy limit in the Aug 14 13:00 bar (UTC+3) and wicked to about 0.0452 (0.38R against); 15:00 is where your position tool starts, and the 15:00 bar's low sits at the entry within one pixel. Was the limit resting before 13:00 (filled at 13:00) or placed at 15:00? The target filled in the Aug 16 10:30 bar on all three charts; your '14:00' is the tool's right edge. Was the exit at about 10:30?"
+  - "Leverage: not stated. On this 2.454% stop the 60% rule allows up to 24.45x (20x = 49.1% of the margin, 24x = 58.9%). What did you use?"
+  - "News on Aug 14: web search lists US Retail Sales at 08:30 New York (15:30 UTC+3). Was it red on ForexFactory? If so, the no-entry window ran 14:30-16:30: a limit filled at 13:00 stands (open trades are kept), one filled at 15:00 sits inside the window."

@@ -446,6 +446,11 @@ def _check_trade(trade: Trade, kb: KB, add: _Sink) -> None:
         if not (kb.root / str(chart)).exists():
             add(WARN, where, f"chart not found: {chart}")
 
+    questions = t.get("open_questions")
+    if questions is not None and (not isinstance(questions, list)
+                                  or not all(isinstance(q, str) and q.strip() for q in questions)):
+        add(ERROR, where, "open_questions must be a list of questions (text) or []")
+
 
 def _check_strategies(kb: KB, add: _Sink) -> None:
     promo = kb.config["promotion"]

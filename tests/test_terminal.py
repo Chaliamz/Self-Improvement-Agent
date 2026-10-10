@@ -464,6 +464,26 @@ class VersionNumberTest(KBTestCase):
         self.assertFalse(any("is a number" in i.msg for i in self.issues("ERROR")))
 
 
+class TradeQuestionsTest(KBTestCase):
+    def test_questions_reach_data_gaps_and_the_report(self):
+        self.write_trade("T-0001", result={"r": 1.0}, open_questions=["When did the limit fill?", "  "])
+        self.write_trade("T-0002", result={"r": 1.0}, open_questions=[])
+        self.assertTrue([i for i in self.issues("ERROR") if "open_questions" in i.msg], "a blank entry is an error")
+        self.write_trade("T-0001", result={"r": 1.0}, open_questions=["When did the limit fill?"])
+        self.assertFalse([i for i in self.issues("ERROR")])
+        p = build_payload(load_kb())
+        self.assertEqual(p["gaps"]["trade_questions"], [{"id": "T-0001", "questions": ["When did the limit fill?"]}])
+        from tradekb import report
+        self.assertIn("T-0001: 1 open question(s)", report._gaps(load_kb()))
+        code, out = self.run_cli("status")
+        self.assertIn("Questions on trade records: T-0001 (1)", out)
+
+    def test_malformed_questions_are_refused(self):
+        for bad in ("When did it fill?", [1, 2], ["ok", None], ["  "]):
+            self.write_trade("T-0001", result={"r": 1.0}, open_questions=bad)
+            self.assertTrue(any("open_questions must be a list" in i.msg for i in self.issues("ERROR")), repr(bad))
+
+
 INCIDENT = {"id": "INC-001", "date": "2026-09-28", "area": "data", "severity": "medium", "title": "t", "detail": "d",
             "found_by": "agent", "status": "fixed", "fix": "f"}
 

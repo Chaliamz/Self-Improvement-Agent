@@ -52,6 +52,7 @@ instruments:                          # list of markets/assets traded
   - "POLUSDT perpetual (BloFin)"
   - "TIAUSDT perpetual (BloFin)"
   - "NEAR (chart: TradingView CRYPTO NEARUSD index; exchange not stated)"
+  - "OPNUSDT perpetual (BloFin)"
 sessions: "24/7"                      # "no, no we trade 24/7 regardless" (2026-09-28): no days or hours avoided besides red USD news
 timeframes:                           # notation: m minutes, h hours, D days, W weeks, M months
   swing_day:                          # swing and day trading (trader, 2026-09-28): the bot's focus
@@ -78,13 +79,13 @@ grading:
   maybe: [C]                          # "We would avoid D setups and maybe C ones as well"
   avoid: [D]
   s_rr_guide: 3.5                     # a rough guide, not a floor: "it could be slightly less"
-  s_criteria: "Proper confluences, clear confirmations, sniper entries leading to TP and a high RR (3.5RR and higher)."
+  s_criteria: "Proper confluences, clear confirmations, sniper entries leading to TP and a high RR (3.5RR and higher). T-0012: 'it met our criteria (CH+DEMAND+ Avoiding inducement) + Very good RR'."
   separated_by: "The quality of the setup (trader, 2026-09-27)."
   a_criteria: "A good setup executed well, one step short of S: a better entry or a stronger target would have made it S (T-0001, T-0006)."
   b_criteria: "Decent R:R but few confluences: 'it could be a risky execution'. T-0009: 'Setup B because of FVG ignorance but decent confirmations'."
   c_criteria: "A setup taken without the full process, 'regardless of win' (T-0003: only the 1m timeframe)."
   d_criteria: "A poor trade plus a mistake: 'D would definitely be a poor trade+mistake'."
-  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B}
+  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S}
 
 # News filter (trader, 2026-09-27). Applies to NEW entries only: open trades are kept.
 news_filter:
@@ -141,6 +142,7 @@ terminology:
   grades: "S, A, B, C, D. S-B tradeable, C maybe, D avoided. Criteria for each in grading (all stated by 2026-09-28)."
   4H candle range: "The range of the impulsive candle that made the high/low (cyan lines). Inside it = consolidation. A pullback must CLOSE beyond its opposite end."
   fake CH: "A lower-timeframe CH the next timeframe up does not confirm: '30M CH' while on the '1H there wasn't any CH, it was just a pullback on a consolidation range' (T-0011). Same as NOT CH."
+  Avoiding inducement: "Placing the limit at the zone beyond the equal highs/lows, never at them, so the inducement is swept into the zone first. One of the S criteria: 'CH+DEMAND+ Avoiding inducement' (T-0012)."
   front run: "Price moves toward the target without retesting the entry level first; the limit is cancelled: 'we got front runned so we cancel our entry, since there wasn't any retest' (T-0011)."
   NOT CH: "A break of a level inside a candle range. Consolidation, not a change of character (T-0008)."
   pullback: "From a high, price must break and CLOSE below the low of the candle range, read on the HTF (4h); otherwise it is consolidation. A 1h pullback inside a 4h candle range is not a 4h pullback (trader, T-0008)."
@@ -168,6 +170,10 @@ sources:
   instruments.POLUSDT: "T-0008 charts (BloFin POLUSDT perpetual, 4h and 1h), 2026-09-27"
   instruments.TIAUSDT: "T-0009 charts (BloFin TIAUSDT perpetual, 4h and 1h), 2026-09-28"
   instruments.NEAR: "T-0010 chart (TradingView CRYPTO NEARUSD index, 1h), 2026-09-28"
+  instruments.OPNUSDT: "T-0012 charts (BloFin OPNUSDT perpetual, 4h, 1h and 30m), 2026-10-10"
+  grading.examples.T-0010: "Trader, 2026-09-28: 'setup was A even though it was lost'"
+  grading.examples.T-0011: "Trader, 2026-09-30: 'B, because we had good RR with LTF confirmation, but HTF was against our bias'"
+  grading.examples.T-0012: "Trader, 2026-10-10: 'Setup was definitely S, because it met our criteria (CH+DEMAND+ Avoiding inducement) + Very good RR'"
   risk.max_daily_loss_r: "Trader, 2026-09-27: 'there's no stopping we stick to the plan. only 1% risk we ignore frequency. there's no pause'"
   risk.max_open_risk_pct: "Trader, 2026-09-27: 'only 1% risk we ignore frequency'"
   risk.max_consecutive_losses_before_pause: "Trader, 2026-09-27: 'there's no pause'"

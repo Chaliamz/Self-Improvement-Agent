@@ -65,7 +65,9 @@ in INITIALIZATION, learn and record; do not propose system redesigns.
    Timeframe notation is TradingView's: m minutes, h hours, D days, W weeks, M months. The trader
    may write "1M" for one minute; check the chart interval and record `1m`.
 4. `./tj show T-####` → use its R, outcome and GOOD/BAD OUTCOME × PROCESS label.
-   `./tj validate` must report 0 errors.
+   `./tj validate` must report 0 errors. A fact the record still needs from the trader (a fill time the chart
+   contradicts, an unstated leverage, a news release to confirm) goes in the record's `open_questions`: the terminal's
+   Data gaps and `./tj status` show it. Delete each question once answered and record the answer.
 5. Reply in the §44 TRADE REVIEW format. If `./tj status` flags a recurring error,
    say so (§15) as a system-design problem, without shaming.
 6. `./tj build` (regenerates `terminal.html` and `exports/kb.json`), `./tj audit` (must pass), then commit:

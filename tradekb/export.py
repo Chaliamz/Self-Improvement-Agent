@@ -23,7 +23,7 @@ from . import __version__, analysis, model, readiness
 from .model import num
 from .risk import exposure
 from .stats import histogram, outlook
-from .store import INCIDENT_ENUMS, KB, TAXONOMIES, dig, unresolved
+from .store import INCIDENT_ENUMS, KB, TAXONOMIES, dig, trade_questions, unresolved
 
 SCHEMA_VERSION = 1
 OUTPUTS = ("exports/kb.json", "terminal.html")
@@ -195,6 +195,7 @@ def build_payload(kb: KB) -> dict:
         "gaps": {
             "unmeasurable": [{"id": row.trade.id, "needs": row.d.missing} for row in analysis.unmeasurable(kb)],
             "unreviewed": [row.trade.id for row in analysis.rows(kb, {"closed"}) if row.d.grade is None],
+            "trade_questions": trade_questions(kb),
         },
     }
 

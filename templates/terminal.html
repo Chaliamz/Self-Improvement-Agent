@@ -1216,6 +1216,10 @@ function renderGaps() {
     card("Open questions", "What the system still needs from the trader before these rules can be automated.",
       qGroups.length ? qGroups.flatMap(g => [h("h3", { text: `${g.st.meta.name || g.st.slug} · v${g.st.meta.current_version}` }), list(g.qs)])
                      : h("p", { class: "empty", text: "None open." })),
+    card("Questions on recorded trades", "Facts a record still needs from the trader. Each is deleted from the record once answered.",
+      (KB.gaps.trade_questions || []).length
+        ? KB.gaps.trade_questions.flatMap(g => [h("h3", { text: g.id }), h("div", { "data-trade-q": g.id }, list(g.questions))])
+        : h("p", { class: "empty", text: "None open." })),
     card("Bot specification", `Questions the trading bot${dig(KB.readiness, "venue.exchange") ? " (" + KB.readiness.venue.exchange + ")" : ""} still needs answered.`,
       list((KB.readiness || {}).open_questions, "None open.")),
     card("Unresolved profile parameters", "Never assumed. Each one is filled only when the trader states it.", list(KB.unresolved, "All resolved.")),

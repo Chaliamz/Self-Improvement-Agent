@@ -4,16 +4,16 @@ Consolidated knowledge (system prompt §27). Every entry must cite the evidence 
 trade IDs, n, and the `./tj` output it rests on. An entry without evidence does not belong
 here; it belongs in a trade record's `evidence.hypotheses`.
 
-Status: **INITIALIZATION.** 7 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009, T-0010), 1 missed
-(T-0002), 3 not taken (T-0005, T-0008, T-0011; counterfactual only). Overall (`./tj stats`): +1.72R expectancy, 95% CI [-0.20,
-+3.38], n=7, LOW tier: the interval now includes zero. Seven trades cannot separate skill from luck. Nothing below is
-established.
+Status: **INITIALIZATION.** 8 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012), 1 missed
+(T-0002), 3 not taken (T-0005, T-0008, T-0011; counterfactual only). Overall (`./tj stats`): +2.34R expectancy, 95% CI [+0.45,
++4.26], n=8, LOW tier. The interval sat at [-0.20, +3.38] before T-0012: one +6.68R trade moved its lower edge above zero,
+which shows how fragile it is at n=8. Eight trades cannot separate skill from luck. Nothing below is established.
 
 ## Strategies
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.15 | unvalidated | 6 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010) | n=6: +1.52R, 95% CI [-0.27, +3.41] (LOW) |
+| supply-demand-structure | 1.16 | unvalidated | 7 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012) | n=7: +2.25R, 95% CI [+0.10, +4.40] (LOW) |
 | key-level-sr | 1.5 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -25,13 +25,16 @@ _None._
 ## Hypotheses
 - **Top-down vs lower-timeframe-only.** The trader flags LTF-only entries as risky (T-0003) and names skipping the
   15m-30m as the cause of T-0004. Evidence (`./tj stats --by top_down`): n=2 without complete top-down (T-0003
-  +2.94R, T-0004 -1.00R), n=2 with it (T-0006 +3.41R, T-0009 -1.00R: top-down done, but the 4h FVG it showed was
-  ignored), T-0001 and T-0007 not recorded. T-0005 had it (+3.09R) but is a counterfactual and excluded. Test: `./tj compare top_down yes no`, from n=5 per side for an interval.
+  +2.94R, T-0004 -1.00R), n=4 with it (T-0006 +3.41R, T-0009 -1.00R: top-down done, but the 4h FVG it showed was
+  ignored; T-0010 -1.00R; T-0012 +6.68R), T-0001 and T-0007 not recorded. T-0005 had it (+3.09R) but is a counterfactual and excluded. Test: `./tj compare top_down yes no`, from n=5 per side for an interval.
   Status: observation.
 - **Target the strongest opposing level.** Now the trader's stated preference (v1.5 target model: "more
   preferable to hunt strongest levels"). Whether it pays is untested: T-0006's order was 66.10 (3.41R); the
-  70.70 supply would have given about 4.75R (COUNTERFACTUAL, same 4h candle). n=1. Record both levels on
-  future trades. Status: hypothesis (performance), rule (preference).
+  70.70 supply would have given about 4.75R (COUNTERFACTUAL, same 4h candle). T-0012's order was the first opposing
+  supply (6.68R); the 0.0561 high above it filled two days later after a dip that stayed 4.6R in profit (about 9.34R,
+  COUNTERFACTUAL). n=2, both single paths. Record both levels on future trades. Where the TP sits inside the opposing
+  zone (far edge in T-0011 and T-0012, inside in T-0010) is strategy open question 3. Status: hypothesis
+  (performance), rule (preference).
 - **Counter-trend trades.** The trader calls T-0007 (short at ATH, bullish bias) risky but worth it for a very
   solid setup at 4.12R; graded like any other setup, "just a bit riskier" (2026-09-27). `./tj stats --by
   trend`: with-trend n=4 (+2.48R; T-0009 -1.00R added), counter-trend n=2 (T-0004 -1.00R, T-0007 +4.12R). The trend label is derived
@@ -42,6 +45,15 @@ _None._
   break inside the 4h candle range, skipped, -1.00R COUNTERFACTUAL; T-0011 a 30m CH inside the 1h range (about
   82,579-85,220), skipped, -1.00R COUNTERFACTUAL. n=3 (1 realized). Counterfactuals are excluded from statistics, so
   whether the filter pays is untested. Status: rule (stated); hypothesis (performance).
+- **Avoiding inducement: the limit at the origin demand, beyond the equal lows.** T-0012 (graded S, +6.68R): a 4H
+  CH, then the untested 1H demand that created it; the 1H equal lows above it (about 0.0463-0.0465) were swept on the
+  way down and the buy limit sat below them, at the demand. The trader's S criteria: "CH+DEMAND+ Avoiding inducement +
+  Very good RR". T-0001 (AAVE, +4.57R) also had equal lows as the inducement. `./tj stats --by setup`: inducement n=2,
+  both winners. Far too few; the rule itself ("AVOID Inducements at all costs") is the trader's. Status: rule (stated);
+  hypothesis (performance).
+- **Pullback or bearish CH.** T-0012's pullback into the demand made a lower high and closed below the post-CH
+  pullback low before the entry; the trader read it as the pullback, with the CH's swing low as the invalidation.
+  How the bot separates the two is strategy open question 2. n=1.
 - **Front-run cancel.** T-0011: price ran about 3.4R toward the target without retesting the 30m supply, and the
   trader cancelled the limit. Under the older cancel-at-TP rule it would have filled in the Sep 30 15:30 spike and
   been stopped within about 10 minutes (-1.00R COUNTERFACTUAL). Rule stated (v1.15); its exact trigger is the open
@@ -54,12 +66,15 @@ _None._
 - **Entry precision (heat on winners).** `./tj build` excursions: median MAE on winners 0.13R (worst 0.33R, n=4:
   T-0001 0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R); the losers ran +0.28R (T-0004), +0.63R (T-0009) and +1.65R
   (T-0010) before their stops (median 0.63R). This measures the trader's "sniper entries" (S criterion). The trader's
-  management is hold to TP; no break-even rule is proposed from n=3 losers. Descriptive only, n=7. Status: observation.
-- **Drawdown planning (outlook).** `./tj build` Monte Carlo, 100 trades x 2,000 paths from the 7 measured trades. As
-  sampled: median worst drawdown 5.0R (95%: 8.0R), losing streak 5 (95%: 8). At the low win rate the sample still
-  allows (25%, 95% Wilson bound; +0.19R per trade): drawdown 14.7R (95%: 28.7R, i.e. about 28.7% of equity at 1% risk,
-  not compounded), losing streak 12 (95%: 20), and about 19% of runs end below zero. Plan for the second, not the first.
-  Status: risk planning figure (n=7), not a forecast.
+  management is hold to TP; no break-even rule is proposed from n=3 losers. T-0012 is not in it yet: its heat is about
+  0.38R or about 0R depending on whether the limit filled at the 13:00 touch or at 15:00 (asked). Descriptive only.
+  Status: observation.
+- **Drawdown planning (outlook).** `./tj build` Monte Carlo, 100 trades x 2,000 paths from the 8 measured trades. As
+  sampled: median worst drawdown 4.0R (95%: 7.0R), losing streak 4 (95%: 7). At the low win rate the sample still
+  allows (31%, 95% Wilson bound; +0.63R per trade with the +4.34R average win): drawdown 10.6R (95%: 19.0R, about 19% of
+  equity at 1% risk, not compounded), losing streak 10 (95%: 17), and 0.4% of runs end below zero. The average win
+  rests on 5 winners, one of them +6.68R: a smaller real average win puts the low scenario back near zero. Plan for
+  the second scenario, not the first. Status: risk planning figure (n=8), not a forecast.
 - **Valid setups still lose.** T-0010 (NEAR short, graded A, process 4.20/5) lost -1.00R to NEAR-specific bullish news
   after the entry, having run +1.65R first: loss type E, BAD OUTCOME / GOOD PROCESS. Keep the process. Status:
   observation (n=1).
@@ -110,8 +125,9 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
   "Setup B because of FVG ignorance but decent confirmations" (-1.00R).
 - D vs B (2026-09-28): T-0004 is a D because it was executed on a 5m CH when the 30m showed no CH ("Poorly
   executed"); T-0009's CH was real, so the early execution made it a risky B, not a D.
-- `./tj stats --by trader_grade`: S n=1 (+4.12R), A n=3 (+2.33R; T-0010 lost), B n=1 (-1.00R), C n=1 (+2.94R), D n=1
-  (-1.00R). Far too few to say whether the grade predicts the result. Status: observation.
+- S also (2026-10-10): "CH+DEMAND+ Avoiding inducement + Very good RR" (T-0012, 6.68R).
+- `./tj stats --by trader_grade`: S n=2 (+5.40R: T-0007, T-0012), A n=3 (+2.33R; T-0010 lost), B n=1 (-1.00R), C n=1
+  (+2.94R), D n=1 (-1.00R). Far too few to say whether the grade predicts the result. Status: observation.
 
 ## High-quality setups
 _None._
@@ -163,6 +179,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-10-10 | T-0012 OPNUSDT long +6.68R (demand_level, 4H CH, 1H demand below an equal-lows inducement, grade S). supply-demand-structure v1.16 (CHG-016): checklist item 1 names the 1h-30m zone after the HTF CH; T-0012 is the S and inducement example; open questions 2 (pullback or bearish CH) and 3 (TP inside the opposing zone). New tag avoided_inducement. Trade records can carry open questions, shown in Data gaps and `./tj status` | T-0012 charts; trader's review; tests |
 | 2026-09-30 | T-0011 BTCUSD short not taken (fake CH on the 30m; front run cancelled), -1.00R COUNTERFACTUAL. supply-demand-structure v1.15 (CHG-015): HTF (4H-1D) CH first, fake CH, front-run cancel, leverage from the invalidation %. New tags: cancelled_front_run; fake_ch as an alias of false_ch. Bot question on leverage for tight stops | T-0011 charts; trader's review |
 | 2026-09-28 | supply-demand-structure v1.14 (CHG-014): macro release results are the trader's call, not a bot input; the 60% margin rule is the only leverage ceiling. Bot default leverage recorded. T-0010: the CPI printed at 15:30 UTC+3, about 2 hours after the fill. Terminal: more statistics, a two-scenario 100-trade outlook, weekday breakdown, five new backgrounds | trader's answers; tests |
 | 2026-09-28 | T-0010 NEARUSD short -1.00R (supply_level, 1h, grade A, loss type E: NEAR news). supply-demand-structure v1.13 (CHG-013): macro news in the trade's direction as a confluence; T-0010 is an A that lost. Bot question on reading release results | T-0010 chart; trader's review |

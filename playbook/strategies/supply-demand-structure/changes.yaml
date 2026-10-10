@@ -272,3 +272,16 @@ changes:
     fields: [timeframe_alignment, grading, entry_timing, do_not_trade_when, leverage_model, checklist, common_mistakes, open_questions]
     note: "All supply-demand trades retagged \"1.15\"."
     resulting_version: "1.15"
+  - id: CHG-016
+    kind: clarification
+    date: 2026-10-10
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-10 (T-0012): "We have a 4H reversal "CH" showing a high possibility of continuation. Green box is
+      our demand level but formed on 1H time frame" ... "there's a form of inducement ( on that 0.047 area ) making equal
+      lows, meaning that it's a liquidity level so it's highly likely that it will get swept in the future" ... "Setup
+      was definitely S, because it met our criteria (CH+DEMAND+ Avoiding inducement) + Very good RR".
+    fields: [timeframes, grading, inducements, checklist, open_questions]
+    note: "Checklist item 1 now names the 1h-30m zone after the HTF CH, as v1.15's timeframe_alignment already allowed. All supply-demand trades retagged \"1.16\"."
+    resulting_version: "1.16"

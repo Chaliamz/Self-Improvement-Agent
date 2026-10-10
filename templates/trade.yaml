@@ -90,3 +90,5 @@ review:
   actionable_change: null
   strategy_change: null       # "yes" | "no" | insufficient_evidence  (quote yes/no: bare yes/no parse as booleans)
   evidence_strength: null     # low | moderate | high
+
+open_questions: []            # questions to the trader about THIS record (shown in the terminal's Data gaps); delete each once answered

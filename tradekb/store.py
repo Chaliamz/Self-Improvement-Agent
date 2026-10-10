@@ -344,6 +344,18 @@ def unresolved(mapping: Any, prefix: str = "") -> list[str]:
     return out
 
 
+def trade_questions(kb: KB) -> list[dict]:
+    """Open questions to the trader recorded on individual trades, in trade order (ill-formed entries are left to the validator)."""
+    out = []
+    for trade in kb.trades:
+        qs = trade.data.get("open_questions")
+        if isinstance(qs, list):
+            qs = [q.strip() for q in qs if isinstance(q, str) and q.strip()]
+            if qs:
+                out.append({"id": trade.id, "questions": qs})
+    return out
+
+
 def next_trade_id(trades: list[Trade]) -> str:
     numbers = [n for n in (trade_number(t.id) for t in trades) if n is not None]
     return f"T-{(max(numbers) + 1 if numbers else 1):04d}"

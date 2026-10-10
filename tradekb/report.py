@@ -8,7 +8,7 @@ from . import analysis
 from .analysis import Row
 from .model import OUTCOME_WORD, PROCESS_WORD
 from .stats import Comparison, Summary, histogram
-from .store import KB, dig, unresolved
+from .store import KB, dig, trade_questions, unresolved
 
 
 def _hours(x: float) -> str:
@@ -92,6 +92,9 @@ def status(kb: KB, issues) -> str:
 
     gaps = unresolved(kb.profile)
     lines.append(f"Unresolved profile parameters ({len(gaps)}): {', '.join(gaps) if gaps else 'none'}")
+    asked = trade_questions(kb)
+    lines.append("Questions on trade records: " + (", ".join(f"{q['id']} ({len(q['questions'])})" for q in asked)
+                                                  if asked else "none") + " (terminal Data gaps)")
 
     if kb.strategies:
         lines.append("Strategies: " + ", ".join(
@@ -269,4 +272,6 @@ def _gaps(kb: KB) -> str:
     gaps = unresolved(kb.profile)
     if gaps:
         lines.append(f"- Unresolved profile parameters: {', '.join(gaps)}")
+    for item in trade_questions(kb):
+        lines.append(f"- {item['id']}: {len(item['questions'])} open question(s) to the trader")
     return "\n".join(lines) or "_None._"

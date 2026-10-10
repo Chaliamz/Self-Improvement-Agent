@@ -22,7 +22,7 @@ regime: [bullish, range]      # 4h bullish (trader); 1h consolidation range abou
 
 strategy:
   id: supply-demand-structure
-  version: "1.15"             # recorded at v1.15
+  version: "1.16"             # recorded at v1.15; retagged by CHG-016 (clarification)
   experiment: null
   variant: null
 
@@ -91,10 +91,12 @@ evidence:
     - "1h: a range since Sep 24, about 82,579 (Sep 28 12:00) to 85,220 (Sep 25 14:00). Swing lows about 82,579 (Sep 28) and 82,742 (Sep 29 04:00); the Sep 29 drop stopped about 82,876, above both: no lower low, no 1h CH."
     - "4h: the yellow FVG is about 85,225-85,656, left by the Sep 23 drop (1h: about 86,002 to 83,524). Shaded black band about 82,140-82,891; the target sits at its lower edge."
     - "Sep 30 5m: the 15:30 bar reached about 84,460 (through the entry), the 15:35 bar about 84,822 (through the stop); the spike peaked about 85,597 at 16:05, inside the 4h FVG, and fell to about 83,350 by 17:30. 30m: the 15:30 bar about 83,861-85,473, the 16:00 bar high about 85,601."
+    - "News (added 2026-10-10): web search results (the ForexFactory calendar itself could not be reached from this environment) list BEA's August Personal Income and Outlays (PCE inflation) and the Q2 GDP third estimate at 08:30 New York on Sep 30 2026, which is 15:30 UTC+3, the minute the spike began. Their ForexFactory impact colour was not verified."
     - "tj size: 20x = 8.9% of the margin at the stop; isolated liquidation about 87,911 (10.0x the stop distance). The bot's default rule gives 85x on this stop (liquidation about 84,707, 1.5x the stop distance)."
   interpreted:
     - "The chart matches the trader's reading: the 30m CH broke only a 30m higher low inside the 1h range; the 1h swing lows held, so on the 1h it was a pullback in consolidation, a fake CH. This is the same pattern as T-0004 (a 5m CH the 30m never confirmed) and T-0008 (a break inside the 4h candle range), one timeframe up."
     - "Checklist v1.15: 1 pass (30m supply from the CH, fresh); 3 fail (no CH on the 1h or 4h: a fake CH); 4 pass (the limit at the supply's edge); 5 pass (stop above the supply); 6 pass (8.9% of margin, 5.32R); 8 unknown (the ForexFactory calendar for Sep 30 was not given; the spike began at 15:30 UTC+3, 08:30 New York, a US release time). Item 3 alone makes it a no-trade."
+    - "If the 08:30 New York release (PCE, GDP) was red on ForexFactory, item 8 would also have cancelled the resting limit at 14:30, an hour before the spike that would have stopped it (asked)."
     - "Front run: price moved about 3.4R toward the target without retesting the entry, and the trader cancelled. Under the written rule (cancel only when price reaches the TP) the limit would have stayed open and been stopped on Sep 30 within about 10 minutes: -1R COUNTERFACTUAL. The cancel is recorded as the trader's rule; its exact trigger is an open question."
     - "The spike that would have stopped the short ran into the unretested 4h FVG and reversed there, which is the trader's point that a limit at the 4h FVG would have been the better location. No hypothetical R is computed for it: no plan was given."
   hypotheses:
@@ -118,3 +120,6 @@ review:
   actionable_change: null
   strategy_change: "no"
   evidence_strength: low
+
+open_questions:
+  - "News on Sep 30: web search lists PCE (August personal income and outlays) and the Q2 GDP third estimate at 08:30 New York (15:30 UTC+3), the minute the spike began. Was either red on ForexFactory? If so, your news rule alone would have cancelled the resting limit at 14:30."

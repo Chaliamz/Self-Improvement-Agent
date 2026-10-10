@@ -65,7 +65,8 @@ addEventListener("load", () => {
                        items: panel.querySelectorAll("li").length,
                        ladder: panel.querySelectorAll("svg[data-chart=ladder] .pin").length,
                        incidents: panel.querySelectorAll(".inc-title").length, guards: panel.querySelectorAll(".guard-id").length,
-                       outlook: panel.querySelectorAll("svg[data-chart=outlook] path.median").length };
+                       outlook: panel.querySelectorAll("svg[data-chart=outlook] path.median").length,
+                       tradeq: panel.querySelectorAll("[data-trade-q] li").length };
       step();
     }, 300);
   };
@@ -95,6 +96,7 @@ class RenderTest(unittest.TestCase):
         cls.want_bot_questions = len(kb["readiness"].get("open_questions") or [])
         cls.want_incidents = len(kb.get("incidents") or [])
         cls.want_outlook = len((kb["stats"].get("outlook") or {}).get("scenarios") or [])
+        cls.want_trade_questions = sum(len(g["questions"]) for g in kb["gaps"].get("trade_questions") or [])
         cls.want_guards = len((kb["readiness"].get("malfunction_guard") or {}).get("checks") or [])
         cls.want_ladder = sum(1 for t in kb["trades"] if any(x is not None for x in t["derived"].get("planned_rr") or []))
         cls.results = {}
@@ -132,6 +134,7 @@ class RenderTest(unittest.TestCase):
         self.assertEqual(tabs["health"]["incidents"], self.want_incidents, "health: one row per logged incident")
         self.assertEqual(tabs["health"]["guards"], self.want_guards, "health: one row per malfunction-guard check")
         self.assertEqual(tabs["performance"]["outlook"], self.want_outlook, "outlook: one median line per scenario")
+        self.assertEqual(tabs["gaps"]["tradeq"], self.want_trade_questions, "data gaps: every open question on a trade record")
 
     def test_backgrounds_and_trade_dialogs(self):
         out = self.results[1280]["out"]
