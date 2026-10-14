@@ -32,7 +32,7 @@ TAG_FIELDS = (("setups", "setups"), ("regime", "regimes"), ("review.mistakes", "
               ("review.behaviors", "behaviors"))
 STRATEGY_STATUSES = ("unvalidated", "developing", "established", "retired")
 CHANGE_STATUSES = ("observation", "hypothesis", "testing", "provisional", "established", "rejected")
-CHANGE_KINDS = ("rule_change", "clarification")
+CHANGE_KINDS = ("rule_change", "clarification", "trader_rule")
 EXPERIMENT_STATUSES = ("planned", "running", "concluded", "abandoned")
 CHANGE_ID_RE = re.compile(r"^CHG-\d{3,}$")
 EXPERIMENT_ID_RE = re.compile(r"^EXP-\d{3,}$")
@@ -236,6 +236,9 @@ def _check_risk(t: dict, kb: KB, where: str, add: _Sink) -> None:
                 add(WARN, where, f"RISK: approx. liquidation {liq:,.6g} ({mode}, mmr {mmr}) is reached before "
                                  f"the stop {stop}: the stop could not protect this position")
 
+    ceiling = num(dig(kb.profile, "leverage.max_leverage"))
+    if leverage and ceiling is not None and leverage > ceiling + 1e-9:
+        breach("excessive_leverage", f"RISK: leverage {leverage:g}x is above your {ceiling:g}x ceiling")
     max_margin_loss = num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct"))
     if leverage and entry and stop and entry != stop and max_margin_loss is not None:
         stop_pct = abs(entry - stop) / entry * 100
@@ -498,6 +501,23 @@ def _check_strategies(kb: KB, add: _Sink) -> None:
             cstatus = ch.get("status")
             if kind not in CHANGE_KINDS:
                 add(ERROR, cw, f"kind must be one of {', '.join(CHANGE_KINDS)}")
+                continue
+            if kind == "trader_rule":
+                # The trader sets or changes a rule of their own (a risk or safety limit). It restricts what may be done
+                # and claims nothing about performance, so no evidence gate; it must say that a rule changed.
+                if cstatus != "adopted":
+                    add(ERROR, cw, "a trader_rule has status 'adopted'")
+                if not ch.get("statement"):
+                    add(ERROR, cw, "a trader_rule must quote the trader's statement")
+                if not ch.get("rule_changed"):
+                    add(ERROR, cw, "a trader_rule changes a rule (rule_changed: true); restating one is a clarification")
+                if ch.get("evidence"):
+                    add(ERROR, cw, "a trader_rule makes no performance claim: evidence trades belong to a rule_change")
+                resulting = ch.get("resulting_version")
+                if _unquoted_version(resulting):
+                    add(ERROR, cw, f"resulting_version {resulting!r} is a number: quote it (1.10 unquoted reads as 1.1)")
+                if resulting is None or str(resulting) not in strat.versions:
+                    add(ERROR, cw, f"resulting_version {resulting} has no version file")
                 continue
             if kind == "clarification":
                 # The trader stating rules that were already in force: no performance claim, no evidence gate.

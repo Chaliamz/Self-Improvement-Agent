@@ -285,3 +285,33 @@ changes:
     fields: [timeframes, grading, inducements, checklist, open_questions]
     note: "Checklist item 1 now names the 1h-30m zone after the HTF CH, as v1.15's timeframe_alignment already allowed. All supply-demand trades retagged \"1.16\"."
     resulting_version: "1.16"
+  - id: CHG-017
+    kind: clarification
+    date: 2026-10-13
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-13: "the bot should trigger the cancel when we identify a CH but price doesn't make the retest to
+      continue its trend" ... "no by all means there's not a bearish CH ... for the bot, it must place SL below that low
+      that had that demand level and formed reversal" ... "its ideal the tp to go at the far edge, it depends also the RR"
+      ... "the limit order placed much earlier as long as CH formed so that order could be pending for a long time" ...
+      T-0013: "Weekly Time frame we identify a bearish trend with LH and LL but price manages to close above green line
+      (CH)" ... "The higher price is (Premium Level) the more we consider looking for Day trading" ... "it's not a
+      specific price, it's a range depending on how much price reacts" ... "We didn't see any CH on 30M time frame,
+      however FVG and BB breaking a solid support level seemed a solid choice to enter" ... "Setup was A".
+    fields: [timeframes, market_structure, required_conditions, confirmation, key_levels, entry_timing, entry_models, stop_model, target_model, management, grading, checklist, open_questions]
+    note: "The partial-profit / break-even runner is recorded under management as not adopted ('speculation for now, so we don't change any plans'). All supply-demand trades retagged \"1.17\"."
+    resulting_version: "1.17"
+  - id: CHG-018
+    kind: trader_rule
+    date: 2026-10-13
+    status: adopted
+    rule_changed: true
+    statement: >-
+      Trader, 2026-10-13: "we should stick to the maximum of 20X leverage for safety reasons, that's obviously for tight
+      stops with low % of invalidation and meets our criteria".
+    previous_rule: "No fixed leverage cap; the only ceiling was the 60% margin rule ('Ceiling should be 60% so we should avoid margin calls (80%)', 2026-09-28)."
+    context: "Bot question on T-0011: the 60% rule allowed 85x on a 0.447% stop, with liquidation (about 84,710) inside the Sep 30 spike (about 84,822)."
+    fields: [leverage_model, checklist]
+    note: "Profile leverage.max_leverage = 20; tj size, the bot default and the malfunction guard (G3) enforce it. Every recorded trade used 20x or less, so it changes none of them and they are retagged \"1.17\" with CHG-017."
+    resulting_version: "1.17"

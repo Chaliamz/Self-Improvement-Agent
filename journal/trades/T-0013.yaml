@@ -1,0 +1,139 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0013
+status: closed
+opened: 2026-10-13            # trader: "13/10/26 --> 03:00-11:00" (UTC+3); the position tool starts at the 03:00 30m bar
+closed: 2026-10-13            # the tool's shading ends in the 11:00 30m bar; the Oct 13 daily high 84,060.37 is through the target
+asset: "BTCUSD"
+market: "crypto (chart: TradingView CRYPTO BTCUSD index; exchange not stated)"
+direction: "long"
+session: null
+timeframes:
+  htf: "1W"                   # bearish LH/LL, a close above the CH line: "a potential confirmation of Weekly CH"
+  execution: "30m"            # trader: "our execution plan is 30M or 1H. In this case we found in 30M"
+  chain: ["1W", "1D", "4h", "30m"]
+  detail: []
+  top_down: true              # the trader's worked Top Down Analysis example: W -> 1D -> 4H -> 30M
+
+setups: [breaker_block, fvg, reclaim, key_level, demand_level, choch]
+regime: [bullish]             # weekly bearish trend turning: a close above the weekly CH line, the 1D CH; a day trade from premium
+
+strategy:
+  id: supply-demand-structure
+  version: "1.17"
+  experiment: null
+  variant: null
+
+plan:
+  entry: 81229.20             # position-tool label: inside the 30M BB + FVG box, at the reclaimed 81,224 support
+  stop: 80325.77              # position-tool label: "SL on last low in case of invalidation" (the Oct 8 low, about 80,360)
+  targets: [84034.83]         # position-tool label: the cyan supply's lower (near) edge, under the 84,315 resistance
+  invalidation: "Price below the last low (about 80,360 on Oct 8, inside the 4h demand): 'SL on last low in case of invalidation'."
+  entry_model: breaker_block
+  split_entries: []
+  split_share: null
+  confluences:
+    - "Plenty of demand levels on both premium and discount level"
+    - "Supply level (cyan box) which broke resistance level and continued lower"
+    - "Plenty of liquidity levels (yellow line) which are avoided not to get trapped and get swept"
+  confirmations:
+    - "Daily and Weekly CH (We keep for later)"
+    - "Many demand levels only to zoom on lower time frames for confirmations to see which one can play"
+    - "New FVG + Breaker Block (BB) at 30M where reclaimed support level as well"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # the trader's standing 1% (not restated for this trade)
+  leverage: 20                # trader: "Leverage 20X - Invalidation (1,09%)"; tj: 1.112% stop, 22.2% of the margin at the stop
+  margin_mode: isolated       # the trader's standing rule
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits:
+    - {price: 84034.83, reason: "Target (position-tool label). Trader: 'Result: Profit', RR 3.11."}
+  fees: null                  # inside the 1% risk (trader, 2026-09-27)
+  duration_minutes: 480       # stated: "13/10/26 --> 03:00-11:00"; the tool's start and the end of its shading agree
+  orders_filled: null
+  worst_price: 80953.41       # the Oct 13 daily low (1D header); the 30m 03:30 bar's wick reads about 80,950: 0.31R against
+  best_price: 84034.83        # the target filled
+
+result:
+  pnl: null
+  r: null                     # derived price-based from the 84,034.83 exit: matches the trader's 3.11
+  hypothetical_r: null
+
+journal:
+  before: |
+    Reconstructed from the trader's account on 2026-10-14 (after the outcome, so not hindsight-proof).
+    Top Down Analysis. (1) Weekly: a bearish trend with LH and LL, but price closed above the green line (CH): a
+    potential Weekly CH. (2) 1D: liquidity levels, support/resistance and demand/supply levels, the levels to find
+    confirmations for execution. "The higher price is (Premium Level) the more we consider looking for Day trading
+    because it has potential to go lower to mitigate FVGs or demand levels." (3) 4H: a support level (the 81,224 range;
+    "it's not a specific price, it's a range depending on how much price reacts") and a demand level (green box,
+    80,095-80,579) which formed the weekly and daily CH and broke the support level. (4) 1H/30M: after the retest of
+    the demand level, a breaker block and an FVG on the 30M (new green box); plenty of liquidity levels to avoid, not to
+    get swept; resistance at the 84,300 range.
+    Plan: long, a day trade ("stick to Day trading for now as long as price didn't plummet deeper to find swing
+    trades"). No CH on the 30M, "however FVG and BB breaking a solid support level seemed a solid choice to enter for a
+    trade as a continuation on fresh level". TP at the supply level close to resistance, SL on the last low. 20x,
+    invalidation 1.09%, RR 3.11.
+  during: |
+    Oct 13: price fell from about 83,000 (00:00) into the 30M box; the tool starts at 03:00 and the 03:30 bar wicked to
+    about 80,950 (the daily low 80,953.41), 0.31R against. Then a steady rally; the target filled in the 11:00 bar.
+  after: |
+    Trader: "Setup was A because our data was good enough to execute with confirmations and our reward was 3,11 which
+    is very good for us." "Result: Profit."
+
+evidence:
+  observed:
+    - "TradingView BTCUSD (CRYPTO index), 1W, 1D, 4h and 30m, chart time UTC+3, screenshots Oct 14 01:50-02:04. 30m position tool: entry 81,229.20, stop 80,325.77, target 84,034.83 (tj: stop distance 1.112%, 3.11R; the trader: 1.09% and 3.11). The chart is an index, not the exchange where the trade was placed."
+    - "Calibration: 30m on 28 axis ticks (max residual about 6 USD, under half a pixel) and 11 date labels (0.11 h); 4h on 28 ticks (13 USD, about 2 px) and 22 date labels (0.6 h). The 30m position-tool labels agree with the calibration within about 1 px."
+    - "Weekly: the green dashed CH line sits at about 82,800 (the May 2026 high), drawn to early September. The current weekly bar opened at 83,691.23 (header: O 83,691.23 H 84,245.88 L 80,953.41 C 83,439.96), so the prior weekly close sits above the line. The Fib is drawn from 56,955.06 (1) to 86,836.03 (0): 0.5 = 71,895.54, 0.618 = 68,369.59; price is in its upper half."
+    - "1D: the CH line at about 82,800 was broken in late September (the rally to the about 87,300 highs, a yellow line over equal highs from Sep 21 to Oct 5); a red supply about 94,000-96,500 above. The Oct 13 daily bar: O 81,759.90 H 84,060.37 L 80,953.41 C 83,436.24."
+    - "4h: support red line 81,224.54, resistance red line 84,315.53, green demand about 80,090-80,570 (the trader: 80,095-80,579), cyan supply about 84,040-84,225 drawn from Oct 7."
+    - "30m: the Oct 8 ~20:00 low about 80,360 sits inside the 4h demand (the retest); a rally to about 84,215 on Oct 12, into the cyan supply and under 84,315. The '30M BB + FVG' box is about 80,840-81,280, drawn from the Oct 8-9 base. Yellow lines marked $$: descending highs on Oct 7-8 and ascending lows on Oct 10 (about 82,350-82,550)."
+    - "Oct 13 (30m): the drop from about 83,000 (00:00) through the Oct 10 ascending lows into the box; the tool starts at the 03:00 bar; the 03:30 bar wicked to about 80,950 (the daily low 80,953.41). The tool's shading ends in the 11:00 bar; the daily high 84,060.37 is through the 84,034.83 target. Afterwards price fell back to about 82,900 and stood at 83,222 at the screenshot."
+    - "The target sits at the cyan supply's lower (near) edge (about 84,040); its far edge (about 84,225) is 3.32R (tj). The stop sits about 35 under the Oct 8 low (about 80,360) and inside the 4h demand."
+    - "tj size: stop distance 1.112%; 20x = 22.2% of the margin at the stop, isolated liquidation about 77,556 (4.07x the stop distance). The 60% rule allows 53.94x, so the 20x ceiling is the binding cap; the bot default is 20x."
+    - "News: 03:00-11:00 UTC+3 is 20:00-04:00 New York, outside the 08:30 release window; the chart's next US event marker is on Oct 14."
+    - "Other position tools on the charts (not described by the trader): 4h shorts drawn Oct 7 ~20:00-Oct 8 ~16:00 (entry 83,544.79, stop 83,741.34, target 81,052.23; tj 12.68R) and Oct 11 ~16:00-Oct 12 ~12:30 (84,069.90 / 84,468.20 / 82,442.00; tj 4.09R); on the weekly, a long drawn into Jan-Mar 2027 (entry 61,030.44, stop 57,595.63, target 100,746.18; tj 11.56R). Asked."
+  interpreted:
+    - "The charts match the trader's top-down: the weekly CH line held on a weekly close, the 1D CH, the 4h support range with the demand that formed the CH (retested Oct 8), then the 30m BB + FVG at the reclaimed support for the entry, the cyan supply for the target."
+    - "Premium: price trades in the upper half of the trader's weekly Fib (above 71,895.54), where the trader takes day trades rather than swings. Whether that Fib defines premium is v1.17 open question 3."
+    - "No 30m CH: the entry is a continuation at a fresh lower-timeframe zone after the HTF CH, as with T-0012's limit at the 1H demand. v1.17 records that such an entry needs no lower-timeframe CH; a lower-timeframe CH used as the trigger still needs the 15m-30m (T-0004)."
+    - "Checklist v1.17: 1 pass (a 30m BB + FVG after the 1D/1W CH, at the 4h support and above the 4h demand); 2 pass (the Oct 13 drop ran through the Oct 10 ascending lows into the box); 3 pass (the 1D CH by close, the weekly close above the CH line; no 30m CH needed for a fresh-zone entry); 4 pass (entry in the box at the reclaimed support); 5 pass (about 35 under the last low, inside the 4h demand); 6 pass (20x = 22.2% of the margin, liquidation 4.07x the stop distance, at the 20x ceiling; 3.11R); 7 pass (the liquidity lines were avoided); 8 pass (no US release window)."
+    - "Target at the near edge: 3.11R against 3.32R at the far edge. The trader's rule (2026-10-13): the far edge is ideal, 'it depends also the RR'."
+    - "Runner check for the not-adopted partial idea: after the target price fell back to about 82,900 but not to the 81,229 entry; the next level (the 84,315 resistance) had not been reached at the screenshot. Undecided."
+  hypotheses:
+    - "A 30M BB + FVG at a reclaimed 4h support, after the 1D/1W CH and without a 30m CH, gave 3.11R (T-0013). n=1."
+  charts: [journal/charts/T-0013-btc-1w.png, journal/charts/T-0013-btc-1d.png, journal/charts/T-0013-btc-4h.png, journal/charts/T-0013-btc-30m.png]
+
+review:
+  scores:
+    setup: 4                  # HTF CH, 4h demand retested, support reclaimed, 30m BB + FVG; no 30m CH; 3.11R at the near edge
+    context: 4                # the 1D CH and a potential weekly CH; in premium, inside the 81,224-87,300 4h range
+    execution: 5              # entry in the box as planned, stop under the last low, target at the supply
+    risk: 5                   # 1%, stop at the structural invalidation, 20x = 22.2% of the margin, liquidation 4.07x away
+    management: 5             # held to the target
+  trader_grade: "A"           # trader: "Setup was A because our data was good enough to execute with confirmations and our reward was 3,11"
+  setup_validity: valid
+  followed_plan: true
+  loss_type: null
+  mistakes: []
+  behaviors: [did_top_down, followed_htf, waited_for_confirmation, avoided_inducement, followed_setup, correct_sizing, took_planned_profits]
+  outside_control: []
+  lesson: >-
+    The worked Top Down Analysis: the weekly and daily CH set the bias, the 4h support range and the demand that formed
+    the CH set the area, the 30m breaker block + FVG at the reclaimed support set the entry, the cyan supply set the
+    target. In premium the trader takes it as a day trade: 3.11R in 8 hours, the stop under the last low never threatened.
+  actionable_change: null
+  strategy_change: "no"       # documentation only (v1.17 clarifications); the 20x ceiling is the trader's rule, not a finding from this trade
+  evidence_strength: low
+
+open_questions:
+  - "Other position tools on your charts: on the 4h, two shorts (Oct 7-8: 83,544.79 entry, 83,741.34 stop, 81,052.23 target, 12.68R; Oct 11-12: 84,069.90 / 84,468.20 / 82,442.00, 4.09R), and on the weekly a long drawn into 2027 (61,030.44 / 57,595.63 / 100,746.18, 11.56R). Were the shorts trades you took, ideas you skipped, or old drawings? Is the weekly long a planned swing? A plan recorded before the outcome is hindsight-proof."

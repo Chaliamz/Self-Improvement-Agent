@@ -254,3 +254,15 @@ incidents:
     found_by: agent
     status: caught
     fix: "The outlook shows two scenarios side by side, as sampled and at the low win rate, and says it is a range to plan drawdowns against, not a forecast; the audit replays both."
+
+  - id: INC-021
+    date: 2026-10-13
+    area: data
+    severity: low
+    title: "An edit to T-0011 nested double quotes inside a YAML string"
+    detail: >-
+      Recording the trader's answer on the Sep 30 news put a double-quoted quote inside a double-quoted evidence line,
+      which made T-0011.yaml unreadable. Nothing was committed or built from it.
+    found_by: validator
+    status: caught
+    fix: "The validator's load check failed before the commit; the quote was rewritten with single quotes and every edited YAML file was parsed again."

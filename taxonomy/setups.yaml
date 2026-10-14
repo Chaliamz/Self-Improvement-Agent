@@ -75,3 +75,7 @@ tags:
     label: Fair value gap (FVG)
     definition: "A gap left by an impulsive move. A supply/demand level that formed an FVG with its CH is stronger; T-0001's demand kept an unfilled FVG (trader, 2026-09-27)."
     introduced_in: "trader statement 2026-09-27"
+  breaker_block:
+    label: Breaker block (BB)
+    definition: "The trader's 30M 'BB + FVG' box: a fresh level where a solid support was broken and reclaimed, used for a continuation entry without a 30M CH once the HTF CH is in: 'FVG and BB breaking a solid support level seemed a solid choice to enter for a trade as a continuation on fresh level' (trader, 2026-10-13). The formal definition is an open question."
+    introduced_in: T-0013

@@ -10,8 +10,9 @@ venue:
   exchange: "MEXC"                    # trader, 2026-09-27: "I'm expecting to use MEXC as an exchange to use the bot placing orders"
 
 # Questions the bot's specification still needs answered (shown in the terminal's Data gaps).
-open_questions:
-  - "1. Leverage on tight stops (T-0011): the default (the highest leverage within 60% of margin, liquidation 1.5x the stop distance away) gives 85x on this 0.447% stop, liquidation about 84,710. You used 20x (liquidation about 87,911). In the Sep 30 15:35 spike price reached about 84,822: a stop that slipped that far at 85x ends in liquidation, which loses the whole margin, about 2.6% of equity instead of 1%. Keep the highest leverage within 60%, or cap it (for example at 20x, as in every trade you have recorded)?"
+# Answered 2026-10-13: leverage on tight stops is capped at 20x ("we should stick to the maximum of 20X leverage for
+# safety reasons, that's obviously for tight stops with low % of invalidation and meets our criteria").
+open_questions: []
 
 # Trade alerts (trader, 2026-09-28): "you can send alerts when we entered on a trade or exited on SL or TP. Trade will
 # be full analyzed about how you executed, entry and exit prices, risk on $ and leverage, and type of setup."
@@ -43,8 +44,8 @@ malfunction_guard:
       trigger: "Size x (entry to stop distance) plus fees is above 1% of equity for the setup (all its split orders together; 0.9% for three), checked before sending and again on every fill."
       action: "Refuse the order; if already filled, reduce the position to 1% risk."
     - id: G3
-      name: "Leverage above the margin rule"
-      trigger: "Stop distance % x leverage above 60% of the posted margin (split entries: the first order's stop sets the leverage for every order)."
+      name: "Leverage above the margin rule or the 20x ceiling"
+      trigger: "Stop distance % x leverage above 60% of the posted margin, or leverage above 20x (trader, 2026-10-13: 'we should stick to the maximum of 20X leverage for safety reasons'). Split entries: the first order's stop sets the leverage for every order."
       action: "Refuse the order; resend it only with leverage inside the rule."
     - id: G4
       name: "Liquidation before the stop"
@@ -160,9 +161,9 @@ safety:
   - "API keys never go into chat, the repository or kb.json. They live only in the bot server's secret store or environment."
   - "Keys have trade permission only: withdrawals disabled, IP-whitelisted to the bot's server."
   - "The bot trades a dedicated sub-account funded with only the capital it may risk."
-  - "Every order is placed with its exchange-side stop, sized by the 1% rule, with leverage set from the stop distance by the margin rule (aim 50-60% of margin at the stop, never above 60%, margin call at 80%) and capped so liquidation sits beyond the stop."
+  - "Every order is placed with its exchange-side stop, sized by the 1% rule, with leverage set from the stop distance by the margin rule (aim 50-60% of margin at the stop, never above 60%, margin call at 80%), never above 20x, and capped so liquidation sits beyond the stop."
   - "Trading rules have no daily stop, no pause after losses and no correlation cap (trader, 2026-09-27/28). The malfunction guard (G1-G9 above) is separate and mandatory: it blocks or repairs the one action only a bug produces and logs it; it never halts the bot."
-  - "Leverage: the highest whole number with at most 60% of the margin lost at the stop ('Ceiling should be 60% so we should avoid margin calls (80%)', trader, 2026-09-28) and liquidation at least 1.5x the stop distance away at MEXC's tier, capped by the pair's maximum; split entries take it from the first order. Lower is always allowed."
+  - "Leverage: the highest whole number with at most 60% of the margin lost at the stop ('Ceiling should be 60% so we should avoid margin calls (80%)', trader, 2026-09-28), at most 20x ('we should stick to the maximum of 20X leverage for safety reasons', 2026-10-13) and liquidation at least 1.5x the stop distance away at MEXC's tier, capped by the pair's maximum; split entries take it from the first order. Lower is always allowed. On T-0011's 0.447% stop that is 20x (85x without the ceiling: a stop that slipped to the 15:35 spike would have been liquidated)."
   - "Macro release results (CPI above or below forecast) are the trader's call, not a bot input ('its actually my call', 2026-09-28): the bot only applies the news window."
   - "Every entry and every exit (stop or target) sends a trade alert with the execution analysis, entry and exit prices, risk in USDT, leverage and setup type (trader, 2026-09-28)."
   - "No new entries and no resting orders from 1 hour before to 1 hour after a red (high-impact) USD event on ForexFactory; open trades are kept (trader, 2026-09-27/28). Otherwise the bot runs 24/7."

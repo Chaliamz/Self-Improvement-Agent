@@ -51,8 +51,9 @@ def max_leverage_liq_beyond_stop(entry: float, stop: float, mmr_rate: float, buf
 
 def default_leverage(caps: list[float | None]) -> int | None:
     """The bot's default leverage: the highest whole number under every cap (the 60% margin rule, liquidation kept
-    1.5x the stop distance away). Lower is always allowed (trader, 2026-09-28: "we don't have to reach it to -60% at
-    all costs"; "Ceiling should be 60% so we should avoid margin calls (80%)")."""
+    1.5x the stop distance away, the trader's leverage ceiling). Lower is always allowed (trader, 2026-09-28: "we don't
+    have to reach it to -60% at all costs"; 2026-10-13: "we should stick to the maximum of 20X leverage for safety
+    reasons")."""
     live = [c for c in caps if c is not None]
     if not live:
         return None
@@ -235,7 +236,12 @@ def size_position(inp: SizingInput) -> SizingResult:
         flags.append((NOTE, f"loss at stop is {margin_loss_pct:.1f}% of the posted margin, below your {aim:g}-"
                             f"{inp.max_margin_loss_pct:g}% aim, which is not required (trader: 'we don't have to reach it "
                             f"to -60% at all costs'). The loss at the stop is the same; more margin is posted"))
-    if (max_leverage_liq is not None and min_leverage_for_aim is not None
+    ceiling_binds = inp.max_leverage is not None and (max_leverage_liq is None or inp.max_leverage <= max_leverage_liq)
+    if min_leverage_for_aim is not None and ceiling_binds and inp.max_leverage < min_leverage_for_aim:
+        flags.append((NOTE, f"the {aim:g}-{inp.max_margin_loss_pct:g}% aim needs {min_leverage_for_aim:.2f}x, above your "
+                            f"{inp.max_leverage:g}x ceiling: stay at or below {inp.max_leverage:g}x. The aim is not required "
+                            f"(trader: 'we don't have to reach it to -60% at all costs')"))
+    elif (max_leverage_liq is not None and min_leverage_for_aim is not None
             and max_leverage_liq < min_leverage_for_aim):
         flags.append((NOTE, f"the {aim:g}-{inp.max_margin_loss_pct:g}% aim needs {min_leverage_for_aim:.2f}x, but "
                             f"liquidation reaches the stop above {fmt_cap(max_leverage_liq)} (maintenance rate "
@@ -248,8 +254,9 @@ def size_position(inp: SizingInput) -> SizingResult:
         if inp.equity and margin_required > inp.equity:
             flags.append((CRITICAL, f"margin required {margin_required:,.2f} exceeds equity "
                                     f"{inp.equity:,.2f}: the order would be rejected or is larger than intended"))
-        if inp.max_leverage is not None and inp.leverage > inp.max_leverage:
-            flags.append((WARN, f"leverage setting {inp.leverage:g}x is above your max {inp.max_leverage:g}x"))
+        if inp.max_leverage is not None and inp.leverage > inp.max_leverage + 1e-9:
+            flags.append((CRITICAL, f"leverage {inp.leverage:g}x is above your {inp.max_leverage:g}x ceiling: use "
+                                    f"{inp.max_leverage:g}x or less"))
         if inp.margin_mode == "isolated" and inp.mmr_rate >= 1 / inp.leverage:
             flags.append((CRITICAL, f"{inp.leverage:g}x isolated with maintenance rate {inp.mmr_rate} "
                                     f"liquidates at or before entry"))
@@ -287,7 +294,8 @@ def size_position(inp: SizingInput) -> SizingResult:
                         liq, liq_ratio, margin_loss_pct, max_leverage_for_rule, targets, flags,
                         min_leverage_for_aim=min_leverage_for_aim, max_leverage_liq_beyond_stop=max_leverage_liq,
                         default_leverage=default_leverage([max_leverage_for_rule, max_leverage_liq_beyond_stop(
-                            inp.entry, stop_fill, inp.mmr_rate, inp.liq_buffer_warn) if inp.margin_mode == "isolated" else None]))
+                            inp.entry, stop_fill, inp.mmr_rate, inp.liq_buffer_warn) if inp.margin_mode == "isolated" else None,
+                            inp.max_leverage]))
 
 
 @dataclass
@@ -318,12 +326,13 @@ class SplitPlan:
     max_leverage_liq: float                    # liquidation behind every next order and the stop
     flags: list[tuple[str, str]] = field(default_factory=list)
     default_leverage: int | None = None        # the bot's choice: first-order rule and a 1.5x liquidation buffer at every step
+    max_leverage_ceiling: float | None = None  # the trader's leverage ceiling (profile leverage.max_leverage)
 
 
 def split_plan(entries: list[float], stop: float, order_risk: float, *, leverage: float | None = None,
                mmr_rate: float = 0.005, fee_rate: float = 0.0, max_margin_loss_pct: float | None = None,
                margin_loss_aim_min_pct: float | None = None, targets: tuple[float, ...] = (),
-               min_rr: float | None = None, liq_buffer: float = 1.5) -> SplitPlan:
+               min_rr: float | None = None, liq_buffer: float = 1.5, max_leverage: float | None = None) -> SplitPlan:
     """Split limit entries sharing one stop and one target (trader, 2026-09-28: up to 3 orders; 1 = 1%, 2 = 0.5% each,
     3 = 0.3% each). Each order is sized from its own risk share, and fills merge into ONE isolated position with ONE
     leverage setting.
@@ -382,6 +391,9 @@ def split_plan(entries: list[float], stop: float, order_risk: float, *, leverage
             flags.append((CRITICAL, f"the first order's stop x {leverage:g}x = {first_loss:.1f}% of the margin, above your "
                                     f"{max_margin_loss_pct:g}% limit for the first order: use {fmt_cap(first_cap)} or less "
                                     f"for every order"))
+        if max_leverage is not None and leverage > max_leverage + 1e-9:
+            flags.append((CRITICAL, f"leverage {leverage:g}x is above your {max_leverage:g}x ceiling: use {max_leverage:g}x or less "
+                                    f"for every order"))
         bad = [f.orders for f in fills if f.liq_first]
         if bad:
             flags.append((CRITICAL, f"liquidation comes before the next order or the stop with {', '.join(map(str, bad))} order(s) "
@@ -389,12 +401,13 @@ def split_plan(entries: list[float], stop: float, order_risk: float, *, leverage
     if min_rr is not None and targets and max(fills[0].rr) < min_rr - 1e-9:
         flags.append((WARN, f"if only the first order fills, the best target gives {max(fills[0].rr):.2f}R, below your {min_rr:g}R minimum"))
     return SplitPlan(side, order, order_risk, qtys, fills, first_cap, first_aim, full_cap, liq_cap, flags,
-                     default_leverage([first_cap, *buffered]))
+                     default_leverage([first_cap, *buffered, max_leverage]), max_leverage)
 
 
 def exposure(entry: float, stop: float, risk_pct: float | None, leverage: float | None = None,
              margin_mode: str | None = None, mmr_rate: float = 0.005,
-             max_margin_loss_pct: float | None = None, margin_loss_aim_min_pct: float | None = None) -> dict:
+             max_margin_loss_pct: float | None = None, margin_loss_aim_min_pct: float | None = None,
+             max_leverage: float | None = None) -> dict:
     """Equity-free exposure decomposition for a trade that risks a fixed % of equity.
 
     Everything is a percentage of equity, so it works without knowing the account size:
@@ -406,15 +419,23 @@ def exposure(entry: float, stop: float, risk_pct: float | None, leverage: float 
     side = infer_side(entry, stop)
     stop_pct = abs(entry - stop) / entry * 100
     out: dict = {"side": side, "stop_pct": stop_pct}
+    if max_leverage is not None:
+        out["max_leverage_ceiling"] = max_leverage                       # the trader's ceiling (profile leverage.max_leverage)
     if max_margin_loss_pct is not None:
         out["max_leverage_for_rule"] = max_margin_loss_pct / stop_pct
         if margin_loss_aim_min_pct is not None:
             out["min_leverage_for_aim"] = margin_loss_aim_min_pct / stop_pct
+        caps = {"rule": out["max_leverage_for_rule"]}
         if margin_mode in (None, "isolated"):
             liq_cap = max_leverage_liq_beyond_stop(entry, stop, mmr_rate)
             out["max_leverage_liq"] = liq_cap                            # above this, liquidation comes before the stop
-            out["max_leverage_safe"] = min(out["max_leverage_for_rule"], liq_cap)
-            out["liq_binds"] = liq_cap < out["max_leverage_for_rule"]
+            caps["liquidation"] = liq_cap
+        if max_leverage is not None:
+            caps["ceiling"] = max_leverage
+        binds = min(caps, key=lambda k: (caps[k], ("ceiling", "rule", "liquidation").index(k)))
+        out["max_leverage_safe"] = caps[binds]                           # the lowest cap: the most leverage allowed
+        out["binds"] = binds                                             # which cap: rule | liquidation | ceiling
+        out["liq_binds"] = binds == "liquidation"
     notional_pct = None
     if risk_pct:
         notional_pct = risk_pct / stop_pct * 100
@@ -422,6 +443,8 @@ def exposure(entry: float, stop: float, risk_pct: float | None, leverage: float 
         out["effective_leverage"] = notional_pct / 100
     if leverage:
         out["margin_loss_pct"] = stop_pct * leverage          # the trader's own calc: fee-free
+        if max_leverage is not None:
+            out["above_ceiling"] = leverage > max_leverage + 1e-9
         if max_margin_loss_pct is not None:
             status = margin_status(out["margin_loss_pct"], max_margin_loss_pct, margin_loss_aim_min_pct)
             out["margin_loss_breach"] = status == "breach"           # above the limit (60%)

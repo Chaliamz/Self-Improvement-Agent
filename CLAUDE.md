@@ -104,11 +104,15 @@ stated, `status: unvalidated`, version `1.0`. Tag subsequent trades with `strate
 `strategy.version`.
 
 ### F. Strategy change (§20, §21, §41)
-Never edit a committed `v*.yaml` (the validator fails). Two kinds of change record:
+Never edit a committed `v*.yaml` (the validator fails). Three kinds of change record:
 - **clarification**: the trader states rules that were already in force (filling `null`s, defining
   terms). New version file, `kind: clarification`, `status: adopted`, `rule_changed: false`, the trader's
   statement quoted. No evidence gate, because no performance claim is made. Retag the trades taken
   under those rules to the new version so per-version statistics are not split by documentation.
+- **trader_rule**: the trader sets or changes a rule of their own (a risk or safety limit, e.g. the 20x leverage
+  ceiling, CHG-018). New version file, `kind: trader_rule`, `status: adopted`, `rule_changed: true`, the statement
+  quoted and `previous_rule` recorded; no evidence trades (it claims nothing about performance). Mirror it in
+  `profile/trader.yaml` when it is a profile parameter. Retag earlier trades only when none of them breaks the new rule.
 - **rule_change** (default): evidence-driven, as below.
 
 For a rule change, append a change record to

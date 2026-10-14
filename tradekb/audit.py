@@ -198,8 +198,14 @@ def run(kb: KB, check_outputs: bool = True) -> Audit:
                 cap = exp["max_leverage_liq"]
                 liq = entry * (1 - 1 / cap) / (1 - mmr) if stop < entry else entry * (1 + 1 / cap) / (1 + mmr)
                 a.check(abs(liq - stop) <= abs(entry - stop) * 1e-9, f"{t['id']}: at the liquidation cap {cap:.4f}x, liquidation sits on the stop")
-                a.check(exp["max_leverage_safe"] == min(cap, exp["max_leverage_for_rule"])
-                        and exp["liq_binds"] == (cap < exp["max_leverage_for_rule"]), f"{t['id']}: safe leverage is the lower cap")
+                ceiling = _num((kb.profile.get("leverage") or {}).get("max_leverage"))
+                rule_cap = exp["max_leverage_for_rule"]
+                lowest = min(c for c in (cap, rule_cap, ceiling) if c is not None)
+                a.check(exp["max_leverage_safe"] == lowest, f"{t['id']}: safe leverage is the lowest cap")
+                a.check(exp["liq_binds"] == (cap == lowest and cap < rule_cap and (ceiling is None or cap < ceiling)),
+                        f"{t['id']}: liquidation binds only when its cap is the lowest")
+                if ceiling is not None:
+                    a.check(exp.get("max_leverage_ceiling") == ceiling, f"{t['id']}: the leverage ceiling is the profile's")
             lev = _num((t.get("risk") or {}).get("leverage"))
             if lev and "margin_loss_pct" in exp:
                 a.check(abs(exp["margin_loss_pct"] - exp["stop_pct"] * lev) < TOL, f"{t['id']}: margin loss at stop")

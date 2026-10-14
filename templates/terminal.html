@@ -1179,11 +1179,11 @@ function renderRisk() {
     { label: "Risk", num: true, render: r => fmtPct(dig(r.t, "risk.risk_pct"), 1) },
     { label: "Notional", num: true, render: r => isNum(r.e.notional_pct) ? fmtPct(r.e.notional_pct, 1) + " of equity" : "—" },
     { label: "Effective lev.", num: true, render: r => fmtX(r.e.effective_leverage) },
-    { label: "Lev. setting", num: true, render: r => isNum(dig(r.t, "risk.leverage")) ? r.t.risk.leverage + "x" : "—" },
+    { label: "Lev. setting", num: true, render: r => isNum(dig(r.t, "risk.leverage")) ? h("span", { class: r.e.above_ceiling ? "down" : null, text: r.t.risk.leverage + "x" }) : "—" },
     { label: "Margin posted", num: true, render: r => isNum(r.e.margin_pct) ? fmtPct(r.e.margin_pct) + " of equity" : "—" },
     { label: "Margin loss at stop", num: true, render: r => isNum(r.e.margin_loss_pct) ? h("span", { class: r.e.margin_loss_breach ? "down" : r.e.margin_loss_below_aim ? null : "up", text: fmtPct(r.e.margin_loss_pct, 1) }) : "—" },
-    { label: "Max leverage", title: "The lower of the 60% margin rule and the leverage whose liquidation reaches the stop (L = liquidation binds)", num: true,
-      render: r => isNum(r.e.max_leverage_safe) ? fmtCap(r.e.max_leverage_safe) + (r.e.liq_binds ? " L" : "") : fmtCap(r.e.max_leverage_for_rule) },
+    { label: "Max leverage", title: "The lowest of the 60% margin rule, your leverage ceiling and the leverage whose liquidation reaches the stop (C = your ceiling binds, L = liquidation binds)", num: true,
+      render: r => isNum(r.e.max_leverage_safe) ? fmtCap(r.e.max_leverage_safe) + (r.e.binds === "liquidation" ? " L" : r.e.binds === "ceiling" ? " C" : "") : fmtCap(r.e.max_leverage_for_rule) },
     { label: "Liquidation (isolated)", num: true, render: r => isNum(r.e.liq_isolated) ? fmtNum(r.e.liq_isolated) + (r.e.liq_mode_assumed ? " *" : "") : "—" },
     { label: "Liq. / stop distance", num: true, render: r => fmtX(r.e.liq_to_stop) },
     { label: "Check", render: r => r.e.liq_before_stop ? badge("loss", "▼ Liq. before stop") : r.e.margin_loss_breach ? badge("loss", "▼ Over margin rule") : r.e.margin_loss_below_aim ? badge("below_aim", "◐ Within rules, below aim") : isNum(r.e.liq_to_stop) ? badge("win", "▲ Within rules") : "—" },
@@ -1191,7 +1191,7 @@ function renderRisk() {
 
   return h("div", { class: "stack" },
     card("Risk rules", "Only what the trader has stated. Unresolved rules are gaps to fill, never defaults to assume.", profileTable),
-    card("Exposure per trade", "Leverage is not risk. With a fixed % risk, the stop distance sets the position size; leverage only changes the margin posted and the liquidation distance. Max leverage is the lower of the margin rule and the liquidation cap (L = liquidation binds first, at the assumed maintenance rate). * = margin mode not recorded, isolated assumed.", expTable));
+    card("Exposure per trade", "Leverage is not risk. With a fixed % risk, the stop distance sets the position size; leverage only changes the margin posted and the liquidation distance. Max leverage is the lowest of the margin rule, your leverage ceiling (C) and the liquidation cap (L = liquidation binds first, at the assumed maintenance rate). * = margin mode not recorded, isolated assumed.", expTable));
 }
 
 function renderBehaviour() {

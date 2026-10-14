@@ -140,16 +140,27 @@ def cmd_size(kb: KB, args) -> int:
         buffered = max_leverage_liq_beyond_stop(args.entry, res.stop_fill, mmr, rc["liq_buffer_warn"])
         print(f"| Max leverage with liquidation beyond the stop (isolated, maintenance {mmr}) | {fmt_cap(liq_cap)} "
               f"({fmt_cap(buffered)} keeps it {rc['liq_buffer_warn']:g}x the stop distance away) |")
+    ceiling = inp.max_leverage
+    if ceiling is not None:
+        print(f"| Your leverage ceiling | {ceiling:g}x (profile leverage.max_leverage) |")
     if res.min_leverage_for_aim is not None and res.max_leverage_for_rule is not None:
-        top = res.max_leverage_for_rule if liq_cap is None else min(res.max_leverage_for_rule, liq_cap)
+        caps = {"the margin rule": res.max_leverage_for_rule}
+        if liq_cap is not None:
+            caps["liquidation"] = liq_cap
+        if ceiling is not None:
+            caps["your ceiling"] = ceiling
+        binder = min(caps, key=caps.get)
+        top = caps[binder]
         aim = f"{inp.margin_loss_aim_min_pct:g}-{inp.max_margin_loss_pct:g}%"
         if top < res.min_leverage_for_aim:
-            print(f"| Leverage for your {aim} aim | not reachable: liquidation comes first above {fmt_cap(top)} |")
+            print(f"| Leverage for your {aim} aim | not reachable: {binder} caps leverage at {fmt_cap(top)}, "
+                  f"which loses {top * res.stop_distance_pct:.1f}% of the margin at the stop (lower is fine) |")
         else:
-            capped = " (capped by liquidation)" if liq_cap is not None and liq_cap < res.max_leverage_for_rule else ""
+            capped = f" (capped by {binder})" if binder != "the margin rule" else ""
             print(f"| Leverage for your {aim} aim | {res.min_leverage_for_aim:.2f}x to {fmt_cap(top)}{capped} |")
     if res.default_leverage is not None:
-        print(f"| Bot default leverage | {res.default_leverage}x (the highest whole number within the margin limit, liquidation "
+        within = "within the margin limit" + (f" and your {ceiling:g}x ceiling" if ceiling is not None else "")
+        print(f"| Bot default leverage | {res.default_leverage}x (the highest whole number {within}, liquidation "
               f"at least {rc['liq_buffer_warn']:g}x the stop distance away; lower is always allowed) |")
     if res.liquidation is not None:
         print(f"| Liquidation, {margin_mode} (approx.) | {res.liquidation:,.6g} "
@@ -186,7 +197,8 @@ def _split_report(p: dict, args, rc: dict, sources: list, risk_amount: float, fe
     plan = split_plan(entries, args.stop, order_risk, leverage=args.leverage, mmr_rate=mmr, fee_rate=fee_rate,
                       max_margin_loss_pct=num(dig(p, "leverage.max_margin_loss_at_stop_pct")),
                       margin_loss_aim_min_pct=num(dig(p, "leverage.margin_loss_aim_min_pct")),
-                      targets=tuple(args.target or ()), min_rr=num(dig(p, "risk.min_rr")), liq_buffer=rc["liq_buffer_warn"])
+                      targets=tuple(args.target or ()), min_rr=num(dig(p, "risk.min_rr")), liq_buffer=rc["liq_buffer_warn"],
+                      max_leverage=num(dig(p, "leverage.max_leverage")))
     if args.side and args.side != plan.side:
         raise ValueError(f"the stop makes this a {plan.side}, not a {args.side}")
     print(f"## Split entry — {plan.side.upper()}, {len(entries)} limit orders, one stop and one target\n")
@@ -222,8 +234,11 @@ def _split_report(p: dict, args, rc: dict, sources: list, risk_amount: float, fe
         print(f"- first order ({abs(plan.entries[0] - args.stop) / plan.entries[0] * 100:.3f}% stop): at most "
               f"{fmt_cap(plan.max_leverage_first_order)}{aim}")
     print(f"- liquidation behind every next order and the stop (maintenance {mmr}): at most {fmt_cap(plan.max_leverage_liq)}")
+    if plan.max_leverage_ceiling is not None:
+        print(f"- your leverage ceiling: {plan.max_leverage_ceiling:g}x")
     if plan.max_leverage_first_order is not None:
-        print(f"- use at most {fmt_cap(min(plan.max_leverage_first_order, plan.max_leverage_liq))}")
+        top = min(c for c in (plan.max_leverage_first_order, plan.max_leverage_liq, plan.max_leverage_ceiling) if c is not None)
+        print(f"- use at most {fmt_cap(top)}")
     if plan.default_leverage is not None:
         print(f"- bot default: {plan.default_leverage}x (whole number; liquidation at least {rc['liq_buffer_warn']:g}x the distance "
               f"to the next order or the stop)")

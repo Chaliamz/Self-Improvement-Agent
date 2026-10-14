@@ -21,7 +21,7 @@ regime: [bearish]             # 1m structure: lower highs and lower lows through
 
 strategy:
   id: key-level-sr
-  version: "1.5"            # retagged by CHG-001 to CHG-005 (clarifications)
+  version: "1.6"            # retagged by CHG-001 to CHG-006 (CHG-006: the 20x ceiling; T-0003 used 20x)
   experiment: null
   variant: null
 

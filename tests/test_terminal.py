@@ -114,6 +114,28 @@ class ExposureTest(unittest.TestCase):
         plan = split_plan([54.44, 53.5, 52.9], 51.02, 30.0, max_margin_loss_pct=60)
         self.assertEqual(plan.default_leverage, 9)
 
+    def test_leverage_ceiling(self):
+        # trader, 2026-10-13: "we should stick to the maximum of 20X leverage for safety reasons"
+        base = dict(risk_amount=100, max_margin_loss_pct=60, margin_loss_aim_min_pct=50, mmr_rate=0.005, max_leverage=20)
+        for (entry, stop), want in {(100, 99.4): 20, (1.5944, 1.6354): 20, (100, 94): 10, (54.44, 51.02): 9}.items():
+            self.assertEqual(size_position(SizingInput(entry=entry, stop=stop, **base)).default_leverage, want, (entry, stop))
+        over = size_position(SizingInput(entry=100, stop=99.4, leverage=25, **base))
+        self.assertTrue(any(lvl == "CRITICAL" and "above your 20x ceiling" in m for lvl, m in over.flags))
+        at = size_position(SizingInput(entry=100, stop=99.4, leverage=20, **base))
+        self.assertFalse(any("ceiling" in m and lvl == "CRITICAL" for lvl, m in at.flags))
+        self.assertTrue(any("above your 20x ceiling: stay at or below 20x" in m for _, m in at.flags), "the aim note names the ceiling")
+        plan = split_plan([100, 99.8], 99.4, 30.0, max_margin_loss_pct=60, max_leverage=20, leverage=25)
+        self.assertEqual(plan.default_leverage, 20)
+        self.assertTrue(any(lvl == "CRITICAL" and "ceiling" in m for lvl, m in plan.flags))
+        tight = exposure(100, 99.4, 1.0, 20, "isolated", 0.005, 60, 50, max_leverage=20)
+        self.assertEqual((tight["max_leverage_safe"], tight["binds"], tight["liq_binds"], tight["above_ceiling"]), (20, "ceiling", False, False))
+        wide = exposure(100, 94, 1.0, 10, "isolated", 0.005, 60, 50, max_leverage=20)
+        self.assertEqual(wide["binds"], "rule")
+        self.assertAlmostEqual(wide["max_leverage_safe"], 10)
+        free = exposure(100, 99.4, 1.0, None, "isolated", 0.005, 60, 50)
+        self.assertEqual((free["binds"], free["liq_binds"]), ("liquidation", True))
+        self.assertTrue(exposure(100, 99.4, 1.0, 25, "isolated", 0.005, 60, 50, max_leverage=20)["above_ceiling"])
+
     def test_liquidation_cap_sits_exactly_at_the_stop(self):
         for entry, stop, side in ((100, 99.4, "long"), (100, 100.6, "short"), (54.44, 51.02, "long"), (0.01298, 0.013478, "short")):
             for mmr in (0.0, 0.005, 0.01):
@@ -462,6 +484,47 @@ class VersionNumberTest(KBTestCase):
         self.assertTrue(any("is a number: quote it" in i.msg for i in self.issues("ERROR")))
         self.write_trade("T-0001", result={"r": 1.0}, strategy={"id": None, "version": "1.10"})
         self.assertFalse(any("is a number" in i.msg for i in self.issues("ERROR")))
+
+
+class LeverageCeilingRecordsTest(KBTestCase):
+    def test_trade_above_the_ceiling_is_flagged(self):
+        profile = self.tmp / "profile" / "trader.yaml"
+        data = yaml.safe_load(profile.read_text(encoding="utf-8"))
+        data["leverage"]["max_leverage"] = 20
+        profile.write_text(yaml.safe_dump(data), encoding="utf-8")
+        self.write_trade("T-0001", result={"r": 1.0}, risk={"risk_amount": 100, "leverage": 25, "margin_mode": "isolated"},
+                         plan={"entry": 100, "stop": 99.4, "targets": []})
+        self.assertTrue(any("above your 20x ceiling" in i.msg for i in self.issues("WARN")))
+        self.write_trade("T-0001", result={"r": 1.0}, risk={"risk_amount": 100, "leverage": 25, "margin_mode": "isolated"},
+                         plan={"entry": 100, "stop": 99.4, "targets": []}, review={"mistakes": ["excessive_leverage"], "behaviors": []})
+        self.assertFalse(any("ceiling" in i.msg for i in self.issues("WARN")), "acknowledged once tagged")
+        self.assertTrue(any("ceiling" in i.msg for i in self.issues("INFO")))
+        p = build_payload(load_kb())
+        e = p["trades"][0]["derived"]["exposure"]
+        self.assertEqual((e["max_leverage_safe"], e["binds"], e["above_ceiling"]), (20, "ceiling", True))
+        from tradekb import audit
+        self.assertEqual(audit.run(load_kb(), check_outputs=False).failures, [])
+
+
+class TraderRuleChangeTest(KBTestCase):
+    def write_strategy(self, changes):
+        d = self.tmp / "playbook" / "strategies" / "s"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "strategy.yaml").write_text(yaml.safe_dump({"id": "s", "status": "unvalidated", "current_version": "1.1"}))
+        for v in ("1.0", "1.1"):
+            (d / f"v{v}.yaml").write_text(yaml.safe_dump({"version": v}))
+        (d / "changes.yaml").write_text(yaml.safe_dump({"changes": changes}))
+
+    def test_trader_rule_needs_a_quote_and_a_changed_rule_but_no_evidence(self):
+        ok = {"id": "CHG-001", "kind": "trader_rule", "status": "adopted", "rule_changed": True,
+              "statement": "we should stick to the maximum of 20X leverage", "resulting_version": "1.1"}
+        self.write_strategy([ok])
+        self.assertFalse([i for i in self.issues("ERROR") if "changes" in i.where], "a quoted trader rule needs no evidence gate")
+        for bad, msg in (({"rule_changed": False}, "restating one is a clarification"), ({"statement": None}, "must quote"),
+                         ({"status": "provisional"}, "status 'adopted'"), ({"evidence": ["T-0001"]}, "no performance claim"),
+                         ({"resulting_version": "9.9"}, "has no version file")):
+            self.write_strategy([{**ok, **bad}])
+            self.assertTrue(any(msg in i.msg for i in self.issues("ERROR")), msg)
 
 
 class TradeQuestionsTest(KBTestCase):

@@ -87,3 +87,15 @@ changes:
 #    status: testing
 #    experiment: EXP-001
 #    resulting_version: null
+  - id: CHG-006
+    kind: trader_rule
+    date: 2026-10-13
+    status: adopted
+    rule_changed: true
+    statement: >-
+      Trader, 2026-10-13: "we should stick to the maximum of 20X leverage for safety reasons, that's obviously for tight
+      stops with low % of invalidation and meets our criteria".
+    previous_rule: "Higher leverage when the invalidation % is small, within the 60% margin rule and liquidation beyond the stop; no fixed cap."
+    fields: [leverage_model]
+    note: "Account-wide (profile leverage.max_leverage = 20). T-0003 used 20x: unchanged, retagged \"1.6\"."
+    resulting_version: "1.6"

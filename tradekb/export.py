@@ -79,7 +79,7 @@ def _trade(row: analysis.Row, kb: KB) -> dict:
         mmr = num(dig(kb.profile, "leverage.maintenance_margin_rate")) or kb.config["risk_checks"]["default_mmr_rate"]
         exp = exposure(entry, stop, num(dig(t, "risk.risk_pct")), num(dig(t, "risk.leverage")),
                        dig(t, "risk.margin_mode"), mmr, num(dig(kb.profile, "leverage.max_margin_loss_at_stop_pct")),
-                       num(dig(kb.profile, "leverage.margin_loss_aim_min_pct")))
+                       num(dig(kb.profile, "leverage.margin_loss_aim_min_pct")), num(dig(kb.profile, "leverage.max_leverage")))
     derived = jsonable(row.d)
     derived.update({"exposure": exp, "planned_rr": model.planned_rr(t), "holding_hours": analysis.holding_hours(row), "top_down": dig(t, "timeframes.top_down"),
                     "rule_checks": analysis.rule_checks(row, kb) if row.trade.status in analysis.TAKEN else None,
