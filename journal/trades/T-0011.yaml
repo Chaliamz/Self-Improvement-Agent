@@ -22,7 +22,7 @@ regime: [bullish, range]      # 4h bullish (trader); 1h consolidation range abou
 
 strategy:
   id: supply-demand-structure
-  version: "1.18"             # recorded at v1.15; retagged by CHG-019 (clarification)
+  version: "1.19"             # recorded at v1.15; retagged by CHG-020 (clarification)
   experiment: null
   variant: null
 
@@ -98,6 +98,7 @@ evidence:
     - "Checklist v1.15: 1 pass (30m supply from the CH, fresh); 3 fail (no CH on the 1h or 4h: a fake CH); 4 pass (the limit at the supply's edge); 5 pass (stop above the supply); 6 pass (8.9% of margin, 5.32R); 8 unknown (the ForexFactory calendar for Sep 30 was not given; the spike began at 15:30 UTC+3, 08:30 New York, a US release time). Item 3 alone makes it a no-trade."
     - "The 08:30 New York release (PCE, GDP) was red (trader, 2026-10-13): item 8 fails, and the news rule alone would have cancelled the resting limit at 14:30, an hour before the spike that would have stopped it. Two independent rules (the front-run cancel and the news cancel) each avoided the -1.00R COUNTERFACTUAL."
     - "Front-run trigger (trader, 2026-10-13): 'Price reached fast to the previous low, it didn't give any retest so it was likely for price to go even lower or invalidate our setup which did. the bot should trigger the cancel when we identify a CH but price doesn't make the retest to continue its trend.'"
+    - "Front-run rule for the bot (trader, 2026-10-14: option b, cancel on a new low beyond the previous low; a new low by the close rule): after the CH the lowest 30m close was about 82,961, above the 82,882 CH low (82,877 was only a wick; calibration 28 ticks, about 22 USD). Under that rule the limit would have stayed resting; the red 08:30 New York release (PCE, GDP) cancels it at 14:30, an hour before the 15:30 spike that would have stopped it. The trader's own cancel came earlier than the bot rule requires."
     - "Front run: price moved about 3.4R toward the target without retesting the entry, and the trader cancelled. Under the written rule (cancel only when price reaches the TP) the limit would have stayed open and been stopped on Sep 30 within about 10 minutes: -1R COUNTERFACTUAL. The cancel is recorded as the trader's rule; its exact trigger is an open question."
     - "The spike that would have stopped the short ran into the unretested 4h FVG and reversed there, which is the trader's point that a limit at the 4h FVG would have been the better location. No hypothetical R is computed for it: no plan was given."
   hypotheses:

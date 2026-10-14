@@ -22,7 +22,7 @@ regime: [bullish]             # weekly bearish trend turning: a close above the 
 
 strategy:
   id: supply-demand-structure
-  version: "1.18"             # recorded at v1.17; retagged by CHG-019 (clarification)
+  version: "1.19"             # recorded at v1.17; retagged by CHG-020 (clarification)
   experiment: null
   variant: null
 
@@ -101,18 +101,19 @@ evidence:
     - "The target sits at the cyan supply's lower (near) edge (about 84,040); its far edge (about 84,225) is 3.32R (tj). The stop sits about 35 under the Oct 8 low (about 80,360) and inside the 4h demand."
     - "tj size: stop distance 1.112%; 20x = 22.2% of the margin at the stop, isolated liquidation about 77,556 (4.07x the stop distance). The 60% rule allows 53.94x, so the 20x ceiling is the binding cap; the bot default is 20x."
     - "The 30M breaker block (trader, 2026-10-14: 'you can see the mini pullback which created inside the zone, went lower and then reversed higher forming an FVG'): the Oct 8 19:00 30m up-candle (about 80,840-81,265) is the mini pullback inside the zone and the green box; the 19:30 and 20:00 bars went lower (about 80,362, into the 4h demand); the 21:00 bar reversed through it and the 21:30 bar left an FVG of about 80,890-81,290 (between the 20:30 high and the 21:30 low). The entry (81,229.20) sits inside both."
+    - "Trader's weekly chart of Oct 14 14:05 (T-0013-btc-1w-fib.jpg): the Fib redrawn from 57,733.48 (1) to 87,318.63 (0), labels 0.5 (72,526.06), 0.618 (69,035.01), 0.786 (64,064.7x), 0.886 (61,106.1x) and extensions up to -0.618 (105,602.26); all match a recomputation from the two anchors. The anchors sit within about 6 and 21 of the swing wicks measured on the 1D chart (about 87,313 on Sep 21 and 57,712 on Jul 1)."
     - "News: 03:00-11:00 UTC+3 is 20:00-04:00 New York, outside the 08:30 release window; the chart's next US event marker is on Oct 14."
     - "Other position tools on the charts (4h shorts Oct 7-8 and Oct 11-12, a weekly long drawn into 2027): trader, 2026-10-14: 'ignore these position tools, these were some testing samples.' Not trades, not plans; not recorded."
   interpreted:
     - "The charts match the trader's top-down: the weekly CH line held on a weekly close, the 1D CH, the 4h support range with the demand that formed the CH (retested Oct 8), then the 30m BB + FVG at the reclaimed support for the entry, the cyan supply for the target."
-    - "Premium (trader, 2026-10-14: 'yes exactly'): the upper half of the weekly Fib (above 0.5 = 71,895.54). Price is there, so the trader takes day trades; swings only with extra confirmations ('its risky'); the 0.618 (68,369.59), 0.786 (63,349.59) and 0.886 (60,361.49) levels are the swing areas. The Fib's anchors (56,955.06 / 86,836.03) are not this chart's wicks (about 57,712 on Jul 1 and 87,313 on Sep 21): asked in strategy open question 2."
+    - "Premium (trader, 2026-10-14: 'yes exactly'): the upper half of the Fib on the weekly swing points. The trader redrew it on the swing wicks ('Fibonacci retracement was on weekly swing point'): 1 = 57,733.48, 0 = 87,318.63, so 0.5 = 72,526.06, 0.618 = 69,035.01, 0.786 = 64,064.70, 0.886 = 61,106.19. Price (about 81,229-84,035 in the trade) is well above 0.5: premium, day trades; swings only with extra confirmations ('its risky'); 0.618-0.886 are the swing areas. The first Fib (56,955.06 to 86,836.03) was not on the swing points."
     - "No 30m CH: the entry is a continuation at a fresh lower-timeframe zone after the HTF CH, as with T-0012's limit at the 1H demand. v1.17 records that such an entry needs no lower-timeframe CH; a lower-timeframe CH used as the trigger still needs the 15m-30m (T-0004)."
     - "Checklist v1.17: 1 pass (a 30m BB + FVG after the 1D/1W CH, at the 4h support and above the 4h demand); 2 pass (the Oct 13 drop ran through the Oct 10 ascending lows into the box); 3 pass (the 1D CH by close, the weekly close above the CH line; no 30m CH needed for a fresh-zone entry); 4 pass (entry in the box at the reclaimed support); 5 pass (about 35 under the last low, inside the 4h demand); 6 pass (20x = 22.2% of the margin, liquidation 4.07x the stop distance, at the 20x ceiling; 3.11R); 7 pass (the liquidity lines were avoided); 8 pass (no US release window)."
     - "Target at the near edge: 3.11R against 3.32R at the far edge. The trader's rule (2026-10-13): the far edge is ideal, 'it depends also the RR'."
     - "Runner check for the not-adopted partial idea: after the target price fell back to about 82,900 but not to the 81,229 entry; the next level (the 84,315 resistance) had not been reached at the screenshot. Undecided."
   hypotheses:
     - "A 30M BB + FVG at a reclaimed 4h support, after the 1D/1W CH and without a 30m CH, gave 3.11R (T-0013). n=1."
-  charts: [journal/charts/T-0013-btc-1w.png, journal/charts/T-0013-btc-1d.png, journal/charts/T-0013-btc-4h.png, journal/charts/T-0013-btc-30m.png]
+  charts: [journal/charts/T-0013-btc-1w.png, journal/charts/T-0013-btc-1d.png, journal/charts/T-0013-btc-4h.png, journal/charts/T-0013-btc-30m.png, journal/charts/T-0013-btc-1w-fib.jpg]
 
 review:
   scores:

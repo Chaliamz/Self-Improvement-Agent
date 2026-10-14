@@ -13,7 +13,7 @@ shows how fragile it is. Nine trades cannot separate skill from luck. Nothing be
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.18 | unvalidated | 8 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013) | n=8: +2.36R, 95% CI [+0.47, +4.28] (LOW) |
+| supply-demand-structure | 1.19 | unvalidated | 8 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013) | n=8: +2.36R, 95% CI [+0.47, +4.28] (LOW) |
 | key-level-sr | 1.6 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -72,8 +72,10 @@ _None._
   been stopped within about 10 minutes (-1.00R COUNTERFACTUAL). The 15:30 release (PCE, GDP) was red (trader,
   2026-10-13), so the news rule alone would also have cancelled it at 14:30. The trigger (2026-10-13): "the bot should
   trigger the cancel when we identify a CH but price doesn't make the retest to continue its trend"; on the previous low
-  (2026-10-14): "it would be the trigger for a limit if price wouldnt go even lower". Whether the bot cancels at the
-  previous low or only on a new low beyond it is strategy open question 1. n=1.
+  (2026-10-14): the bot cancels only when price makes a new low beyond the previous low before the retest ("The ideal
+  option would be b when price makes new low so it's likely for price to get invalidated"; a new low by the close
+  rule). On T-0011 no 30m candle closed below the 82,882 CH low, so under that rule the limit stays and the news rule
+  is what cancels it at 14:30. n=1.
 - **Stop beyond the swing that created the confirmed CH.** Now a rule (v1.6 checklist item 5; trader: "yes
   exactly"). T-0006, T-0007 and T-0009 kept it; T-0004's stop sat beyond a high whose CH was never confirmed and was
   swept. How close: "just very close to that swing point or demand/supply level" (2026-09-28): 0.01-0.18% of price
@@ -185,8 +187,8 @@ Stated by the trader (2026-09-26). These are the trader's rules, not performance
   setups (T-0006, T-0007). Top Down Analysis from the weekly (T-0013): 1W trend and CH, 1D levels, 4H support range
   and demand, 1H/30M confirmation and execution. Premium and discount on the weekly swing's Fib ("yes exactly",
   2026-10-14): above 0.5, day trades (swings only with extra confirmations, "its risky"); 0.618 / 0.786 / 0.886, swings
-  ("61.8-78.6-88.6 we can focus on swings as well"). T-0013: 71,895.54 / 68,369.59 / 63,349.59 / 60,361.49. Where the
-  bot anchors the Fib is strategy open question 2.
+  ("61.8-78.6-88.6 we can focus on swings as well"). The Fib sits on the weekly swing points (wick low to wick high):
+  BTC 57,733.48 to 87,318.63, so 0.5 = 72,526.06, 0.618 = 69,035.01, 0.786 = 64,064.70, 0.886 = 61,106.19.
 - Support/resistance is a range, not a single price: "it's a range depending on how much price reacts" (2026-10-13).
 - Bot: MEXC USDT-margined perpetuals BTC_USDT, ETH_USDT, HYPE_USDT for now; day trading and swings, no scalps for
   now. The malfunction guard is mandatory (G1-G9 in `playbook/automation.yaml`, shown in the Health tab) and never
@@ -201,6 +203,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-10-14 | supply-demand-structure v1.19 (CHG-020, clarification): the bot's front-run cancel is a new low beyond the previous low (close rule); the premium/discount Fib sits on the weekly swing points (BTC 57,733.48 to 87,318.63). No strategy question open; stage 1 criterion "open strategy questions" met | trader's answers; weekly chart |
 | 2026-10-14 | supply-demand-structure v1.18 (CHG-019, clarification): the breaker block defined (mini pullback inside the zone, a move below it, a reversal through it leaving an FVG; matches T-0013's chart), premium/discount on the weekly Fib with swings at 0.618 / 0.786 / 0.886, the trader's front-run answer. T-0012: the exit at 10:30 confirmed. T-0013: the other position tools were testing samples. Two strategy questions open (the front-run reading, the Fib anchors) | trader's answers; T-0013 chart |
 | 2026-10-13 | T-0013 BTCUSD long +3.11R (30M breaker block + FVG at the reclaimed 4h support after the 1D/1W CH, grade A; the worked Top Down Analysis). supply-demand-structure v1.17: CHG-017 (clarifications: front-run trigger, pullback after a CH, TP at the far edge, top-down from the weekly, premium -> day trading, S/R as a range, the breaker-block entry, the pending limit; T-0013 as an A) and CHG-018 (trader_rule: a 20x leverage ceiling); key-level-sr v1.6 (CHG-006, the same ceiling). T-0011: the Sep 30 release was red. T-0012: filled at 13:00 (MAE 0.38R), 20x, Aug 14 not red; exit time asked. Partial/break-even runner recorded as a hypothesis, not adopted. New change kind trader_rule; the leverage ceiling enforced by tj size, the bot default, the validator, the audit and the terminal. INC-021 caught | trader's answers; T-0013 charts; tests |
 | 2026-10-10 | T-0012 OPNUSDT long +6.68R (demand_level, 4H CH, 1H demand below an equal-lows inducement, grade S). supply-demand-structure v1.16 (CHG-016): checklist item 1 names the 1h-30m zone after the HTF CH; T-0012 is the S and inducement example; open questions 2 (pullback or bearish CH) and 3 (TP inside the opposing zone). New tag avoided_inducement. Trade records can carry open questions, shown in Data gaps and `./tj status` | T-0012 charts; trader's review; tests |

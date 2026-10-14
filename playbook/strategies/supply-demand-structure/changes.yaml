@@ -329,3 +329,15 @@ changes:
     fields: [timeframes, entry_models, entry_timing, open_questions]
     note: "The 20x ceiling (CHG-018) carries over. All supply-demand trades retagged \"1.18\"."
     resulting_version: "1.18"
+  - id: CHG-020
+    kind: clarification
+    date: 2026-10-14
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-14: "The ideal option would be b when price makes new low so it's likely for price to get
+      invalidated" ... "Im sending you the picture. Fibonacci retracement was on weekly swing point" (the weekly chart's Fib
+      redrawn from 57,733.48 to 87,318.63).
+    fields: [timeframes, entry_timing, open_questions]
+    note: "A new low counts by the trader's close rule (market_structure). No strategy question remains open. All supply-demand trades retagged \"1.19\"."
+    resulting_version: "1.19"
