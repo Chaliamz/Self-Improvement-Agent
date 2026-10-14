@@ -5,7 +5,7 @@
 id: T-0012
 status: closed
 opened: 2026-08-14            # the limit (resting since the CH) filled in the 13:00 bar, UTC+3 (trader, 2026-10-13: "the position opened at 13:00")
-closed: 2026-08-16            # the chart's first bar through the 0.05312 target is the Aug 16 10:30 30m bar; trader (2026-10-13): "exit was at 16/8/26 at 06:00 am" (asked)
+closed: 2026-08-16            # the target filled in the Aug 16 10:30 30m bar (UTC+3): the chart, and the trader (2026-10-14): "you are right, it closed at 10:30"
 asset: "OPNUSDT"
 market: "crypto perp (BloFin)"
 direction: "long"
@@ -22,7 +22,7 @@ regime: [bullish]             # trader: "a 4H reversal CH showing a high possibi
 
 strategy:
   id: supply-demand-structure
-  version: "1.17"             # retagged by CHG-017 (clarification)
+  version: "1.18"             # recorded at v1.16; retagged through CHG-019 (clarifications)
   experiment: null
   variant: null
 
@@ -54,7 +54,7 @@ fills:
   exits:
     - {price: 0.05312, reason: "Target (position-tool label). Trader: 'Target: Profit', 'Risk/Reward 6.68'."}
   fees: null                  # inside the 1% risk (trader, 2026-09-27)
-  duration_minutes: 2730      # measured: the 13:00 fill (Aug 14, trader-confirmed) to the target bar (Aug 16 10:30, 30m, UTC+3), +/- 30 min. The trader's 06:00 exit would make it 2460: asked
+  duration_minutes: 2730      # measured: the 13:00 fill to the 10:30 target fill (Aug 14-16, UTC+3), both trader-confirmed; +/- 30 min
   orders_filled: null
   worst_price: 0.04521        # about: the 13:00 fill bar's wick (30m and both 1h charts), 0.38R against; the fill came first (price passed 0.04564 on the way down)
   best_price: 0.05312         # the target filled
@@ -78,7 +78,7 @@ journal:
   during: |
     Aug 14: the 12:00 30m bar swept the equal lows; the 13:00 bar filled the resting 0.04564 limit and wicked to about
     0.0452 (0.38R against, 0.61R above the stop); price based at the zone until 15:00, then rose. Aug 15-16: a steady
-    climb; the chart's first bar through the target is the Aug 16 10:30 30m bar (the trader recalls 06:00). The stop
+    climb; the target filled in the Aug 16 10:30 30m bar (the trader first recalled 06:00, then confirmed 10:30). The stop
     was never approached.
   after: |
     Trader: "Im going to show you another one great example on how to perform to hunt high RR." "Setup was
@@ -110,14 +110,14 @@ evidence:
     - "tj size: stop distance 2.454%. 60% cap 24.45x; the 50-60% aim is 20.37x-24.45x; bot default 24x (liquidation about 0.04396, 1.50x the stop distance). At 20x: 49.1% of margin, liquidation about 0.04358 (1.84x). Targets: 0.05312 = 6.68R; 0.05262 (the supply's lower edge) = 6.23R; 0.0561 (the Aug 4 high) = 9.34R."
     - "News: web search results (the ForexFactory calendar itself could not be reached from this environment) list US Retail Sales (July) at 08:30 New York on Friday Aug 14 2026, which is 15:30 UTC+3. Its ForexFactory impact colour was not verified."
     - "Leverage: 20x (trader, 2026-10-13). News: US Retail Sales on Aug 14 was not red on ForexFactory (trader)."
-    - "Fill: the trader confirms the limit was resting since the CH and filled at 13:00. Exit: the trader recalls 06:00 on Aug 16, but the 06:00 bar topped at about 0.0529 on all three charts (30m 0.05290, 1h 0.05292 and 0.05291), about 0.0002 under the 0.05312 target; the first bar through it is the 10:30 30m bar, where TradingView's own shading ends."
+    - "Fill: the trader confirms the limit was resting since the CH and filled at 13:00. Exit: the trader first recalled 06:00 on Aug 16, but the 06:00 bar topped at about 0.0529 on all three charts (30m 0.05290, 1h 0.05292 and 0.05291), about 0.0002 under the 0.05312 target; the first bar through it is the 10:30 30m bar, where TradingView's own shading ends. Trader, 2026-10-14: 'you are right, it closed at 10:30'."
     - "The trader's Oct 14 4h chart (T-0012-opn-4h-extended.png): the same position tool stretched to a 0.06471 target (tj: 17.03R) at the 4h green box, about 0.0636-0.0652, left by the Jul 24 drop. The tool's shading ends in the Aug 22 ~00:00-04:00 4h bar (calibration 27 ticks, 0.00008; times +/- 0.6 h)."
     - "Oct 10 1h chart: after the target, lows of about 0.0508 (Aug 17 ~01:00) and a single grey 1h wick to about 0.0471 at Aug 22 ~08:00, after the 0.06471 touch; no price at or below the 0.04564 entry."
   interpreted:
     - "The chart matches the trader's sequence: a 4H bullish CH by close above about 0.0502 (Aug 3), born from the Jul 30 low; an untested 1H demand at the base of that move; equal lows above it (the inducement), swept in the Aug 14 12:00 bar and carried into the demand by 13:00. The limit sat at the demand, below the equal lows: the strategy's inducement rule exactly (swept into the zone, never traded)."
     - "Stop 0.04452 about 0.0001 under the 0.0446 swing low that created the CH (0.2% of price): the trader's stop rule, 'just very close to that swing point'."
     - "Fill settled (trader, 2026-10-13): the limit rested from the CH and filled at 13:00, so the 0.0452 wick was taken in the trade (MAE about 0.38R)."
-    - "Close not settled: the trader recalls 06:00, the chart shows no price at the 0.05312 target before the 10:30 bar. Either the exit was at about 10:30, or it was a different price at 06:00 (about 0.0529 would be about 6.48R, not 6.68R). The record keeps the trader's 6.68R and the chart's 10:30 until the trader confirms."
+    - "Close settled (trader, 2026-10-14): the target filled at about 10:30 on Aug 16, as the chart shows; 6.68R and 2730 minutes stand."
     - "Structure: after the CH the 4h/1h made a lower high (about 0.0553 under the 0.0561 high) and closed below the 0.0490 pullback low on Aug 12. If that low counts as 'the last higher low', the close-based rule reads a bearish CH before the entry. The trader treated the whole decline as the pullback into the demand that created the CH, with the Jul 30 low as invalidation. That is the usual reading (0.0490 never produced a higher high, so it never became a confirmed higher low), but the strategy does not state it: v1.16 open question 2."
     - "News: Retail Sales was not red (trader), and the 13:00 fill came before any 08:30 New York release anyway: item 8 passes."
     - "Checklist v1.17: 1 pass (a 1H demand drawn from the CH, untested, after the 4H CH; the trader: 'Green box is our demand level but formed on 1H time frame'); 2 pass (equal lows swept into the zone at 12:00-13:00); 3 pass on the 4H (close above about 0.0502); the post-CH break of the 0.0490 low is the pullback, not a bearish CH (trader, 2026-10-13: 'no by all means there's not a bearish CH'); 4 pass (limit at the demand); 5 pass (about 0.0001 under the CH's swing low); 6 pass (20x: 49.1% of the margin, liquidation 1.84x the stop distance, within the 20x ceiling; 6.68R); 7 pass (no entry at the equal lows); 8 pass (no red release)."
@@ -153,5 +153,4 @@ review:
   strategy_change: "no"       # documentation only (v1.16, v1.17); the partial/break-even idea is a hypothesis, not adopted
   evidence_strength: low
 
-open_questions:
-  - "Exit time: you recall 06:00 on Aug 16, but the 06:00 bar topped at about 0.0529 on all three charts, about 0.0002 under your 0.05312 target; the first bar through it is the 10:30 bar, where TradingView's shading ends. Was the exit the 0.05312 target at about 10:30, or a close at 06:00 near 0.0529 (about 6.48R instead of 6.68R)?"
+open_questions: []

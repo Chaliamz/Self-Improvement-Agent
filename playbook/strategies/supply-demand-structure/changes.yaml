@@ -315,3 +315,17 @@ changes:
     fields: [leverage_model, checklist]
     note: "Profile leverage.max_leverage = 20; tj size, the bot default and the malfunction guard (G3) enforce it. Every recorded trade used 20x or less, so it changes none of them and they are retagged \"1.17\" with CHG-017."
     resulting_version: "1.17"
+  - id: CHG-019
+    kind: clarification
+    date: 2026-10-14
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-14: (breaker block) "you can see the mini pullback which created inside the zone, went lower and
+      then reversed higher forming an FVG" ... (premium/discount on the weekly Fib) "yes exactly. since we are above 0.5 we
+      are looking for day trading, maybe for swing as well if we see some extra confirmations but its risky. 61.8-78.6-88.6
+      we can focus on swings as well." ... (front-run trigger) "it would be the trigger for a limit if price wouldnt go
+      even lower."
+    fields: [timeframes, entry_models, entry_timing, open_questions]
+    note: "The 20x ceiling (CHG-018) carries over. All supply-demand trades retagged \"1.18\"."
+    resulting_version: "1.18"

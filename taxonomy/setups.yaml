@@ -77,5 +77,5 @@ tags:
     introduced_in: "trader statement 2026-09-27"
   breaker_block:
     label: Breaker block (BB)
-    definition: "The trader's 30M 'BB + FVG' box: a fresh level where a solid support was broken and reclaimed, used for a continuation entry without a 30M CH once the HTF CH is in: 'FVG and BB breaking a solid support level seemed a solid choice to enter for a trade as a continuation on fresh level' (trader, 2026-10-13). The formal definition is an open question."
+    definition: "The trader's 30M 'BB + FVG' box: a fresh level where a solid support was broken and reclaimed, used for a continuation entry without a 30M CH once the HTF CH is in: 'FVG and BB breaking a solid support level seemed a solid choice to enter for a trade as a continuation on fresh level' (trader, 2026-10-13). Built: 'you can see the mini pullback which created inside the zone, went lower and then reversed higher forming an FVG' (trader, 2026-10-14): a mini pullback inside the zone, a move below it, then a reversal through it that leaves an FVG."
     introduced_in: T-0013
