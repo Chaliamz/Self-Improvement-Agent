@@ -85,7 +85,7 @@ grading:
   b_criteria: "Decent R:R but few confluences: 'it could be a risky execution'. T-0009: 'Setup B because of FVG ignorance but decent confirmations'."
   c_criteria: "A setup taken without the full process, 'regardless of win' (T-0003: only the 1m timeframe)."
   d_criteria: "A poor trade plus a mistake: 'D would definitely be a poor trade+mistake'."
-  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S, T-0013: A}
+  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S, T-0013: A, T-0014: B}
 
 # News filter (trader, 2026-09-27). Applies to NEW entries only: open trades are kept.
 news_filter:
@@ -179,6 +179,7 @@ sources:
   instruments.OPNUSDT: "T-0012 charts (BloFin OPNUSDT perpetual, 4h, 1h and 30m), 2026-10-10"
   grading.examples.T-0010: "Trader, 2026-09-28: 'setup was A even though it was lost'"
   grading.examples.T-0011: "Trader, 2026-09-30: 'B, because we had good RR with LTF confirmation, but HTF was against our bias'"
+  grading.examples.T-0014: "Trader, 2026-10-16: 'Setup was B, because even though we had solid confirmations and good RR we went against the trend so it had potential risk'"
   grading.examples.T-0013: "Trader, 2026-10-13: 'Setup was A because our data was good enough to execute with confirmations and our reward was 3,11 which is very good for us'"
   grading.examples.T-0012: "Trader, 2026-10-10: 'Setup was definitely S, because it met our criteria (CH+DEMAND+ Avoiding inducement) + Very good RR'"
   risk.max_daily_loss_r: "Trader, 2026-09-27: 'there's no stopping we stick to the plan. only 1% risk we ignore frequency. there's no pause'"

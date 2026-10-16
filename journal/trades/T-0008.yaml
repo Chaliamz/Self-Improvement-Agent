@@ -21,7 +21,7 @@ regime: [bullish]             # 4h: higher highs; the Sep 23 drop stayed inside 
 
 strategy:
   id: supply-demand-structure
-  version: "1.19"               # retagged through CHG-020 (clarifications)
+  version: "1.20"               # retagged through CHG-021 (clarifications)
   experiment: null
   variant: null
 

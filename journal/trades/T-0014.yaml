@@ -1,0 +1,135 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0014
+status: closed
+opened: 2026-10-16            # trader: "16/10/26 --> 01:00 - 14:00" (UTC+3); the 158.67 entry first traded in the Oct 16 01:00 1h bar
+closed: 2026-10-16            # the stop filled in the Oct 16 14:00 1h bar (a spike to about 165.70)
+asset: "AAVEUSD"
+market: "crypto (chart: TradingView CRYPTO AAVEUSD index; exchange not stated)"
+direction: "short"
+session: null
+timeframes:
+  htf: "4h"                   # the failed demand and the bearish 4h structure; the higher-timeframe bias was bullish (trader)
+  execution: "1h"             # trader: "on 1H there was a mini FVG that could absorb and continue lower"
+  chain: ["4h", "1h"]
+  detail: []
+  top_down: true              # 4h zone and structure, 1h for the entry; the bullish HTF bias was named and traded against
+
+setups: [demand_level, key_level, retest, fvg]
+regime: [bullish]             # trader: "even though HTF bias is bullish": a counter-trend short
+
+strategy:
+  id: supply-demand-structure
+  version: "1.20"
+  experiment: null
+  variant: null
+
+plan:
+  entry: 158.67               # position-tool entry line (both charts); the trader also wrote "we placed our sell limit order on cyan line" (159.89): asked
+  stop: 163.46                # position-tool label: about 0.5 above the Oct 14 03:00 high (about 162.92), the last swing before the breakdown
+  targets: [140.44]           # position-tool label: the top (near) edge of the lower demand, about 135.18-140.39
+  invalidation: "Price back above the swing that preceded the breakdown of the 157.36-160.26 demand (about 162.9): stop 163.46."
+  entry_model: reclaim        # the mirror for shorts: a demand traded through, then retested from below as resistance
+  split_entries: []
+  split_share: null
+  confluences:
+    - "Plenty of liquidity levels"
+    - "2 green demand levels"
+    - "FVG on lowest demand level which formed an inducement/liquidity"
+  confirmations:
+    - "Highest demand level failed so we expected retest for continuation lower"
+    - "Price can potentially go lower to absorb extra liquidity and then going higher"
+    - "Even though HTF bias is bullish it gave us a solid setup with a good RR (3.81)"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # trader: "Risk 1%"
+  leverage: 10                # trader: "Leverage 10X (Invalidation 3,02%)"; tj: 3.019% stop, 30.2% of the margin at the stop
+  margin_mode: isolated       # the trader's standing rule
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits:
+    - {price: 163.46, reason: "Stop hit in the Oct 16 14:00 1h bar (spike to about 165.70). Trader: 'Result: LOSS'."}
+  fees: null                  # inside the 1% risk (trader, 2026-09-27)
+  duration_minutes: 780       # stated: "16/10/26 --> 01:00 - 14:00"; the tool's start and the end of its shading agree (1h)
+  orders_filled: null
+  worst_price: 163.46         # the stop filled (price traded to about 165.70 in that bar)
+  best_price: 156.49          # about: the Oct 16 02:00 1h wick, the lowest price between the fill and the stop
+
+result:
+  pnl: null
+  r: null                     # derived price-based from the stop exit: -1.00
+  hypothetical_r: null
+
+journal:
+  before: |
+    Reconstructed from the trader's account on 2026-10-16 (after the outcome, so not hindsight-proof).
+    (1) The green box 157.36-160.26 was a decent demand level where confirmations could be looked for on the 1H or 30M
+    (for a long), but there was no confirmation, so it was passed. It had been retested many times, so it was
+    potentially a key level for a position (the red circles: how many times it was retested and failed afterwards,
+    also on the 1H). Confluences: plenty of liquidity levels; 2 green demand levels; an FVG on the lowest demand level
+    which formed an inducement/liquidity. Confirmations: the highest demand level failed, so a retest for continuation
+    lower was expected; price could go lower to absorb extra liquidity and then go higher; even though the HTF bias was
+    bullish, a solid setup with a good RR (3.81). Sell limit on the cyan line; on the 1H a mini FVG that could absorb
+    and continue lower. 10x, invalidation 3.02%, risk 1%.
+  during: |
+    Oct 16: the 01:00 1h bar reached the 158.67 entry (the 05:00 bar the 159.89 cyan line); price dipped to about 156.49
+    at 02:00 (+0.46R), then climbed through the morning; the 14:00 bar spiked to about 165.70 through the 163.46 stop. By
+    16:00 price was back at about 159.9 and stood at 160.69 at the screenshot (17:51).
+  after: |
+    Trader: "Setup was B, because even though we had solid confirmations and good RR we went against the trend so it
+    had potential risk." "Result: LOSS." "It was a solid trade even though it didn't pay out, I would definitely go for
+    the same setup again in the future."
+
+evidence:
+  observed:
+    - "TradingView AAVEUSD (CRYPTO index), 4h and 1h, chart time UTC+3, screenshots Oct 16 17:51. Position tool on both: entry line 158.67, stop 163.46, target 140.44 (tj: stop distance 3.019%, 3.81R; the trader: 3.02% and 3.81). A cyan dashed line at 159.89 (label), where the trader says the sell limit was. The chart is an index, not the exchange."
+    - "Calibration: 32 and 31 axis ticks (max residual 0.03, under one pixel), 29 and 28 date labels (0.3 h). The tool's lines sit at 163.41 and 158.66 by the calibration, matching its labels."
+    - "Zones: upper green demand about 157.36-160.20 (the trader: 157.36-160.26), drawn from the Sep 30 base; lower green demand about 135.18-140.39, drawn from the Sep 24 low; yellow lines over lows (Sep 20-24, Sep 25-28) and over the Oct 7-10 highs."
+    - "4h structure: highs about 187.2 (Oct 2) and 187.6 (Oct 6), then lower highs about 176 (Oct 10) and 172.8 (Oct 12) and lower lows: a wick to about 160 into the demand (Oct 8, circled), about 151.6 (Oct 13), about 147.2 (Oct 15). The box was retested from Oct 12 to Oct 14 (circled) and lost on Oct 14-15."
+    - "1h, Oct 13-14: retest highs about 162.0 (Oct 13 22:00), 162.92 (Oct 14 03:00), 162.69 (07:00) and 162.11 (11:00); the breakdown below the box from Oct 14 15:00."
+    - "Oct 16 (1h): the 01:00 bar first reached 158.67; the 05:00 bar first reached 159.89 (wick to about 160.07); the 02:00 bar dipped to about 156.49; the 12:00 and 13:00 bars topped at about 163.39; the 14:00 bar spiked to about 165.70; the 16:00 bar was back at about 159.85. 4h header at 17:51: O 164.13 H 164.21 L 159.84 C 160.69."
+    - "tj size: entry 158.67: 10x = 30.2% of the margin at the stop, isolated liquidation about 173.67 (3.13x the stop distance); 135.18 (the lower box's far edge) = 4.90R. Entry 159.89: 2.233% stop, 22.3% of the margin, 5.45R to 140.44."
+    - "News: 01:00-14:00 UTC+3 is 18:00-07:00 New York, before the 08:30 release window; the chart's next US event marker is on Oct 20."
+  interpreted:
+    - "The chart matches the trader's reading: a 4h demand that held several retests (Oct 8, Oct 12-14), then failed on Oct 14-15 inside a bearish 4h structure (lower highs since Oct 6); the short was the retest of the failed demand from below, against the bullish higher-timeframe bias the trader named."
+    - "Stop and liquidity: the stop sat about 0.5 above the Oct 13-14 retest highs (about 162.0-162.9), the highs the trader circled as repeated retests. The 14:00 spike took them and the stop, and price was back at the entry zone two hours later. By the stop rule (a bit beyond the swing before the breakdown) the placement is right; by the inducement rule ('do not leave the stop just beyond them', T-0004) those equal highs were liquidity. Strategy open question 2."
+    - "Counter-trend and the fake-CH rule: the 4h was bearish, the higher timeframe bullish (trader). T-0011 (a 30m CH against the 1h/4h, graded B) was skipped as a fake CH; T-0014 (a 4h break against the bullish HTF, graded B) was taken. Whether the 'next timeframe up must confirm' rule applies to a 4h CH is strategy open question 1."
+    - "Checklist v1.20: 1 pass (4h demand from the Sep 30 base, retested many times, failed); 2 unclear (no equal highs below the zone were swept on the way up; the liquidity the trader names sits below, at the targets); 3 depends on open question 1 (a bearish 4h structure; the higher timeframe bullish); 4 pass (the limit at the failed zone, the 1h mini FVG); 5 pass by the stop rule, open by the inducement rule (open question 2); 6 pass (10x = 30.2% of the margin, liquidation 3.13x away, within 20x; 3.81R); 7 pass (no entry at equal highs; the stop's position is question 2); 8 pass (no release window)."
+    - "Loss type A (good loss) on the trader's own assessment ('It was a solid trade even though it didn't pay out, I would definitely go for the same setup again'). If the trader answers question 2 that the stop sat in liquidity, it becomes type C (execution: stop_in_liquidity), as T-0004."
+    - "The 1h mini FVG at the cyan line is the trader's reading; it is not resolvable at this zoom."
+  hypotheses:
+    - "Counter-trend trades (against the trader's HTF bias): T-0007 +4.12R, T-0004 -1.00R, T-0014 -1.00R. n=3; nothing can be concluded."
+    - "Stops placed just beyond equal highs/lows get swept before the move (T-0004; possibly T-0014). n=2 if confirmed."
+  charts: [journal/charts/T-0014-aave-4h.png, journal/charts/T-0014-aave-1h.png]
+
+review:
+  scores:
+    setup: 3                  # failed 4h demand retest, retested many times, 3.81R; counter-trend, and the fake-CH scope is open
+    context: 3                # bearish 4h structure against a bullish higher timeframe
+    execution: 4              # limit at the zone as planned; the stop just beyond the circled equal highs (question 2)
+    risk: 5                   # 1%, 10x = 30.2% of the margin, liquidation 3.13x away; the loss was exactly 1R
+    management: 5             # held to the stop, no interference
+  trader_grade: "B"           # trader: "Setup was B, because even though we had solid confirmations and good RR we went against the trend"
+  setup_validity: valid       # by the rules as written and the trader's view; questions 1 and 2 may change it
+  followed_plan: true
+  loss_type: A                # the trader's assessment; C if the stop sat in liquidity (question 2)
+  mistakes: []
+  behaviors: [did_top_down, followed_setup, respected_invalidation, correct_sizing]
+  outside_control: ["The Oct 16 14:00 spike to about 165.70 (a wick; price was back at about 159.9 by 16:00)"]
+  lesson: >-
+    A counter-trend short at a failed 4h demand, valid by the rules and sized correctly, lost 1R to a spike that took
+    the equal highs just above the stop and returned to the entry within two hours. The trade is not the question;
+    where the stop sits relative to liquidity is.
+  actionable_change: null
+  strategy_change: insufficient_evidence
+  evidence_strength: low
+
+open_questions:
+  - "Entry price: you wrote 'we placed our sell limit order on cyan line' (159.89), but the position tool's entry line is 158.67, and your 3.81RR and 3.02% match 158.67 (159.89 would be 5.45R and 2.23%). Which price was the order at? The result is -1R either way."
