@@ -354,3 +354,17 @@ changes:
     fields: [trend_context, grading, open_questions]
     note: "Two open questions where T-0014 meets the written rules (the fake-CH scope; a stop just beyond equal highs). All supply-demand trades retagged \"1.20\"."
     resulting_version: "1.20"
+  - id: CHG-022
+    kind: clarification
+    date: 2026-10-17
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-17: "It's not necessary but you can definitely have a look on 1D as well ... A combination of
+      multiple time frame CH seems a valid one" ... "Since there are equal highs and we place sell positions we either be
+      careful of a potential liquidity sweep/deviation or placing our SL above swing highs. The opposite goes on longs" ...
+      "My main entries after our loss at T-0014 would be either our supply level above or last demand below" ... "the limit
+      was 158.67. cyan line was a potential support/resistance zone, it's not a price on it's own."
+    fields: [timeframe_alignment, key_levels, inducements, entry_timing, open_questions]
+    note: "T-0014 stays loss type A ('we couldnt do anything'); a supply-level confluence added at the trader's request. All supply-demand trades retagged \"1.21\"."
+    resulting_version: "1.21"

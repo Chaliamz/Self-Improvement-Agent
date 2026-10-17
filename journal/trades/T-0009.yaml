@@ -22,7 +22,7 @@ regime: [bullish, range]      # trader: "Bias Bullish"; 4h: a pullback from 0.44
 
 strategy:
   id: supply-demand-structure
-  version: "1.20"             # retagged through CHG-021 (clarifications)
+  version: "1.21"             # retagged through CHG-022 (clarifications)
   experiment: null
   variant: null
 

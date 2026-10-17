@@ -13,7 +13,7 @@ trades move it a lot. Ten trades cannot separate skill from luck. Nothing below 
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.20 | unvalidated | 9 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014) | n=9: +1.99R, 95% CI [+0.14, +3.85] (LOW) |
+| supply-demand-structure | 1.21 | unvalidated | 9 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014) | n=9: +1.99R, 95% CI [+0.14, +3.85] (LOW) |
 | key-level-sr | 1.6 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -47,7 +47,8 @@ _None._
   trend`: with-trend n=7 (+2.67R, 95% CI [+0.74, +4.54]), counter-trend n=3 (+0.71R: T-0004 -1.00R, T-0007 +4.12R,
   T-0014 -1.00R, "we went against the trend so it had potential risk"). The trend label is derived from the regime tag,
   so T-0004 counts as counter-trend against its bullish 30m regime. Three trades cannot be compared with seven.
-  Whether a 4h CH against the HTF bias is a fake CH is strategy open question 1. Status: observation.
+  A 4h CH needs no 1D confirmation ("It's not necessary but you can definitely have a look on 1D as well"); aligned
+  multi-timeframe CHs are "a valid one" (2026-10-17). Status: observation.
 - **A break inside the impulsive candle's range is consolidation, not a CH ("NOT CH", "fake CH").** Now a rule
   (checklist item 3). Evidence: T-0004 taken on a 5m break inside the 30m candle range, -1.00R (false_ch); T-0008 a
   break inside the 4h candle range, skipped, -1.00R COUNTERFACTUAL; T-0011 a 30m CH inside the 1h range (about
@@ -82,8 +83,14 @@ _None._
   swept. How close: "just very close to that swing point or demand/supply level" (2026-09-28): 0.01-0.18% of price
   so far (T-0007, T-0009, T-0006). T-0009 shows its limit: a correct stop does not rescue a wrong location.
   T-0014: the stop sat about 0.5 above the swing before the breakdown, which were also the circled equal highs; a spike
-  to about 165.7 took them and the stop, and price was back at the entry two hours later. Stop rule vs inducement rule:
-  strategy open question 2. Status: rule (stated).
+  to about 165.7 took them and the stop, and price fell to about 153.47, below the entry, the next day (+1.09R
+  COUNTERFACTUAL had the stop survived). The trader: those retest highs were not equal highs ("we couldnt do anything");
+  with real equal highs above a short, "be careful of a potential liquidity sweep/deviation or placing our SL above swing
+  highs" (2026-10-17). How the bot recognises equal highs is strategy open question 1. Status: rule (stated).
+- **After a zone fails, trade the extremes.** "My main entries after our loss at T-0014 would be either our supply level
+  above or last demand below" (2026-10-17): on AAVE the red supply about 179.6-182.8 (stop above the about 187.1 equal
+  highs, 4.52R to 140.69) or the demand about 135.2-140.4, not the failed 157.36-160.26 zone. n=1 (T-0014). Status: rule
+  (stated).
 - **Entry precision (heat on winners).** `./tj build` excursions: median MAE on winners 0.24R, worst 0.38R (n=6: T-0001
   0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R, T-0012 0.38R, T-0013 0.31R); the losers ran +0.28R (T-0004), +0.63R
   (T-0009), +1.65R (T-0010) and +0.46R (T-0014) before their stops (median 0.54R). This measures the trader's "sniper
@@ -209,6 +216,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-10-17 | supply-demand-structure v1.21 (CHG-022, clarification): a 4h CH needs no 1D confirmation; equal highs/lows near the stop; after a zone fails, the entries are the supply above or the demand below; an S/R line is a zone, not a price. T-0014: entry 158.67 confirmed, loss type A confirmed, supply-level confluence added; price fell to about 153.47 after the stop. Open: how the bot recognises equal highs | trader's answers; Oct 17 chart |
 | 2026-10-16 | T-0014 AAVEUSD short -1.00R (a failed 4h demand retested from below, counter-trend, grade B, loss type A on the trader's assessment). supply-demand-structure v1.20 (CHG-021, clarification): T-0014 as a B and counter-trend example; two open questions (the fake-CH scope for a 4h CH against the HTF bias; a stop just beyond equal highs). Entry price asked (158.67 tool vs 159.89 cyan line) | T-0014 charts; trader's review |
 | 2026-10-14 | supply-demand-structure v1.19 (CHG-020, clarification): the bot's front-run cancel is a new low beyond the previous low (close rule); the premium/discount Fib sits on the weekly swing points (BTC 57,733.48 to 87,318.63). No strategy question open; stage 1 criterion "open strategy questions" met | trader's answers; weekly chart |
 | 2026-10-14 | supply-demand-structure v1.18 (CHG-019, clarification): the breaker block defined (mini pullback inside the zone, a move below it, a reversal through it leaving an FVG; matches T-0013's chart), premium/discount on the weekly Fib with swings at 0.618 / 0.786 / 0.886, the trader's front-run answer. T-0012: the exit at 10:30 confirmed. T-0013: the other position tools were testing samples. Two strategy questions open (the front-run reading, the Fib anchors) | trader's answers; T-0013 chart |

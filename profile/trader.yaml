@@ -139,7 +139,7 @@ terminology:
   inducement: "Equal highs/lows: resting liquidity (equal lows = liquidity resting below, T-0001). 'AVOID Inducements at all costs'."
   level validity: "S/R levels and trendlines: at least 3 reactions preferred. Not for S/D levels (fewer mitigations = stronger)."
   reaction: "Not knowable in advance: a level is key if traders react to it. A touch that rejects, a break-retest-continue, or a deviation (break, retest, fail, level lost again). Mostly deviations, so the retest is traded for continuation."
-  equal highs/lows: "No fixed tolerance; they may take longer to form. Still a liquidity level likely to be swept."
+  equal highs/lows: "No fixed tolerance; they may take longer to form. Still a liquidity level likely to be swept. Near a stop: 'we either be careful of a potential liquidity sweep/deviation or placing our SL above swing highs. The opposite goes on longs' (2026-10-17). T-0014's retest highs were not equal highs in the trader's reading; the bot's tolerance is asked."
   potential CH (30m): "A 30m candle closes below the previous bullish 30m candle's low (bearish), or above the previous bearish 30m candle's high (bullish)."
   S setup: "Proper confluences, clear confirmations, a sniper entry that runs to TP, and a high R:R (about 3.5R; a rough guide) (trader, 2026-09-27). T-0007."
   grades: "S, A, B, C, D. S-B tradeable, C maybe, D avoided. Criteria for each in grading (all stated by 2026-09-28)."
