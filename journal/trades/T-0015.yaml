@@ -1,0 +1,112 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0015
+status: missed                # trader: "This trade didn't get executed because I was late finding this setup on specific pair"
+opened: 2026-09-29            # a resting limit at 0.2101 fills in the Sep 29 04:00 1h bar (UTC+3); the position tool starts at 05:00
+closed: 2026-09-30            # the 0.2453 target is reached around Sep 30 00:00 (the tool's shading ends there)
+asset: "BERAUSDT"
+market: "crypto perp (BloFin)"
+direction: "long"
+session: null
+timeframes:
+  htf: "1D"                   # trader: "On Daily Time frame we see that HTF trend is bearish"
+  execution: "1h"             # the limit at the 1H demand; "that would be a day trade"
+  chain: ["1D", "4h", "1h"]
+  detail: []
+  top_down: true
+
+setups: [demand_level, inducement, liquidity_sweep, fvg]
+regime: [bearish]             # the daily trend; the long went with the 4h rally from the August lows
+
+strategy:
+  id: supply-demand-structure
+  version: "1.22"
+  experiment: null
+  variant: null
+
+plan:
+  entry: 0.2101               # position-tool label: buy limit at the demand ("a limit buy order at demand level (0.2101)")
+  stop: 0.2041                # position-tool label: "SL below it (0.2041)"
+  targets: [0.2453]           # position-tool label: "TP on last swing high (0.2453)"
+  invalidation: "Price below the demand (stop 0.2041)."
+  entry_model: demand_level
+  split_entries: []
+  split_share: null
+  confluences:
+    - "Liquidity level above the green box (demand) on 1H, 21/9/26 05:00 - 24/9/26 12:00, likely to get swept: an inducement level to avoid"
+    - "FVG included in the demand"
+    - "Demand level never mitigated"
+  confirmations: []           # none stated separately for the long
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: null              # not stated for this example
+  leverage: null              # not stated (tj: the 60% rule allows 21.01x on the 2.856% stop; the 20x ceiling binds)
+  margin_mode: isolated
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits: []
+  fees: null
+  duration_minutes: null
+  orders_filled: null
+  worst_price: null
+  best_price: null
+
+result:
+  pnl: null
+  r: null
+  hypothetical_r: 5.87        # COUNTERFACTUAL: the limit fills on Sep 29 (low about 0.2074, 0.45R against) and the 0.2453 target is reached around Sep 30 00:00 (tj: 5.87R)
+
+journal:
+  before: |
+    Reconstructed on 2026-10-18, after the outcome, as a teaching example: the trader found the setup too late to trade
+    it ("only for giving feedback and proper execution").
+    Daily: the HTF trend is bearish. On the 1H there was a liquidity level above the green box (demand), from
+    21/9/26 05:00 to 24/9/26 12:00, including an FVG, likely to get swept, and the demand had never been mitigated:
+    "it was obvious that we avoid this inducement level". A limit buy at the demand (0.2101), SL below it (0.2041), TP
+    on the last swing high (0.2453): a day trade, 5.87RR. "That level got tested and pushed price higher forming a new HL."
+  during: ""
+  after: |
+    Trader: "Long setup on BERA would be A because of inducement-unmitigated demand level and a great RR." "With that
+    proper execution both setups combine would reward us to 9.79RR in total" (with T-0016). "None of these setups got
+    executed, they are only for information and feedback." "Keep this in your memory."
+
+evidence:
+  observed:
+    - "BloFin BERAUSDT perpetual, chart time UTC+3: a 1h chart of Sep 21-Oct 3 (T-0015-bera-1h.png) with a position tool: entry 0.2101, stop 0.2041, target 0.2453 (tj: 2.856% stop, 5.87R). Calibrated on 12 axis ticks (max residual 0.00016) and 13 date labels (0.12 h)."
+    - "Demand (green box) about 0.2047-0.2102. Yellow $$ line over lows from Sep 21 05:00 (about 0.2123) to Sep 24 13:00 (about 0.2132), just above the demand: the trader's dates, to the hour."
+    - "Sep 28-29: the decline swept the $$ lows; the Sep 29 04:00 1h bar was the first through 0.2101 (low about 0.2084); the 05:00 bar reached about 0.2074, the lowest point (0.45R against). The tool starts at the 05:00 bar."
+    - "Sep 29: a steady climb; the 23:00 bar reached about 0.2452 and the Sep 30 00:00 bar about 0.2513; the tool's shading ends at Sep 30 00:00. The stop was never approached."
+    - "The daily chart (T-0016-bera-1d.png): a decline from about 0.35 (late May) to about 0.14 (mid-August), then a rally to 0.2667 (Sep 30): the daily trend the trader calls bearish."
+  interpreted:
+    - "The trader's T-0012 pattern again: an unmitigated demand with an FVG, equal lows just above it as the inducement, the limit at the demand (not at the equal lows), the stop under the demand, the target at the last swing high."
+    - "Counter-trend on the daily (bearish), with the 4h (the rally from the August lows had made higher highs). Graded A; T-0014, a short against the bullish HTF, was graded B 'because we went against the trend'. What separates them is strategy open question 2."
+    - "Hindsight: the setup was drawn after the outcome and chosen as an example. It shows the pattern, not its hit rate; the counterfactual is excluded from statistics."
+  hypotheses:
+    - "Limits at an unmitigated demand placed beyond an equal-lows inducement give high R (T-0012 +6.68R; T-0015 +5.87R COUNTERFACTUAL; T-0001 +4.57R). n=2 measured."
+  charts: [journal/charts/T-0015-bera-1h.png, journal/charts/T-0016-bera-1d.png]
+
+review:
+  scores: {setup: null, context: null, execution: null, risk: null, management: null}
+  trader_grade: "A"           # trader: "Long setup on BERA would be A because of inducement-unmitigated demand level and a great RR"
+  setup_validity: valid
+  followed_plan: null         # not traded
+  loss_type: null
+  mistakes: []
+  behaviors: []
+  outside_control: ["Found too late to trade (trader)"]
+  lesson: >-
+    The inducement-avoidance long, as an example: the equal lows above the demand were left to be swept, the limit sat
+    at the unmitigated demand with its FVG, the stop under it and the target at the last swing high: 5.87R
+    (COUNTERFACTUAL) in under a day.
+  actionable_change: null
+  strategy_change: "no"
+  evidence_strength: low
+
+open_questions: []

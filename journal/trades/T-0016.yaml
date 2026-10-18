@@ -1,0 +1,119 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0016
+status: missed                # trader: "None of these setups got executed, they are only for information and feedback"
+opened: 2026-10-15            # the position tool starts about Oct 15 04:00 (4h, +/- 2 h); a 4h bar about Oct 14 16:00 already reads about 0.2487
+closed: 2026-10-17            # the 0.1734 target: the tool's shading ends about Oct 17 20:00 (4h); the Oct 18 low was 0.1690
+asset: "BERAUSDT"
+market: "crypto perp (BloFin)"
+direction: "short"
+session: null
+timeframes:
+  htf: "1D"                   # trader: "On Daily Time frame we see that HTF trend is bearish"
+  execution: "1h"             # the 1H supply retest
+  chain: ["1D", "4h", "1h"]
+  detail: []
+  top_down: true
+
+setups: [supply_level, choch, inducement, liquidity_sweep, key_level, deviation]
+regime: [bearish]             # the daily trend: a with-trend short
+
+strategy:
+  id: supply-demand-structure
+  version: "1.22"
+  experiment: null
+  variant: null
+
+plan:
+  entry: 0.2482               # position-tool label: the 1H supply's lower edge
+  stop: 0.2673                # position-tool label: above the 0.2667 swing high (Sep 30 ~19:00)
+  targets: [0.1734]           # position-tool label: the support/resistance key level (red line 0.1735)
+  invalidation: "Price back above the swing high that topped the move (about 0.2667): stop 0.2673."
+  entry_model: supply_level
+  split_entries: []
+  split_share: null
+  confluences:
+    - "Liquidity levels (yellow lines) forming on 4H and 1H before the bearish CH, so price was likely to retest the 1H supply and continue lower"
+    - "1H supply level"
+    - "TP on the low levels where all the retests formed a support/resistance key level, plus the deviation on the second circle"
+    - "Below the resistance level another liquidity level formed, a target for the swing TP"
+  confirmations:
+    - "Daily HTF trend bearish"
+    - "Bearish CH on 4H and 1H"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: null              # not stated for this example
+  leverage: null              # not stated (tj: the 60% rule allows 7.79x on the 7.695% stop)
+  margin_mode: isolated
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits: []
+  fees: null
+  duration_minutes: null
+  orders_filled: null
+  worst_price: null
+  best_price: null
+
+result:
+  pnl: null
+  r: null
+  hypothetical_r: 3.92        # COUNTERFACTUAL: the limit fills about Oct 14-15 (highs about 0.2487-0.2491, 0.05R against) and the 0.1734 target fills about Oct 17 (tj: 3.92R)
+
+journal:
+  before: |
+    Reconstructed on 2026-10-18, after the outcome, as a teaching example ("only for information and feedback").
+    Daily: the HTF trend is bearish. On the 4H and 1H, before the bearish CH formed on both, liquidity levels (yellow
+    lines) were forming, "meaning that it was likely for price to retest 1H supply level and continue going lower". The
+    short at the 1H supply; TP on the low levels where all the retests formed a support/resistance key level, plus the
+    deviation on the second circle; 3.92RR. Below the resistance level another liquidity level formed, a target for the
+    swing TP. "These data are extremely important so keep them in mind."
+  during: ""
+  after: |
+    Trader: "Short setup would be S because either though RR was lower than Long, our confirmations could help us
+    identify our TP level much easier while on short setup we could find TP only on recent data." "With that proper
+    execution both setups combine would reward us to 9.79RR in total, Longing and Shorting BERA with supreme accuracy."
+    "With this way, we can provide quality trades and scale our profitability to the maximum. Keep this in your memory."
+
+evidence:
+  observed:
+    - "BloFin BERAUSDT perpetual, chart time UTC+3, screenshots Oct 18 16:48-16:57: 4h (Aug 8-Nov), 1h (Aug 19-Sep 22, the key level), 1h (Sep 20-Oct 12, the supply and the CH) and 1D. 4h position tool: entry 0.2482, stop 0.2673, target 0.1734 (tj: 7.695% stop, 3.92R). Calibrations: 10-12 axis ticks (max residual 0.00017), date labels 0.37 h (1h) and 2.2 h (4h)."
+    - "1H supply (red box) about 0.2479-0.2594, drawn from Oct 1 ~05:00 under the 0.2667 swing high (Sep 30 ~19:00)."
+    - "CH: the red dashed line at about 0.2076 (the Sep 29 low, 0.2074) runs to Oct 8 ~15:00; price broke it on Oct 8 (low about 0.1995 at ~20:00)."
+    - "Liquidity: yellow $$ lines over descending highs from Oct 2 (about 0.2465) to Oct 6 (about 0.2402), and equal highs about 0.2402 (Oct 6 ~14:00) and 0.2407 (Oct 12 ~12:00), 0.2% apart."
+    - "4h: the rally of Oct 14-15 took the 0.240 equal highs into the supply: highs about 0.2487 (about Oct 14 16:00) and 0.2491 (about Oct 15 09:00) through the 0.2482 entry; the stop (0.2673) was never approached. Then the drop through the demand (0.2047-0.2102) to about 0.174 by Oct 17; the tool's shading ends about Oct 17 20:00. Oct 18: low 0.1690, 0.1705 at the screenshot."
+    - "Key level: the red line 0.1735 from Aug 21, retested from both sides through Aug 22-Sep 16 (the trader's circles on the 4h, 1h and 1D). The $$ ascending lows under it run from about 0.1623 (Aug 30) to about 0.1708 (Sep 16): the trader's swing target."
+    - "Daily: a decline from about 0.35 (late May) to about 0.14 (mid-August), a rally to 0.2667 (Sep 30) under the June highs, then this drop."
+  interpreted:
+    - "The sequence on the chart: a bearish CH (Oct 8, close below the 0.2076 low), equal highs forming under the supply (Oct 6, Oct 12), the rally that swept them into the 1H supply (Oct 14-15), the short at the supply's lower edge, the stop above the swing high, the target at a key level with many retests. The inducement is swept into the zone, then the move: the mirror of T-0015."
+    - "S for target clarity: the trader grades it S over the A long although its R:R is lower, because the target sat at a key level built by many retests (and a deviation), while the long's target came only from recent data. The S guide of about 3.5R is met (3.92R)."
+    - "Hindsight: drawn after the outcome and chosen as an example. It shows the pattern, not its hit rate; the counterfactual is excluded from statistics."
+  hypotheses:
+    - "Equal highs/lows forming before a CH predict the retest of the zone that created it (T-0016; T-0012 mirrored). n=2."
+    - "Targets at a key level with many retests are reached more reliably than targets from recent swings (the trader's reason for S). n=1; untested."
+  charts: [journal/charts/T-0016-bera-4h.png, journal/charts/T-0016-bera-1h-supply.png, journal/charts/T-0016-bera-1h-key-level.png, journal/charts/T-0016-bera-1d.png]
+
+review:
+  scores: {setup: null, context: null, execution: null, risk: null, management: null}
+  trader_grade: "S"           # trader: "Short setup would be S because ... our confirmations could help us identify our TP level much easier"
+  setup_validity: valid
+  followed_plan: null         # not traded
+  loss_type: null
+  mistakes: []
+  behaviors: []
+  outside_control: ["Not executed (trader: an example for feedback)"]
+  lesson: >-
+    The with-trend short, as an example: a bearish CH, equal highs left under the supply as the inducement, the rally
+    that swept them into the 1H supply, the short there with the stop above the swing high, the target at a key level
+    built by many retests: 3.92R (COUNTERFACTUAL). With T-0015 on the same pair, 9.79R in about three weeks.
+  actionable_change: null
+  strategy_change: "no"
+  evidence_strength: low
+
+open_questions: []

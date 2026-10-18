@@ -5,7 +5,7 @@ trade IDs, n, and the `./tj` output it rests on. An entry without evidence does 
 here; it belongs in a trade record's `evidence.hypotheses`.
 
 Status: **INITIALIZATION.** 10 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013,
-T-0014), 1 missed (T-0002), 3 not taken (T-0005, T-0008, T-0011; counterfactual only). Overall (`./tj stats`): +2.08R
+T-0014), 3 missed (T-0002; T-0015 and T-0016, the BERA examples), 3 not taken (T-0005, T-0008, T-0011; counterfactual only). Overall (`./tj stats`): +2.08R
 expectancy, 95% CI [+0.41, +3.74], profit factor 6.21, n=10, LOW tier. The interval sat at [-0.20, +3.38] at n=7: a few
 trades move it a lot. Ten trades cannot separate skill from luck. Nothing below is established.
 
@@ -13,7 +13,7 @@ trades move it a lot. Ten trades cannot separate skill from luck. Nothing below 
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.21 | unvalidated | 9 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014) | n=9: +1.99R, 95% CI [+0.14, +3.85] (LOW) |
+| supply-demand-structure | 1.22 | unvalidated | 9 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014) | n=9: +1.99R, 95% CI [+0.14, +3.85] (LOW) |
 | key-level-sr | 1.6 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -58,8 +58,19 @@ _None._
   CH, then the untested 1H demand that created it; the 1H equal lows above it (about 0.0463-0.0465) were swept on the
   way down and the buy limit sat below them, at the demand. The trader's S criteria: "CH+DEMAND+ Avoiding inducement +
   Very good RR". T-0001 (AAVE, +4.57R) also had equal lows as the inducement, and T-0013 avoided the $$ liquidity lines.
+  T-0015 (BERA long, missed, graded A): the equal lows of Sep 21-24 above an unmitigated demand, swept on Sep 29 into
+  it; the limit at 0.2101 reached the 0.2453 target within a day (+5.87R COUNTERFACTUAL).
   `./tj stats --by setup`: inducement n=2, both winners. Far too few; the rule itself ("AVOID Inducements at all costs")
   is the trader's. Status: rule (stated); hypothesis (performance).
+- **Liquidity forming before a CH points to the retest.** T-0016 (BERA short, missed, graded S): equal highs about
+  0.2402/0.2407 formed under the 1H supply before and after the Oct 8 bearish CH, were swept into the supply on Oct
+  14-15, and the short from 0.2482 reached the 0.1734 key level by Oct 17 (+3.92R COUNTERFACTUAL). The trader: "These
+  data are extremely important so keep them in mind." With T-0012 mirrored, n=2 (1 measured). Status: rule (stated);
+  hypothesis (performance).
+- **Targets at key levels built by many retests; the next liquidity as the swing target.** T-0016's target was the
+  0.1735 level retested from both sides through Aug 22-Sep 16 (plus a deviation); the $$ lows beneath it (about
+  0.162-0.171) the swing target. Target clarity is why the trader grades it S over the higher-R long (A). Status: rule
+  (stated); hypothesis (performance).
 - **Pullback after a CH.** Now a rule (v1.17 market_structure): the move back into the zone that created the CH is the
   pullback, not a counter CH, while the low that formed the demand and the reversal holds; the stop goes below that
   low (trader, 2026-10-13, on T-0012). n=1 example. Status: rule (stated).
@@ -216,6 +227,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-10-18 | T-0015 BERAUSDT long (missed, A, +5.87R COUNTERFACTUAL) and T-0016 BERAUSDT short (missed, S, +3.92R COUNTERFACTUAL), the trader's teaching examples drawn after the outcome. supply-demand-structure v1.22 (CHG-023, clarification): inducement avoidance, liquidity before a CH as the sign of a retest, key-level and swing targets, target clarity as an S criterion. Open: the equal-highs tolerance (about 0.2%?) and how much going against the daily costs in the grade | T-0015/T-0016 charts; trader's notes |
 | 2026-10-17 | supply-demand-structure v1.21 (CHG-022, clarification): a 4h CH needs no 1D confirmation; equal highs/lows near the stop; after a zone fails, the entries are the supply above or the demand below; an S/R line is a zone, not a price. T-0014: entry 158.67 confirmed, loss type A confirmed, supply-level confluence added; price fell to about 153.47 after the stop. Open: how the bot recognises equal highs | trader's answers; Oct 17 chart |
 | 2026-10-16 | T-0014 AAVEUSD short -1.00R (a failed 4h demand retested from below, counter-trend, grade B, loss type A on the trader's assessment). supply-demand-structure v1.20 (CHG-021, clarification): T-0014 as a B and counter-trend example; two open questions (the fake-CH scope for a 4h CH against the HTF bias; a stop just beyond equal highs). Entry price asked (158.67 tool vs 159.89 cyan line) | T-0014 charts; trader's review |
 | 2026-10-14 | supply-demand-structure v1.19 (CHG-020, clarification): the bot's front-run cancel is a new low beyond the previous low (close rule); the premium/discount Fib sits on the weekly swing points (BTC 57,733.48 to 87,318.63). No strategy question open; stage 1 criterion "open strategy questions" met | trader's answers; weekly chart |

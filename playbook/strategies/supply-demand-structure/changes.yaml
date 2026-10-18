@@ -368,3 +368,19 @@ changes:
     fields: [timeframe_alignment, key_levels, inducements, entry_timing, open_questions]
     note: "T-0014 stays loss type A ('we couldnt do anything'); a supply-level confluence added at the trader's request. All supply-demand trades retagged \"1.21\"."
     resulting_version: "1.21"
+  - id: CHG-023
+    kind: clarification
+    date: 2026-10-18
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-18 (BERA, T-0015 and T-0016): "there was a liquidity level above green box (demand), including FVG
+      which was likely to get swept + it never got mitigated ... it was obvious that we avoid this inducement level" ...
+      "before forming a bearish CH both 4H and 1H you can identify forming liquidity levels (yellow lines) before forming a
+      bearish CH, meaning that it was likely for price to retest 1H supply level and continue going lower" ... "TP would
+      be on low levels where i circled all of retests forming support/resistance key level + deviation on second circle"
+      ... "Long setup on BERA would be A ... Short setup would be S because ... our confirmations could help us identify
+      our TP level much easier".
+    fields: [grading, inducements, target_model, open_questions]
+    note: "Both setups were missed (examples drawn after the outcome); their results are counterfactual only. All supply-demand trades retagged \"1.22\"."
+    resulting_version: "1.22"
