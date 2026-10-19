@@ -22,7 +22,7 @@ regime: [range, bullish]      # 4h: range about 51-77 since June; trader's bias 
 
 strategy:
   id: supply-demand-structure
-  version: "1.22"               # retagged through CHG-023 (clarifications)
+  version: "1.23"               # retagged through CHG-024 (clarifications)
   experiment: null
   variant: null
 

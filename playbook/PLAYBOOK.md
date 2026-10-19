@@ -13,7 +13,7 @@ trades move it a lot. Ten trades cannot separate skill from luck. Nothing below 
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.22 | unvalidated | 9 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014) | n=9: +1.99R, 95% CI [+0.14, +3.85] (LOW) |
+| supply-demand-structure | 1.23 | unvalidated | 9 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014) | n=9: +1.99R, 95% CI [+0.14, +3.85] (LOW) |
 | key-level-sr | 1.6 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -48,7 +48,9 @@ _None._
   T-0014 -1.00R, "we went against the trend so it had potential risk"). The trend label is derived from the regime tag,
   so T-0004 counts as counter-trend against its bullish 30m regime. Three trades cannot be compared with seven.
   A 4h CH needs no 1D confirmation ("It's not necessary but you can definitely have a look on 1D as well"); aligned
-  multi-timeframe CHs are "a valid one" (2026-10-17). Status: observation.
+  multi-timeframe CHs are "a valid one" (2026-10-17). Against the daily the zone decides the grade: T-0015 (BERA, fresh
+  demand with extra data) is A, T-0014 (a retested zone that failed mid-range) was B ("we had extra data + demand didnt
+  get tested", 2026-10-19). Status: observation.
 - **A break inside the impulsive candle's range is consolidation, not a CH ("NOT CH", "fake CH").** Now a rule
   (checklist item 3). Evidence: T-0004 taken on a 5m break inside the 30m candle range, -1.00R (false_ch); T-0008 a
   break inside the 4h candle range, skipped, -1.00R COUNTERFACTUAL; T-0011 a 30m CH inside the 1h range (about
@@ -97,7 +99,9 @@ _None._
   to about 165.7 took them and the stop, and price fell to about 153.47, below the entry, the next day (+1.09R
   COUNTERFACTUAL had the stop survived). The trader: those retest highs were not equal highs ("we couldnt do anything");
   with real equal highs above a short, "be careful of a potential liquidity sweep/deviation or placing our SL above swing
-  highs" (2026-10-17). How the bot recognises equal highs is strategy open question 1. Status: rule (stated).
+  highs" (2026-10-17). The default (2026-10-19): with equal highs/lows at the trade, "wait for sweep, deviating price
+  and we enter on the retest". The tolerance for "equal" is a bot parameter calibrated from the trader's $$ marks (0.2%
+  apart counted, BERA; 0.56% did not, AAVE). Status: rule (stated).
 - **After a zone fails, trade the extremes.** "My main entries after our loss at T-0014 would be either our supply level
   above or last demand below" (2026-10-17): on AAVE the red supply about 179.6-182.8 (stop above the about 187.1 equal
   highs, 4.52R to 140.69) or the demand about 135.2-140.4, not the failed 157.36-160.26 zone. n=1 (T-0014). Status: rule
@@ -227,6 +231,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-10-19 | supply-demand-structure v1.23 (CHG-024, clarification): with equal highs/lows at the trade, wait for the sweep and the deviation and enter on the retest; against the daily, a fresh zone with extra data can grade A (T-0015) where a retested, failed zone grades B (T-0014). The equal-highs tolerance becomes a bot parameter to calibrate. No strategy question open | trader's answers |
 | 2026-10-18 | T-0015 BERAUSDT long (missed, A, +5.87R COUNTERFACTUAL) and T-0016 BERAUSDT short (missed, S, +3.92R COUNTERFACTUAL), the trader's teaching examples drawn after the outcome. supply-demand-structure v1.22 (CHG-023, clarification): inducement avoidance, liquidity before a CH as the sign of a retest, key-level and swing targets, target clarity as an S criterion. Open: the equal-highs tolerance (about 0.2%?) and how much going against the daily costs in the grade | T-0015/T-0016 charts; trader's notes |
 | 2026-10-17 | supply-demand-structure v1.21 (CHG-022, clarification): a 4h CH needs no 1D confirmation; equal highs/lows near the stop; after a zone fails, the entries are the supply above or the demand below; an S/R line is a zone, not a price. T-0014: entry 158.67 confirmed, loss type A confirmed, supply-level confluence added; price fell to about 153.47 after the stop. Open: how the bot recognises equal highs | trader's answers; Oct 17 chart |
 | 2026-10-16 | T-0014 AAVEUSD short -1.00R (a failed 4h demand retested from below, counter-trend, grade B, loss type A on the trader's assessment). supply-demand-structure v1.20 (CHG-021, clarification): T-0014 as a B and counter-trend example; two open questions (the fake-CH scope for a 4h CH against the HTF bias; a stop just beyond equal highs). Entry price asked (158.67 tool vs 159.89 cyan line) | T-0014 charts; trader's review |

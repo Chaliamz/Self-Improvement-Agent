@@ -22,7 +22,7 @@ regime: [bullish]             # trader: "even though HTF bias is bullish": a cou
 
 strategy:
   id: supply-demand-structure
-  version: "1.22"             # recorded at v1.20; retagged by CHG-023 (clarification)
+  version: "1.23"             # recorded at v1.20; retagged by CHG-024 (clarification)
   experiment: null
   variant: null
 
@@ -101,7 +101,7 @@ evidence:
     - "Trader's Oct 17 18:36 4h chart (T-0014-aave-4h-after.png): after the stop, price fell to about 153.47 (Oct 17 ~12:00; header L 153.45, C 153.57), below the 158.67 entry. The red supply is about 179.6-182.8 (drawn from Oct 6 ~22:00) under equal highs ($$) at about 187.1 (Oct 2-5). A red dashed CH line under the green box (about 157.4). An example short drawn for Oct 19-24 (not taken): entry 179.52, stop 188.11, target 140.69 (tj: 4.785% stop, 4.52R, at most 12.53x by the 60% rule)."
   interpreted:
     - "The chart matches the trader's reading: a 4h demand that held several retests (Oct 8, Oct 12-14), then failed on Oct 14-15 inside a bearish 4h structure (lower highs since Oct 6); the short was the retest of the failed demand from below, against the bullish higher-timeframe bias the trader named."
-    - "Stop and liquidity: the stop sat about 0.5 above the Oct 13-14 retest highs (about 162.0-162.9). The trader (2026-10-17): 'there wasnt equal highs over there until now', and 'the outcome already came in resulting on a loss which we couldnt do anything'. In the trader's reading those retest highs were not equal highs, so the stop followed both rules. How the bot tells equal highs from retests is strategy open question 1."
+    - "Stop and liquidity: the stop sat about 0.5 above the Oct 13-14 retest highs (about 162.0-162.9). The trader (2026-10-17): 'there wasnt equal highs over there until now', and 'the outcome already came in resulting on a loss which we couldnt do anything'. In the trader's reading those retest highs were not equal highs, so the stop followed both rules. For the bot (trader, 2026-10-19): with equal highs at the trade, 'wait for sweep, deviating price and we enter on the retest'."
     - "Counter-trend and the fake-CH rule (trader, 2026-10-17): a 4h CH does not need the 1D ('It's not necessary but you can definitely have a look on 1D as well'); 'A combination of multiple time frame CH seems a valid one'. On AAVE: 'I dont believe that AAVE shifted bearish because of bullish momentum on HTF, FVG on last green box (demand)'. The ideal short, if it does turn bearish, is the red supply with the stop above the last swing high, 'risky because of equal highs above'; 'My main entries after our loss at T-0014 would be either our supply level above or last demand below.'"
     - "Checklist v1.20 (answers 2026-10-17: item 3 passes, a 4h CH is enough; item 5 passes, no equal highs in the trader's reading): 1 pass (4h demand from the Sep 30 base, retested many times, failed); 2 unclear (no equal highs below the zone were swept on the way up; the liquidity the trader names sits below, at the targets); 3 depends on open question 1 (a bearish 4h structure; the higher timeframe bullish); 4 pass (the limit at the failed zone, the 1h mini FVG); 5 pass by the stop rule, open by the inducement rule (open question 2); 6 pass (10x = 30.2% of the margin, liquidation 3.13x away, within 20x; 3.81R); 7 pass (no entry at equal highs; the stop's position is question 2); 8 pass (no release window)."
     - "Loss type A (good loss), confirmed by the trader (2026-10-17): 'the outcome already came in resulting on a loss which we couldnt do anything'."

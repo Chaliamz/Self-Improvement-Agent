@@ -384,3 +384,16 @@ changes:
     fields: [grading, inducements, target_model, open_questions]
     note: "Both setups were missed (examples drawn after the outcome); their results are counterfactual only. All supply-demand trades retagged \"1.22\"."
     resulting_version: "1.22"
+  - id: CHG-024
+    kind: clarification
+    date: 2026-10-19
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-19: "since there are equal highs/lows and we don't have much data, its better to wait for these
+      liquidity levels to be swept and reverse back to place an order. So in that case we better wait for sweep, deviating
+      price and we enter on the retest." ... (T-0015 A vs T-0014 B) "we had extra data + demand didnt get tested so we had
+      to expect a sweep or a failed demand level which could potentially change our bias".
+    fields: [trend_context, inducements, open_questions]
+    note: "The equal-highs tolerance is a bot parameter to calibrate from the trader's $$ marks, not a rule to assume. No strategy question remains open. All supply-demand trades retagged \"1.23\"."
+    resulting_version: "1.23"

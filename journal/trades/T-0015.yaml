@@ -22,7 +22,7 @@ regime: [bearish]             # the daily trend; the long went with the 4h rally
 
 strategy:
   id: supply-demand-structure
-  version: "1.22"
+  version: "1.23"             # recorded at v1.22; retagged by CHG-024 (clarification)
   experiment: null
   variant: null
 
@@ -86,7 +86,7 @@ evidence:
     - "The daily chart (T-0016-bera-1d.png): a decline from about 0.35 (late May) to about 0.14 (mid-August), then a rally to 0.2667 (Sep 30): the daily trend the trader calls bearish."
   interpreted:
     - "The trader's T-0012 pattern again: an unmitigated demand with an FVG, equal lows just above it as the inducement, the limit at the demand (not at the equal lows), the stop under the demand, the target at the last swing high."
-    - "Counter-trend on the daily (bearish), with the 4h (the rally from the August lows had made higher highs). Graded A; T-0014, a short against the bullish HTF, was graded B 'because we went against the trend'. What separates them is strategy open question 2."
+    - "Counter-trend on the daily (bearish), with the 4h (the rally from the August lows had made higher highs). Graded A; T-0014, a short against the bullish HTF, was graded B 'because we went against the trend'. What separates them (trader, 2026-10-19): 'we had extra data + demand didnt get tested so we had to expect a sweep or a failed demand level which could potentially change our bias': a fresh zone with extra data, against T-0014's retested zone that failed mid-range."
     - "Hindsight: the setup was drawn after the outcome and chosen as an example. It shows the pattern, not its hit rate; the counterfactual is excluded from statistics."
   hypotheses:
     - "Limits at an unmitigated demand placed beyond an equal-lows inducement give high R (T-0012 +6.68R; T-0015 +5.87R COUNTERFACTUAL; T-0001 +4.57R). n=2 measured."
