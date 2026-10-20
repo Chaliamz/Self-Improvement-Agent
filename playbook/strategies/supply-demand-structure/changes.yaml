@@ -410,3 +410,13 @@ changes:
     fields: [confluences, inducements, do_not_trade_when, checklist, open_questions]
     note: "No recorded trade contradicts it: T-0012, T-0015 and T-0016 reversed from the zone after the sweep. Two questions opened: whether resting limits beyond equal highs/lows stay (they fill before a reversal can show) and how the bot measures the reversal. All supply-demand trades retagged \"1.24\"."
     resulting_version: "1.24"
+  - id: CHG-026
+    kind: clarification
+    date: 2026-10-20
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-20, answering whether resting limits beyond equal highs/lows stay: "You can place limit orders just how trade T-0012 was, since there was a liquidity level there a bullish CH and an unmitigated demand level. That happened on specific example because we had data before (CH and demand) if there wasn't any CH or demand area, we wait for reclaim level/reverse and then we can place our limit orders"
+    fields: [inducements, entry_timing, checklist, open_questions]
+    note: "T-0012 and T-0016 had the CH and the unmitigated zone before the sweep. T-0015's demand was unmitigated but no CH was stated: asked on the trade record. The bot question on measuring the reversal stays open. All supply-demand trades retagged \"1.25\"."
+    resulting_version: "1.25"

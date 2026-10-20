@@ -22,7 +22,7 @@ regime: [bearish]             # the daily trend; the long went with the 4h rally
 
 strategy:
   id: supply-demand-structure
-  version: "1.24"             # recorded at v1.22; retagged through CHG-025 (clarifications)
+  version: "1.25"             # recorded at v1.22; retagged through CHG-026 (clarifications)
   experiment: null
   variant: null
 
@@ -83,6 +83,7 @@ evidence:
     - "Demand (green box) about 0.2047-0.2102. Yellow $$ line over lows from Sep 21 05:00 (about 0.2123) to Sep 24 13:00 (about 0.2132), just above the demand: the trader's dates, to the hour."
     - "Sep 28-29: the decline swept the $$ lows; the Sep 29 04:00 1h bar was the first through 0.2101 (low about 0.2084); the 05:00 bar reached about 0.2074, the lowest point (0.45R against). The tool starts at the 05:00 bar."
     - "Sep 29: a steady climb; the 23:00 bar reached about 0.2452 and the Sep 30 00:00 bar about 0.2513; the tool's shading ends at Sep 30 00:00. The stop was never approached."
+    - "4h (T-0016-bera-4h.png, calibrated on 9 axis ticks, about 6,077 px per 1.0): the Aug 22 high about 0.2164, a lower high about 0.2075 (about Sep 13); the Sep 19-20 move that left the demand broke above both, to about 0.227 on Sep 20 and about 0.237 by Sep 23."
     - "The daily chart (T-0016-bera-1d.png): a decline from about 0.35 (late May) to about 0.14 (mid-August), then a rally to 0.2667 (Sep 30): the daily trend the trader calls bearish."
   interpreted:
     - "The trader's T-0012 pattern again: an unmitigated demand with an FVG, equal lows just above it as the inducement, the limit at the demand (not at the equal lows), the stop under the demand, the target at the last swing high."
@@ -109,4 +110,5 @@ review:
   strategy_change: "no"
   evidence_strength: low
 
-open_questions: []
+open_questions:
+  - "v1.25 lets a limit rest beyond equal lows only with a CH and an unmitigated demand there (T-0012). T-0015's notes name the unmitigated demand but no CH. On the 4h, the Sep 19-20 move that left the demand broke above the Sep 13 lower high (about 0.2075) and the Aug 22 high (about 0.2164). Is that the CH that allowed the resting limit at 0.2101, or was another one in place?"

@@ -13,7 +13,7 @@ trades move it a lot. Ten trades cannot separate skill from luck. Nothing below 
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.24 | unvalidated | 9 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014) | n=9: +1.99R, 95% CI [+0.14, +3.85] (LOW) |
+| supply-demand-structure | 1.25 | unvalidated | 9 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014) | n=9: +1.99R, 95% CI [+0.14, +3.85] (LOW) |
 | key-level-sr | 1.6 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -106,8 +106,11 @@ _None._
   example when equal lows get swept and price fails to reverse (has no power) it can be a continuation to the downside
   so setup gets invalidated and any levels close to them are getting failed" (2026-10-20). The examples reversed from
   the zone after the sweep: T-0012 (measured, +6.68R), T-0015 and T-0016 (missed, COUNTERFACTUAL). No recorded trade
-  shows the no-power case yet (n=0). Open: whether resting limits beyond equal highs/lows stay, since they fill before a
-  reversal can show, and how the bot measures the reversal (v1.24 open questions). Status: rule (stated).
+  shows the no-power case yet (n=0). Resting limits beyond equal highs/lows stay when the data is already there: "You
+  can place limit orders just how trade T-0012 was, since there was a liquidity level there a bullish CH and an
+  unmitigated demand level ... if there wasn't any CH or demand area, we wait for reclaim level/reverse and then we can
+  place our limit orders" (2026-10-20). T-0012 and T-0016 had both; T-0015's CH is asked. Open: how the bot measures
+  the reversal (v1.25). Status: rule (stated).
 - **After a zone fails, trade the extremes.** "My main entries after our loss at T-0014 would be either our supply level
   above or last demand below" (2026-10-17): on AAVE the red supply about 179.6-182.8 (stop above the about 187.1 equal
   highs, 4.52R to 140.69) or the demand about 135.2-140.4, not the failed 157.36-160.26 zone. n=1 (T-0014). Status: rule
@@ -237,6 +240,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-10-20 | supply-demand-structure v1.25 (CHG-026, clarification): a limit rests beyond equal highs/lows only with a CH and an unmitigated zone already there (T-0012, T-0016); without them, wait for the reclaim/reversal, then place the limit. Asked on T-0015: which CH allowed its resting limit (the 4h break above about 0.2075/0.2164 on Sep 19-20?). Open: how the bot measures the reversal | trader's answer; T-0016 4h chart |
 | 2026-10-20 | supply-demand-structure v1.24 (CHG-025, clarification): a sweep of equal highs/lows is not a signal on its own, a reversal must follow; a sweep with no reversal ("has no power") is continuation, the setup is invalidated and nearby levels fail; entries follow the trader's examples (T-0012, T-0015, T-0016). Open: whether resting limits beyond equal highs/lows stay, and how the bot measures the reversal | trader's statement |
 | 2026-10-19 | supply-demand-structure v1.23 (CHG-024, clarification): with equal highs/lows at the trade, wait for the sweep and the deviation and enter on the retest; against the daily, a fresh zone with extra data can grade A (T-0015) where a retested, failed zone grades B (T-0014). The equal-highs tolerance becomes a bot parameter to calibrate. No strategy question open | trader's answers |
 | 2026-10-18 | T-0015 BERAUSDT long (missed, A, +5.87R COUNTERFACTUAL) and T-0016 BERAUSDT short (missed, S, +3.92R COUNTERFACTUAL), the trader's teaching examples drawn after the outcome. supply-demand-structure v1.22 (CHG-023, clarification): inducement avoidance, liquidity before a CH as the sign of a retest, key-level and swing targets, target clarity as an S criterion. Open: the equal-highs tolerance (about 0.2%?) and how much going against the daily costs in the grade | T-0015/T-0016 charts; trader's notes |
