@@ -397,3 +397,16 @@ changes:
     fields: [trend_context, inducements, open_questions]
     note: "The equal-highs tolerance is a bot parameter to calibrate from the trader's $$ marks, not a rule to assume. No strategy question remains open. All supply-demand trades retagged \"1.23\"."
     resulting_version: "1.23"
+  - id: CHG-025
+    kind: clarification
+    date: 2026-10-20
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-20: "But keep in mind that when price breaks equal levels and sweeps liquidity, we should watch a
+      reversal to place a trade. Just because a level gets swept doesn't mean anything. For example when equal lows get
+      swept and price fails to reverse (has no power) it can be a continuation to the downside so setup gets invalidated
+      and any levels close to them are getting failed. We enter the market with these examples I showed you."
+    fields: [confluences, inducements, do_not_trade_when, checklist, open_questions]
+    note: "No recorded trade contradicts it: T-0012, T-0015 and T-0016 reversed from the zone after the sweep. Two questions opened: whether resting limits beyond equal highs/lows stay (they fill before a reversal can show) and how the bot measures the reversal. All supply-demand trades retagged \"1.24\"."
+    resulting_version: "1.24"
