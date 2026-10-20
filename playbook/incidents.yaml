@@ -266,3 +266,18 @@ incidents:
     found_by: validator
     status: caught
     fix: "The validator's load check failed before the commit; the quote was rewritten with single quotes and every edited YAML file was parsed again."
+
+  - id: INC-022
+    date: 2026-10-20
+    area: data
+    severity: low
+    title: "v1.25 read 'CH and demand' as both required for a resting limit beyond equal highs/lows"
+    detail: >-
+      The trader wrote "if there wasn't any CH or demand area, we wait for reclaim level/reverse". The agent read it as
+      "if either is missing" and wrote into v1.25 (entry_timing, inducements, checklist item 2, the profile) that a limit
+      rests only with a CH AND an unmitigated zone. Asked on T-0015, the trader answered that no CH could be known there
+      from the start and "yes that limit rested at 0.2101": the literal reading (neither a CH nor a demand area) was the
+      right one. Nothing was traded or automated on the wrong reading.
+    found_by: trader
+    status: fixed
+    fix: "supply-demand-structure v1.26 (CHG-027) states the rule as the trader's examples show it; the profile and PLAYBOOK corrected; v1.25 stays as the record of the error (versions are immutable)."

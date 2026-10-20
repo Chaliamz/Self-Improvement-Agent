@@ -420,3 +420,13 @@ changes:
     fields: [inducements, entry_timing, checklist, open_questions]
     note: "T-0012 and T-0016 had the CH and the unmitigated zone before the sweep. T-0015's demand was unmitigated but no CH was stated: asked on the trade record. The bot question on measuring the reversal stays open. All supply-demand trades retagged \"1.25\"."
     resulting_version: "1.25"
+  - id: CHG-027
+    kind: clarification
+    date: 2026-10-20
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-20, on T-0015: "Due to liquidity level we can't know if that green area from start could be a CH because of demand and FVG. So since price got swept we could look for supply level at previous high on low time frame but it would be risky and it got invalidated either way. So our HL was our candle where red line starts and we broke structure from previous highs so we have a BOS. However price closed below HL so we have CH and you can see once again the confluences that exist on chart. And yes that limit rested at 0.2101" ... "Yes CH and demand level are important ones especially when demand level or supply are unmitigated having FVG. The more confluences there are, the better." ... "About wait for reclaim level/reverse, I'm going to show you in another example soon, so keep it here until i give you the answer"
+    fields: [market_structure, inducements, entry_timing, checklist, open_questions]
+    note: "Corrects v1.25, which read 'CH and demand' as both required for a resting limit (INC-022): T-0015's limit rested at the unmitigated demand with its FVG, no CH known from the start. BOS added in the trader's words. The bot question on the reclaim/reversal stays open until the trader's example. All supply-demand trades retagged \"1.26\"."
+    resulting_version: "1.26"

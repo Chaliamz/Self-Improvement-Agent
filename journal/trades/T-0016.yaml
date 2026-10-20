@@ -22,7 +22,7 @@ regime: [bearish]             # the daily trend: a with-trend short
 
 strategy:
   id: supply-demand-structure
-  version: "1.25"             # recorded at v1.22; retagged through CHG-026 (clarifications)
+  version: "1.26"             # recorded at v1.22; retagged through CHG-027 (clarifications)
   experiment: null
   variant: null
 
@@ -92,6 +92,7 @@ evidence:
     - "Daily: a decline from about 0.35 (late May) to about 0.14 (mid-August), a rally to 0.2667 (Sep 30) under the June highs, then this drop."
   interpreted:
     - "The sequence on the chart: a bearish CH (Oct 8, close below the 0.2076 low), equal highs forming under the supply (Oct 6, Oct 12), the rally that swept them into the 1H supply (Oct 14-15), the short at the supply's lower edge, the stop above the swing high, the target at a key level with many retests. The inducement is swept into the zone, then the move: the mirror of T-0015."
+    - "The structure in the trader's words (2026-10-20): 'our HL was our candle where red line starts and we broke structure from previous highs so we have a BOS. However price closed below HL so we have CH': the higher low about 0.2074 (Sep 29, T-0015's fill), the BOS on Sep 29-30, the CH by the Oct 8 close below that higher low. The CH and the untested 1H supply were in place before the 0.240 equal highs were swept into it: a resting limit (v1.26)."
     - "S for target clarity: the trader grades it S over the A long although its R:R is lower, because the target sat at a key level built by many retests (and a deviation), while the long's target came only from recent data. The S guide of about 3.5R is met (3.92R)."
     - "Hindsight: drawn after the outcome and chosen as an example. It shows the pattern, not its hit rate; the counterfactual is excluded from statistics."
   hypotheses:

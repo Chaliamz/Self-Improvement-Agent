@@ -27,6 +27,10 @@ tags:
     aliases: [ch]                # the trader labels it "CH" on charts
     definition: "Bullish CHoCH requires a candle CLOSE above the last lower high; a wick through does not count."
     introduced_in: T-0001
+  bos:
+    label: BOS (break of structure)
+    definition: "After a higher low, price breaks the previous highs (mirror: the previous lows after a lower high); the CH is the close back through that higher low. 'our HL was our candle where red line starts and we broke structure from previous highs so we have a BOS. However price closed below HL so we have CH' (trader, 2026-10-20, BERA: the Sep 29 higher low about 0.2074, the break of the about 0.2459 Sep 26 high, the Oct 8 close below the higher low)."
+    introduced_in: T-0015
   inducement:
     label: Inducement
     definition: "Equal lows = liquidity resting below (equal highs: above). A confluence only when price sweeps it into the zone. 'AVOID Inducements at all costs': never enter at one (trader, 2026-09-27)."

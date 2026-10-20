@@ -22,7 +22,7 @@ regime: [bullish]             # trader: "even though HTF bias is bullish": a cou
 
 strategy:
   id: supply-demand-structure
-  version: "1.25"             # recorded at v1.20; retagged through CHG-026 (clarifications)
+  version: "1.26"             # recorded at v1.20; retagged through CHG-027 (clarifications)
   experiment: null
   variant: null
 
