@@ -21,7 +21,7 @@ regime: [range, bullish]      # range = trader's "choppy conditions" during the 
 
 strategy:
   id: supply-demand-structure
-  version: "1.27"               # retagged through CHG-028 (clarifications)
+  version: "1.28"               # retagged through CHG-029 (clarifications)
   experiment: null
   variant: null
 

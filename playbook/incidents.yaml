@@ -281,3 +281,17 @@ incidents:
     found_by: trader
     status: fixed
     fix: "supply-demand-structure v1.26 (CHG-027) states the rule as the trader's examples show it; the profile and PLAYBOOK corrected; v1.25 stays as the record of the error (versions are immutable)."
+
+  - id: INC-023
+    date: 2026-10-20
+    area: data
+    severity: low
+    title: "Prices and the asset read off a teaching drawing were written into the failed-reclaim entry model"
+    detail: >-
+      The trader drew the failed reclaim on a HYPEUSDT chart to show a sequence. The agent measured the drawing's points
+      and wrote them (and the asset) into v1.27's entry model, which kb.json exports to the bot. The trader: "ignore
+      anything about prices and chart ... asset and prices are irrelevant". The numbers were labelled "not price data",
+      but a rule must not carry them.
+    found_by: trader
+    status: fixed
+    fix: "supply-demand-structure v1.28 (CHG-029): the entry model holds only the drawn sequence; v1.27 keeps the old text as history (versions are immutable)."

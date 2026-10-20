@@ -22,7 +22,7 @@ regime: [bullish, range]      # 4h bullish (trader); 1h consolidation range abou
 
 strategy:
   id: supply-demand-structure
-  version: "1.27"             # recorded at v1.15; retagged through CHG-028 (clarifications)
+  version: "1.28"             # recorded at v1.15; retagged through CHG-029 (clarifications)
   experiment: null
   variant: null
 

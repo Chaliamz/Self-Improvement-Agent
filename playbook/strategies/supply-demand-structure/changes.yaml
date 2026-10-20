@@ -440,3 +440,13 @@ changes:
     fields: [inducements, entry_models, do_not_trade_when, checklist, open_questions]
     note: "A drawing, not a trade: no record, no R ('Ignore RR'). Entry model failed_reclaim and taxonomy tag failed_reclaim added in the trader's words. The bot question stays open until a real example. All supply-demand trades retagged \"1.27\"."
     resulting_version: "1.27"
+  - id: CHG-029
+    kind: clarification
+    date: 2026-10-20
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-20, on the failed-reclaim drawing: "ignore anything about prices and chart, I want you to focus only on the drawing for you to undertand, asset and prices are irrelevant. I showed you how it practically works."
+    fields: [entry_models]
+    note: "The entry model now holds only the drawn sequence (equal lows, the sweep, the failed reclaim, the short on the retest, the stop above the latest high before the break); the drawing's prices and asset are removed (INC-023). v1.27 keeps them as history. All supply-demand trades retagged \"1.28\"."
+    resulting_version: "1.28"
