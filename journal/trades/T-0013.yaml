@@ -22,7 +22,7 @@ regime: [bullish]             # weekly bearish trend turning: a close above the 
 
 strategy:
   id: supply-demand-structure
-  version: "1.26"             # recorded at v1.17; retagged through CHG-027 (clarifications)
+  version: "1.27"             # recorded at v1.17; retagged through CHG-028 (clarifications)
   experiment: null
   variant: null
 

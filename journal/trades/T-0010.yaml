@@ -22,7 +22,7 @@ regime: [bearish, news_driven]   # trader: "Bias Bearish"; entry after a CPI pri
 
 strategy:
   id: supply-demand-structure
-  version: "1.26"             # retagged through CHG-027 (clarifications)
+  version: "1.27"             # retagged through CHG-028 (clarifications)
   experiment: null
   variant: null
 

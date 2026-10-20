@@ -430,3 +430,13 @@ changes:
     fields: [market_structure, inducements, entry_timing, checklist, open_questions]
     note: "Corrects v1.25, which read 'CH and demand' as both required for a resting limit (INC-022): T-0015's limit rested at the unmitigated demand with its FVG, no CH known from the start. BOS added in the trader's words. The bot question on the reclaim/reversal stays open until the trader's example. All supply-demand trades retagged \"1.26\"."
     resulting_version: "1.26"
+  - id: CHG-028
+    kind: clarification
+    date: 2026-10-20
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-20, with a schematic drawn on a HYPEUSDT 1h chart (journal/charts/EX-2026-10-20-hype-failed-reclaim.png): "(1) about liquidity sweep and failed to reclaim, I was mentioning this example. Ignore RR it's just an example for you to understand because every Price Action (PA) is different" ... "This is important to apply this setup since we are in a key level (HTF demand/supply, support/resistance level, if we get a CH as well that would be even better for us) don't execute this while on previous data there's nothing, it could be a trap or nothing important. I couldn't find any real example yet, that was the best I could do for now. If I find something real, definitely I'm gonna send this to you."
+    fields: [inducements, entry_models, do_not_trade_when, checklist, open_questions]
+    note: "A drawing, not a trade: no record, no R ('Ignore RR'). Entry model failed_reclaim and taxonomy tag failed_reclaim added in the trader's words. The bot question stays open until a real example. All supply-demand trades retagged \"1.27\"."
+    resulting_version: "1.27"

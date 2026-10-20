@@ -55,6 +55,10 @@ tags:
     label: Deviation (fakeout)
     definition: "Price moves through a level and fails to hold beyond it (trader's words: 'deviation/fakeout')."
     introduced_in: T-0003
+  failed_reclaim:
+    label: Failed reclaim (liquidity sweep and failed to reclaim)
+    definition: "Equal lows swept, then price returns to the swept level from below and fails to reclaim it ('has no power'): a continuation, shorted on the retest; longs mirror with equal highs. Only at a key level: 'This is important to apply this setup since we are in a key level (HTF demand/supply, support/resistance level, if we get a CH as well that would be even better for us) don't execute this while on previous data there's nothing, it could be a trap or nothing important' (trader, 2026-10-20)."
+    introduced_in: "trader schematic 2026-10-20 (journal/charts/EX-2026-10-20-hype-failed-reclaim.png)"
   retest:
     label: Retest
     definition: "Price returns to a level it just broke or lost and tests it from the other side."
