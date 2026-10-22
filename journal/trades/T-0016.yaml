@@ -22,7 +22,7 @@ regime: [bearish]             # the daily trend: a with-trend short
 
 strategy:
   id: supply-demand-structure
-  version: "1.28"             # recorded at v1.22; retagged through CHG-029 (clarifications)
+  version: "1.29"             # recorded at v1.22; retagged through CHG-030 (clarifications)
   experiment: null
   variant: null
 

@@ -4,16 +4,16 @@ Consolidated knowledge (system prompt §27). Every entry must cite the evidence 
 trade IDs, n, and the `./tj` output it rests on. An entry without evidence does not belong
 here; it belongs in a trade record's `evidence.hypotheses`.
 
-Status: **INITIALIZATION.** 10 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013,
-T-0014), 3 missed (T-0002; T-0015 and T-0016, the BERA examples), 3 not taken (T-0005, T-0008, T-0011; counterfactual only). Overall (`./tj stats`): +2.08R
-expectancy, 95% CI [+0.41, +3.74], profit factor 6.21, n=10, LOW tier. The interval sat at [-0.20, +3.38] at n=7: a few
-trades move it a lot. Ten trades cannot separate skill from luck. Nothing below is established.
+Status: **INITIALIZATION.** 11 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013,
+T-0014, T-0017), 3 missed (T-0002; T-0015 and T-0016, the BERA examples), 3 not taken (T-0005, T-0008, T-0011; counterfactual only). Overall (`./tj stats`): +2.26R
+expectancy, 95% CI [+0.67, +3.80], profit factor 7.21, n=11, LOW tier. The interval sat at [-0.20, +3.38] at n=7: a few
+trades move it a lot. Eleven trades cannot separate skill from luck. Nothing below is established.
 
 ## Strategies
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.28 | unvalidated | 9 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014) | n=9: +1.99R, 95% CI [+0.14, +3.85] (LOW) |
+| supply-demand-structure | 1.29 | unvalidated | 10 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014, T-0017) | n=10: +2.19R, 95% CI [+0.46, +3.88] (LOW) |
 | key-level-sr | 1.6 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -44,9 +44,13 @@ _None._
   trader as it grows; the trader decides. Status: hypothesis.
 - **Counter-trend trades.** The trader calls T-0007 (short at ATH, bullish bias) risky but worth it for a very
   solid setup at 4.12R; graded like any other setup, "just a bit riskier" (2026-09-27). `./tj stats --by
-  trend`: with-trend n=7 (+2.67R, 95% CI [+0.74, +4.54]), counter-trend n=3 (+0.71R: T-0004 -1.00R, T-0007 +4.12R,
-  T-0014 -1.00R, "we went against the trend so it had potential risk"). The trend label is derived from the regime tag,
-  so T-0004 counts as counter-trend against its bullish 30m regime. Three trades cannot be compared with seven.
+  trend`: with-trend n=7 (+2.67R, 95% CI [+0.74, +4.54]), counter-trend n=4 (+1.53R, no CI below n=5: T-0004 -1.00R,
+  T-0007 +4.12R, T-0014 -1.00R, "we went against the trend so it had potential risk", T-0017 +4.00R). The trend label
+  is derived from the regime tag, so T-0004 counts as counter-trend against its bullish 30m regime. Four trades cannot
+  be compared with seven. Within them: both winners are ATH supply shorts after a 4H CH with the supply untouched
+  (T-0007 S, T-0017 A: "risky ... but worth when you have enough data", 2026-10-22); both losers had a named defect
+  (T-0004 a D, executed on an unconfirmed 5m CH; T-0014 a B at a zone retested many times that failed mid-range). n=2
+  against n=2: hypothesis. Why T-0007 was S and T-0017 A is asked (v1.29).
   A 4h CH needs no 1D confirmation ("It's not necessary but you can definitely have a look on 1D as well"); aligned
   multi-timeframe CHs are "a valid one" (2026-10-17). Against the daily the zone decides the grade: T-0015 (BERA, fresh
   demand with extra data) is A, T-0014 (a retested zone that failed mid-range) was B ("we had extra data + demand didnt
@@ -62,13 +66,14 @@ _None._
   Very good RR". T-0001 (AAVE, +4.57R) also had equal lows as the inducement, and T-0013 avoided the $$ liquidity lines.
   T-0015 (BERA long, missed, graded A): the equal lows of Sep 21-24 above an unmitigated demand, swept on Sep 29 into
   it; the limit at 0.2101 reached the 0.2453 target within a day (+5.87R COUNTERFACTUAL).
-  `./tj stats --by setup`: inducement n=2, both winners. Far too few; the rule itself ("AVOID Inducements at all costs")
+  `./tj stats --by setup`: inducement n=3 (T-0001, T-0012, T-0017), all winners, +5.08R. Far too few; the rule itself ("AVOID Inducements at all costs")
   is the trader's. Status: rule (stated); hypothesis (performance).
 - **Liquidity forming before a CH points to the retest.** T-0016 (BERA short, missed, graded S): equal highs about
   0.2402/0.2407 formed under the 1H supply before and after the Oct 8 bearish CH, were swept into the supply on Oct
   14-15, and the short from 0.2482 reached the 0.1734 key level by Oct 17 (+3.92R COUNTERFACTUAL). The trader: "These
-  data are extremely important so keep them in mind." With T-0012 mirrored, n=2 (1 measured). Status: rule (stated);
-  hypothesis (performance).
+  data are extremely important so keep them in mind." With T-0012 mirrored and T-0017 (HYPE, the $$ descending highs
+  formed under the ATH supply before the Sep 28 4H CH, swept into it on Oct 5-6, +4.00R), n=3 (2 measured). Status: rule
+  (stated); hypothesis (performance).
 - **Targets at key levels built by many retests; the next liquidity as the swing target.** T-0016's target was the
   0.1735 level retested from both sides through Aug 22-Sep 16 (plus a deviation); the $$ lows beneath it (about
   0.162-0.171) the swing target. Target clarity is why the trader grades it S over the higher-R long (A). Status: rule
@@ -124,16 +129,16 @@ _None._
   above or last demand below" (2026-10-17): on AAVE the red supply about 179.6-182.8 (stop above the about 187.1 equal
   highs, 4.52R to 140.69) or the demand about 135.2-140.4, not the failed 157.36-160.26 zone. n=1 (T-0014). Status: rule
   (stated).
-- **Entry precision (heat on winners).** `./tj build` excursions: median MAE on winners 0.24R, worst 0.38R (n=6: T-0001
-  0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R, T-0012 0.38R, T-0013 0.31R); the losers ran +0.28R (T-0004), +0.63R
-  (T-0009), +1.65R (T-0010) and +0.46R (T-0014) before their stops (median 0.54R). This measures the trader's "sniper
-  entries" (S criterion). No winner has gone 0.4R against yet. Descriptive only, n=10. Status: observation.
-- **Drawdown planning (outlook).** `./tj build` Monte Carlo, 100 trades x 2,000 paths from the 10 measured trades. As
-  sampled: median worst drawdown 4.0R (95%: 7.0R), losing streak 4 (95%: 7). At the low win rate the sample still
-  allows (31%, 95% Wilson bound; +0.61R per trade with the +4.14R average win): drawdown 10.0R (95%: 18.7R, about 19% of
-  equity at 1% risk, not compounded), losing streak 10 (95%: 16), and 0.5% of runs end below zero. The average win rests
-  on 6 winners, one of them +6.68R: a smaller real average win pulls the low scenario toward zero. Plan for the second
-  scenario, not the first. Status: risk planning figure (n=10), not a forecast.
+- **Entry precision (heat on winners).** `./tj build` excursions: median MAE on winners 0.18R, worst 0.38R (n=7: T-0001
+  0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R, T-0012 0.38R, T-0013 0.31R, T-0017 0.10R); the losers ran +0.28R
+  (T-0004), +0.63R (T-0009), +1.65R (T-0010) and +0.46R (T-0014) before their stops (median 0.54R). This measures the
+  trader's "sniper entries" (S criterion). No winner has gone 0.4R against yet. Descriptive only, n=11. Status: observation.
+- **Drawdown planning (outlook).** `./tj build` Monte Carlo, 100 trades x 2,000 paths from the 11 measured trades. As
+  sampled: median worst drawdown 4.0R (95%: 6.0R), losing streak 4 (95%: 6). At the low win rate the sample still
+  allows (35%, 95% Wilson bound; +0.81R per trade with the +4.12R average win): drawdown 9.0R (95%: 15.8R, about 16% of
+  equity at 1% risk, not compounded), losing streak 8 (95%: 14), and no run ends below zero. The average win rests on 7
+  winners, one of them +6.68R: a smaller real average win pulls the low scenario toward zero. Plan for the second
+  scenario, not the first. Status: risk planning figure (n=11), not a forecast.
 - **Valid setups still lose.** T-0010 (NEAR short, graded A, process 4.20/5) lost -1.00R to NEAR-specific bullish news
   after the entry, having run +1.65R first: loss type E, BAD OUTCOME / GOOD PROCESS. Keep the process. Status:
   observation (n=1).
@@ -249,6 +254,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-10-22 | T-0017 HYPEUSDT short +4.00R (the unmitigated ATH supply after a 4H bearish CH, the $$ liquidity swept into it, counter-trend against the bullish daily, grade A; GOOD OUTCOME / GOOD PROCESS). supply-demand-structure v1.29 (CHG-030, clarification): counter-trend at ATH levels with enough data; freshness judged when the CH forms; an untested target stays valid whatever happens after the TP (a zone traded through afterwards is a failed one). Open: T-0007's S versus T-0017's A against the trend; T-0017's execution timeframe | T-0017 charts (4h, 1D, 1h); trader's review |
 | 2026-10-20 | supply-demand-structure v1.28 (CHG-029, clarification): the failed-reclaim entry model holds only the drawn sequence; the drawing's prices and asset removed at the trader's word (INC-023) | trader's note |
 | 2026-10-20 | supply-demand-structure v1.27 (CHG-028, clarification): the failed reclaim (swept equal lows not reclaimed: a continuation short on the retest, stop above the latest high before the break; longs mirror), only at a key level, never where previous data shows nothing. Entry model and taxonomy tag `failed_reclaim`. No real example yet. Open: measuring the reclaim / failed reclaim for the bot | trader's drawing and notes |
 | 2026-10-20 | supply-demand-structure v1.26 (CHG-027, clarification): corrects v1.25's "CH and zone both required" reading (INC-022): T-0015's limit rested at the unmitigated demand with its FVG, no CH known from the start; the wait for the reclaim/reversal applies with neither a CH nor a demand/supply area. BOS added in the trader's words (taxonomy `bos`). T-0015's question answered. Open: the reclaim/reversal for the bot, to be shown in the trader's next example | trader's answers; T-0015 1h and T-0016 4h charts |

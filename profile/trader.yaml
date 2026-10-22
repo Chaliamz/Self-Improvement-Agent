@@ -86,7 +86,7 @@ grading:
   b_criteria: "Decent R:R but few confluences: 'it could be a risky execution'. T-0009: 'Setup B because of FVG ignorance but decent confirmations'."
   c_criteria: "A setup taken without the full process, 'regardless of win' (T-0003: only the 1m timeframe)."
   d_criteria: "A poor trade plus a mistake: 'D would definitely be a poor trade+mistake'."
-  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S, T-0013: A, T-0014: B, T-0015: A, T-0016: S}
+  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S, T-0013: A, T-0014: B, T-0015: A, T-0016: S, T-0017: A}
 
 # News filter (trader, 2026-09-27). Applies to NEW entries only: open trades are kept.
 news_filter:
@@ -132,6 +132,8 @@ terminology:
   retest: "Price returns to a broken level and tests it from the other side."
   reclaim-retest-accept: "Long sequence: level reclaimed, retested from above, and held."
   CH: "The trader's chart label for CHoCH."
+  ATH: "All Time High: 'we are on ATH (All Time High) levels' (T-0007, T-0017). A short there is counter-trend while the HTF is bullish: 'It's a risky decision to go against but worth when you have enough data that can potentially reward you well' (2026-10-22)."
+  failed zone: "A zone price trades through after the TP: 'After hitting TP it proved that demand had no power so it's a failed one' (2026-10-22, T-0017). It does not change the trade: the target was untested."
   liquidity sweep and failed to reclaim: "Equal lows swept, price returns to the swept level from below and fails to reclaim it: a continuation, shorted on the retest (longs mirror). Only at a key level (HTF demand/supply or S/R, a CH even better); never where previous data shows nothing: 'it could be a trap or nothing important' (2026-10-20, schematic). Strategy entry model failed_reclaim."
   PA: "Price Action: 'every Price Action (PA) is different' (2026-10-20)."
   BOS: "Break of structure: after a higher low, price breaks the previous highs (mirror for shorts); the CH is the close back through that higher low. 'our HL was our candle where red line starts and we broke structure from previous highs so we have a BOS. However price closed below HL so we have CH' (2026-10-20, BERA, T-0015/T-0016)."
@@ -186,6 +188,7 @@ sources:
   instruments.BERAUSDT: "T-0015/T-0016 charts (BloFin BERAUSDT perpetual, 4h, 1h and 1D), 2026-10-18"
   grading.examples.T-0015: "Trader, 2026-10-18: 'Long setup on BERA would be A because of inducement-unmitigated demand level and a great RR'"
   grading.examples.T-0016: "Trader, 2026-10-18: 'Short setup would be S because either though RR was lower than Long, our confirmations could help us identify our TP level much easier'"
+  grading.examples.T-0017: "Trader, 2026-10-22: 'Setup was definitely A, because we went against the trend (Daily is still bullish or even Higher Time frames) Our confirmations were strong enough giving us good RR'"
   grading.examples.T-0014: "Trader, 2026-10-16: 'Setup was B, because even though we had solid confirmations and good RR we went against the trend so it had potential risk'"
   grading.examples.T-0013: "Trader, 2026-10-13: 'Setup was A because our data was good enough to execute with confirmations and our reward was 3,11 which is very good for us'"
   grading.examples.T-0012: "Trader, 2026-10-10: 'Setup was definitely S, because it met our criteria (CH+DEMAND+ Avoiding inducement) + Very good RR'"
@@ -210,6 +213,8 @@ sources:
   terminology.BOS: "Trader, 2026-10-20 (T-0015): 'So our HL was our candle where red line starts and we broke structure from previous highs so we have a BOS. However price closed below HL so we have CH'"
   terminology.equal highs/lows (T-0015 answer): "Trader, 2026-10-20: 'Due to liquidity level we can't know if that green area from start could be a CH because of demand and FVG ... And yes that limit rested at 0.2101' ... 'Yes CH and demand level are important ones especially when demand level or supply are unmitigated having FVG. The more confluences there are, the better.'"
   terminology.liquidity sweep and failed to reclaim: "Trader, 2026-10-20, with a drawing ('asset and prices are irrelevant'): '(1) about liquidity sweep and failed to reclaim, I was mentioning this example. Ignore RR it's just an example for you to understand because every Price Action (PA) is different' ... 'This is important to apply this setup since we are in a key level (HTF demand/supply, support/resistance level, if we get a CH as well that would be even better for us) don't execute this while on previous data there's nothing, it could be a trap or nothing important.'"
+  terminology.ATH: "Trader, 2026-10-22 (T-0017): '4H chart we are on ATH (All Time High) levels, you can see on 1D chart as well. It's a risky decision to go against but worth when you have enough data that can potentially reward you well.'"
+  terminology.failed zone: "Trader, 2026-10-22 (T-0017): 'We couldnt know if price could push even lower than demand level but thats irrelevant as long as it was untested. After hitting TP it proved that demand had no power so it's a failed one.'"
   terminology.Premium Level: "Trader, 2026-10-14: 'yes exactly. since we are above 0.5 we are looking for day trading, maybe for swing as well if we see some extra confirmations but its risky. 61.8-78.6-88.6 we can focus on swings as well.'"
   execution_venue.scalps: "Trader, 2026-09-28: 'I'm going to analyze further in the future if we go to scalps too, for now we don't focus on scalps.'"
   reporting: "Trader, 2026-09-28: 'On trading we will count $ not only RR'"

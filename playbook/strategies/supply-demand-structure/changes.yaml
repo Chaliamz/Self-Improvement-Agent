@@ -450,3 +450,13 @@ changes:
     fields: [entry_models]
     note: "The entry model now holds only the drawn sequence (equal lows, the sweep, the failed reclaim, the short on the retest, the stop above the latest high before the break); the drawing's prices and asset are removed (INC-023). v1.27 keeps them as history. All supply-demand trades retagged \"1.28\"."
     resulting_version: "1.28"
+  - id: CHG-030
+    kind: clarification
+    date: 2026-10-22
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-10-22 (T-0017, HYPEUSDT short): "4H chart we are on ATH (All Time High) levels, you can see on 1D chart as well. It's a risky decision to go against but worth when you have enough data that can potentially reward you well." ... "c) unmitigated demand level (green box) 'im mentioning after CH happened not after setup executed which i'll explain below now'" ... "Setup was definitely A, because we went against the trend (Daily is still bullish or even Higher Time frames) Our confirmations were strong enough giving us good RR" ... "We couldnt know if price could push even lower than demand level but thats irrelevant as long as it was untested. After hitting TP it proved that demand had no power so it's a failed one."
+    fields: [trend_context, grading, zones, target_model, open_questions]
+    note: "T-0017's A against the trend contradicts T-0007's S (also an ATH short against the trend): asked, not resolved. All supply-demand trades retagged \"1.29\"."
+    resulting_version: "1.29"

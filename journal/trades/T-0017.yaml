@@ -1,0 +1,138 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0017
+status: closed
+opened: 2026-10-05            # trader: "5/10/26 23:00" (UTC+3); the Oct 5 23:00 1h bar reaches the 94.869 limit (within a pixel); the position tool starts there
+closed: 2026-10-13            # trader: "13/10/26 02:00"; the 81.049 target is first reached at the tool's right edge (Oct 13 ~02:00, 1h)
+asset: "HYPEUSDT"
+market: "crypto perp (Bybit)"
+direction: "short"
+session: null
+timeframes:
+  htf: "1D"                   # trader: "4H chart we are on ATH (All Time High) levels, you can see on 1D chart as well"; "Daily is still bullish"
+  execution: null             # not stated: the supply, the $$ line and the limit appear on both the 4h and the 1h (asked)
+  chain: ["1D", "4h", "1h"]
+  detail: []
+  top_down: true              # 1D trend and ATH, 4H CH and zones, 1H detail
+
+setups: [supply_level, choch, inducement, liquidity_sweep, fvg]
+regime: [bullish]             # the daily (and higher) trend is bullish at ATH levels: a counter-trend short
+
+strategy:
+  id: supply-demand-structure
+  version: "1.29"             # recorded at v1.29
+  experiment: null
+  variant: null
+
+plan:
+  entry: 94.869               # position-tool label: the sell limit at the supply's lower edge (the trader's box 94.903-98.063)
+  stop: 98.324                # position-tool label: "Its obvious that our SL would be right above our last swing high" (the ATH, about 98.0, Sep 23)
+  targets: [81.049]           # position-tool label: the near (upper) edge of the green demand, about 77.7-81.05
+  invalidation: "Price back above the last swing high, the ATH (about 98.0) that topped the move: stop 98.324, above the supply."
+  entry_model: supply_level
+  split_entries: []
+  split_share: null
+  confluences:
+    - "Green box (Demand)"
+    - "FVG"
+    - "Supply level (red box 94.903-98.063)"
+    - "Liquidity level (yellow line)"
+  confirmations:
+    - "Bearish CH 4H"
+    - "Unmitigated supply level above liquidity level"
+    - "Unmitigated demand level (green box): 'im mentioning after CH happened not after setup executed'"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: 1.0               # trader: "Risk 1%"
+  leverage: 12                # trader: "Invalidation was 3,64% so Leverage was 12X"; tj: 3.642% stop, 43.7% of the margin at the stop
+  margin_mode: isolated       # the trader's standing rule
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits:
+    - {price: 81.049, reason: "Target filled (trader: 'Result: WIN'); first reached about Oct 13 02:00 (1h)"}
+  fees: null                  # inside the 1% risk (trader, 2026-09-27)
+  duration_minutes: 10260     # stated: "5/10/26 23:00 - 13/10/26 02:00" (7 days 3 hours); the tool's edges agree (1h)
+  orders_filled: null
+  worst_price: 95.23          # about: the Oct 6 ~01:00 1h wick, the highest price between the fill and the target
+  best_price: 81.049          # the target filled
+
+result:
+  pnl: null
+  r: null                     # derived price-based from the target exit
+  hypothetical_r: null
+
+journal:
+  before: |
+    Reconstructed from the trader's account on 2026-10-22 (after the outcome, so not hindsight-proof).
+    4H: price at ATH (All Time High) levels, also visible on the 1D; going against the trend is "a risky decision ... but
+    worth when you have enough data that can potentially reward you well". Confluences: the green box (demand), an FVG,
+    the supply level (red box 94.903-98.063), the liquidity level (yellow line). Confirmations: a bearish CH on the 4H;
+    the unmitigated supply level above the liquidity level; the unmitigated demand level (green box), unmitigated when
+    the CH happened. "So we expect a sweep on that supply level and target demand level down." Stop right above the last
+    swing high. Invalidation 3.64%, so 12x; risk 1%; RR 4.
+  during: |
+    Oct 5 23:00: the rally reached the 94.869 limit; the Oct 6 ~01:00 1h bar wicked to about 95.23, through the $$ highs
+    and just inside the supply (0.10R against). Price fell to about 82.65 by Oct 8 ~21:00 (+3.54R open), bounced to about
+    88.05 on Oct 12 ~08:00 (+1.97R open), then dropped to the 81.049 target on Oct 13 ~02:00.
+  after: |
+    Trader: "Setup was definitely A, because we went against the trend (Daily is still bullish or even Higher Time
+    frames) Our confirmations were strong enough giving us good RR." "We couldnt know if price could push even lower than
+    demand level but thats irrelevant as long as it was untested. After hitting TP it proved that demand had no power so
+    it's a failed one." "Result: WIN."
+
+evidence:
+  observed:
+    - "Bybit HYPEUSDT perpetual, 4h, 1D and 1h, chart time UTC+3, screenshots Oct 22 09:55-10:07. Position tool on all three: entry 94.869, stop 98.324, target 81.049 (tj: 3.642% stop, 4.00R; the trader: 3.64% and 4). Calibrated on the axis ticks (4h about 30.0 px per 1.0, 1D about 21.5, 1h about 21.46; residuals about 1 px) and the date labels (4h about 15.5 px per day, 1h about 46.6)."
+    - "Supply (red box): top about 98.03 (the trader: 94.903-98.063), drawn from the Sep 23 ATH candle (about 98.0, 1h ~08:00). Demand (green box): about 77.7-81.05, drawn from the Sep 15-16 base (4h low about 76.7) of the rally to the ATH."
+    - "CH: the red dashed line at about 89.6, from the Sep 19-20 low to Sep 27 (4h and 1h); price first traded below it on Sep 28 ~04:00 (1h) and fell to about 84.6 by Sep 30."
+    - "Liquidity: the yellow $$ line over descending highs under the supply, about 94.86 (Sep 24) to about 93.65 (Sep 27), formed before the CH."
+    - "Oct 5-6 (1h): the Oct 5 23:00 bar reached about the 94.869 entry (within a pixel); the Oct 6 ~01:00 bar wicked to about 95.23, the highest price before the target. The stop was never approached."
+    - "The decline (1h): about 82.65 (Oct 8 ~21:00), a bounce to about 88.05 (Oct 12 ~08:00), the 81.049 target first reached at the tool's right edge (Oct 13 ~02:00); the 03:00 bar wicked to about 79.4."
+    - "After the target (4h): price traded through the demand to about 76.1 (Oct 18-19) and stood at 78.77, back inside it, at the screenshot (Oct 22 09:55)."
+    - "1D: candles from about May 24; the highest high about 98.0 (Sep 23); the June high about 77.0; the August rally from the mid-60s to the ATH (T-0006's position tool, target label 66.099, sits in August). A lower red box about 70.85-72.90, drawn from about Jul 7, was not mentioned by the trader."
+    - "tj size: 12x = 43.7% of the margin at the stop; isolated liquidation about 102.26 (2.14x the stop distance); the 60% rule allows 16.47x; the bot default would be 16x."
+    - "News: the fill (Oct 5 23:00 UTC+3) is 16:00 New York, outside the usual 08:30-10:00 release windows; the charts carry no event markers. Unverified."
+  interpreted:
+    - "The chart matches the trader's sequence: the ATH, the bearish 4H CH below the Sep 19-20 low, the $$ liquidity forming under the supply before the CH, the Oct 5-6 rally that swept it into the supply, the sell limit at the supply's lower edge, the stop above the ATH, the target at the unmitigated demand. The T-0016 pattern (BERA, missed), here measured, and T-0007's shape (an ATH supply short against the trend)."
+    - "Resting limit (v1.26): the CH and the unmitigated supply were in place before the sweep, so the limit could rest beyond the $$ highs: T-0012 mirrored."
+    - "Checklist v1.29: 1 pass (the supply drawn from the ATH candle that started the CH move, unmitigated when the CH formed); 2 pass (the $$ highs swept into the supply, then the reversal); 3 pass on the 4H (price broke and closed below the about 89.6 low; the daily still bullish: counter-trend, a 4h CH is enough, 2026-10-17); 4 pass (the limit at the supply's lower edge); 5 pass (about 0.3 above the ATH swing, beyond the zone's 98.063 top); 6 pass (12x = 43.7% of the margin, liquidation 2.14x away, within 20x; 4.00R); 7 pass (no entry at the $$ highs; they were left to be swept into the supply); 8 unverified (16:00 New York)."
+    - "The FVG is the trader's confluence; its location is not stated and not resolvable at these zooms."
+    - "Counter-trend at ATH levels: 'risky ... but worth when you have enough data'. T-0007 (SPX500, S) and T-0017 (A) are the two ATH shorts against the trend; the grades differ (asked in v1.29)."
+    - "After the TP the demand was traded through (about 76.1) and price returned inside it; the trader: 'it proved that demand had no power so it's a failed one'. By the trader's rule this does not change the trade: the target was untested when the CH formed."
+  hypotheses:
+    - "Liquidity forming under a zone before the CH points to the retest of that zone: T-0012 (mirrored) and T-0017 measured, T-0016 COUNTERFACTUAL. n=2 measured."
+    - "Limits at an unmitigated zone beyond a liquidity level, after an HTF CH, give high R: T-0012 +6.68R and T-0017 +4.00R measured; T-0015 and T-0016 COUNTERFACTUAL. n=2 measured, no loss yet in that set; the examples are the trader's selection."
+  charts: [journal/charts/T-0017-hype-4h.png, journal/charts/T-0017-hype-1d.png, journal/charts/T-0017-hype-1h.png]
+
+review:
+  scores:
+    setup: 4                  # 4H CH, the unmitigated supply above the $$ liquidity, the limit beyond the inducement, 4R; at ATH against the daily
+    context: 3                # against the bullish daily at ATH levels; the 4H turned bearish
+    execution: 5              # limit at the zone as planned, filled on the sweep; the stop beyond the ATH swing
+    risk: 5                   # 1%, 12x = 43.7% of the margin, liquidation 2.14x away, within 20x
+    management: 5             # held seven days to the planned target
+  trader_grade: "A"           # trader: "Setup was definitely A, because we went against the trend (Daily is still bullish or even Higher Time frames)"
+  setup_validity: valid
+  followed_plan: true
+  loss_type: null
+  mistakes: []
+  behaviors: [did_top_down, followed_setup, avoided_inducement, waited_for_liquidity, correct_sizing, took_planned_profits]
+  outside_control: ["How the demand would react: 'We couldnt know if price could push even lower than demand level' (trader)"]
+  lesson: >-
+    A short at the unmitigated ATH supply against the bullish daily, valid by every rule: the 4H bearish CH, the
+    liquidity that formed under the supply before the CH and was swept into it, the limit at the supply's edge, the stop
+    above the ATH, the target at the unmitigated demand: +4.00R with about 0.10R against. Freshness is judged when the CH
+    forms; what the target zone does after the TP does not change the trade.
+  actionable_change: null
+  strategy_change: "no"
+  evidence_strength: low
+
+open_questions:
+  - "Which timeframe was the entry read on: the 4H (the CH and the supply) or the 1H? The supply, the $$ line and the limit appear on both charts; the strategy keeps 4h execution for great setups (T-0006, T-0007)."

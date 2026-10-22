@@ -21,7 +21,7 @@ regime: [bullish]             # the 30m trend was still up into the sweep; the C
 
 strategy:
   id: supply-demand-structure
-  version: "1.28"               # retagged through CHG-029 (clarifications)
+  version: "1.29"               # retagged through CHG-030 (clarifications)
   experiment: null
   variant: null
 
