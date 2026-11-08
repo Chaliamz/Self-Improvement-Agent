@@ -37,7 +37,7 @@ recurring_error_min: 3
 # "Recent" = the last N recorded (non-planned) trades.
 recent_window: 20
 
-# Process grade from the mean of the five 1-5 dimension scores (§42).
+# Process grade from the mean of the five 1-5 dimension scores (§42); an invalid setup caps it at mixed (INC-026).
 process:
   good_min: 3.5
   poor_max: 2.5

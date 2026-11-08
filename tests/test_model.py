@@ -86,6 +86,15 @@ class OutcomeProcessTest(unittest.TestCase):
                                                         "risk": 5, "management": 4}})
         self.assertEqual(derive(t, CFG).label, "BAD OUTCOME / GOOD PROCESS")
 
+    def test_invalid_setup_is_never_good_process(self):
+        # INC-026: T-0018 (invalid, loss type D) scored a 3.60 mean and was labelled GOOD PROCESS
+        scores = {"setup": 2, "context": 2, "execution": 4, "risk": 5, "management": 5}
+        valid = trade(result={"r": -1.0}, review={"scores": scores, "setup_validity": "valid"})
+        invalid = trade(result={"r": -1.0}, review={"scores": scores, "setup_validity": "invalid"})
+        self.assertEqual(process_grade(valid, CFG), ("good", 3.6))
+        self.assertEqual(process_grade(invalid, CFG), ("mixed", 3.6))
+        self.assertEqual(derive(invalid, CFG).label, "BAD OUTCOME / MIXED PROCESS")
+
     def test_too_few_scores_is_unscored(self):
         self.assertEqual(process_grade(trade(review={"scores": {"setup": 5, "risk": 5}}), CFG), (None, None))
 

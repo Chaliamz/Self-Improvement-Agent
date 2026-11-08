@@ -13,7 +13,7 @@ trades move it a lot. Twelve trades cannot separate skill from luck. Nothing bel
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.30 | unvalidated | 11 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014, T-0017, T-0018) | n=11: +1.90R, 95% CI [+0.29, +3.54] (LOW) |
+| supply-demand-structure | 1.31 | unvalidated | 11 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014, T-0017, T-0018) | n=11: +1.90R, 95% CI [+0.29, +3.54] (LOW) |
 | key-level-sr | 1.6 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -108,6 +108,13 @@ _None._
   highs" (2026-10-17). The default (2026-10-19): with equal highs/lows at the trade, "wait for sweep, deviating price
   and we enter on the retest". The tolerance for "equal" is a bot parameter calibrated from the trader's $$ marks (0.2%
   apart counted, BERA; 0.56% did not, AAVE). Status: rule (stated).
+- **The HTF CH is required; without it, more confluences.** Asked whether the 4H-or-higher CH is required for every
+  trade: "its most likely yes, otherwise it's more preferable to look for other confluences to be more valid. We should
+  always check HTF which we did but there wasnt any CH. It was a risky move" (2026-11-08). T-0018 (no CH, the HTF demand
+  and a 30m sweep and reclaim only) lost 1R and is recorded invalid (D, entered_before_confirmation); T-0015 (no CH
+  known from the start, with the unmitigated demand, its FVG and the inducement) was graded A. The bot's default: require
+  the HTF CH. With T-0004 (a 5m CH the 30m never confirmed), the second loss entered without a confirmed CH on the
+  confirming timeframe: n=2, under the recurring threshold of 3. Status: rule (stated).
 - **A sweep is not a signal; the reversal after it is.** "Just because a level gets swept doesn't mean anything. For
   example when equal lows get swept and price fails to reverse (has no power) it can be a continuation to the downside
   so setup gets invalidated and any levels close to them are getting failed" (2026-10-20). The examples reversed from
@@ -200,7 +207,8 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
 - A also (2026-10-13): "our data was good enough to execute with confirmations and our reward was 3,11" (T-0013).
 - B also (2026-10-16): "even though we had solid confirmations and good RR we went against the trend" (T-0014, -1R).
 - B also (2026-11-08): "less confirmations, we executed because of tapping demand level + liquidity sweep that happened.
-  I would definitely take these types of trades because of high reward" (T-0018, 11.42R planned, -1R; no CH: asked).
+  I would definitely take these types of trades because of high reward" (T-0018, 11.42R planned, -1R). Without the
+  HTF CH it was not a valid setup: "It was a risky move" (2026-11-08); loss type D.
 - `./tj stats --by trader_grade`: S n=2 (+5.40R: T-0007, T-0012), A n=5 (+2.82R, 95% CI [+0.82, +4.11]; T-0010 lost), B
   n=3 (-1.00R each: T-0009, T-0014, T-0018; the skipped B, T-0011, would also have lost 1R, COUNTERFACTUAL), C n=1
   (+2.94R), D n=1 (-1.00R). Every B so far has lost, which matches the trader's own definition ("it could be a risky
@@ -264,6 +272,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-11-08 | supply-demand-structure v1.31 (CHG-032, clarification): the HTF CH is most likely required; without it, more confluences. T-0018 reclassified invalid, loss type D, entered_before_confirmation; 15x and the stop fill at 0.139411 recorded; its label is now BAD OUTCOME / MIXED PROCESS (INC-026: the process grade ignored setup validity, fixed). INC-025: an edit-script quoting error caught before commit | trader's answers |
 | 2026-11-08 | T-0018 FETUSDC long -1.00R (Hyperliquid; a 30m sweep and reclaim of equal lows at the top of a 4h demand, no CH, grade B, 11.42R planned; one 6% candle through the stop; BAD OUTCOME / GOOD PROCESS). supply-demand-structure v1.30 (CHG-031, clarification): the B example and the first real sweep-reclaim-retest trade. Open: whether the HTF CH is required (T-0018's validity and loss type wait on it); T-0018's leverage and stop fill. INC-024: BTC added to the profile's instruments | T-0018 charts (30m, 4h); trader's review |
 | 2026-10-22 | T-0017 HYPEUSDT short +4.00R (the unmitigated ATH supply after a 4H bearish CH, the $$ liquidity swept into it, counter-trend against the bullish daily, grade A; GOOD OUTCOME / GOOD PROCESS). supply-demand-structure v1.29 (CHG-030, clarification): counter-trend at ATH levels with enough data; freshness judged when the CH forms; an untested target stays valid whatever happens after the TP (a zone traded through afterwards is a failed one). Open: T-0007's S versus T-0017's A against the trend; T-0017's execution timeframe | T-0017 charts (4h, 1D, 1h); trader's review |
 | 2026-10-20 | supply-demand-structure v1.28 (CHG-029, clarification): the failed-reclaim entry model holds only the drawn sequence; the drawing's prices and asset removed at the trader's word (INC-023) | trader's note |

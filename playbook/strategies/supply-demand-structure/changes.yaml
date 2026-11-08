@@ -471,3 +471,13 @@ changes:
     fields: [grading, inducements, open_questions]
     note: "The first real sweep-reclaim-retest trade. It had no CH in the trade's direction, which required_conditions lists as required: asked, not resolved. All supply-demand trades retagged \"1.30\"."
     resulting_version: "1.30"
+  - id: CHG-032
+    kind: clarification
+    date: 2026-11-08
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-11-08, asked whether the HTF CH is required for every trade: "its most likely yes, otherwise it's more preferable to look for other confluences to be more valid. We should always check HTF which we did but there wasnt any CH. It was a risky move"
+    fields: [required_conditions, grading, open_questions]
+    note: "Answers the v1.30 question. T-0018 reclassified: setup invalid, loss type D (no HTF CH, no extra confluences), mistake entered_before_confirmation; leverage 15x and the stop fill at 0.139411 recorded. All supply-demand trades retagged \"1.31\"."
+    resulting_version: "1.31"

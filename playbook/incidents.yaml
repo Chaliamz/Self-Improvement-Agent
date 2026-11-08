@@ -307,3 +307,30 @@ incidents:
     found_by: agent
     status: fixed
     fix: "BTC added with its source, alongside FETUSDC (T-0018); every recorded asset is now in the list."
+
+  - id: INC-025
+    date: 2026-11-08
+    area: data
+    severity: low
+    title: "An edit script wrote ' + A + ' instead of the trader's answer into v1.31"
+    detail: >-
+      Recording the trader's answer on the HTF CH, a quoting error in the edit script left the literal text " + A + "
+      where the quote belonged in v1.31's required_conditions. The YAML stayed valid, so the validator could not see it;
+      the agent's read-back of the written line caught it before any build or commit.
+    found_by: agent
+    status: caught
+    fix: "The line was rewritten with the trader's exact words and every file the script touched was read back; v1.31 was committed only after."
+
+  - id: INC-026
+    date: 2026-11-08
+    area: tooling
+    severity: medium
+    title: "The process label ignored setup validity: an invalid setup read GOOD PROCESS"
+    detail: >-
+      The process grade was the mean of the five scores alone. T-0018, recorded as an invalid setup (loss type D, the
+      HTF CH missing), averaged 3.60 and was labelled BAD OUTCOME / GOOD PROCESS in tj show, the stats split by grade
+      and kb.json's process_outcome, the bot's training labels. A trade that should not have been taken is not good
+      process (system prompt §1: setup validity is the first question).
+    found_by: agent
+    status: fixed
+    fix: "tradekb/model.py process_grade caps an invalid setup at mixed; tests/test_model.py test_invalid_setup_is_never_good_process fails without it. config.yaml documents the cap."

@@ -199,6 +199,8 @@ def process_grade(t: dict, cfg: dict) -> tuple[str | None, float | None]:
         return None, None
     mean = fmean(scored)
     grade = "good" if mean >= pc["good_min"] else "poor" if mean <= pc["poor_max"] else "mixed"
+    if grade == "good" and dig(t, "review.setup_validity") == "invalid":
+        grade = "mixed"     # a trade that should not have been taken is never GOOD PROCESS (§1: setup validity first)
     return grade, mean
 
 
