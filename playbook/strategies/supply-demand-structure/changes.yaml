@@ -460,3 +460,14 @@ changes:
     fields: [trend_context, grading, zones, target_model, open_questions]
     note: "T-0017's A against the trend contradicts T-0007's S (also an ATH short against the trend): asked, not resolved. All supply-demand trades retagged \"1.29\"."
     resulting_version: "1.29"
+  - id: CHG-031
+    kind: clarification
+    date: 2026-11-08
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-11-08 (T-0018, FETUSDC long): "On Higher Time frame we identify a major Demand level (green) (2) Zooming on LTF (30M) (1) there's a form of equal lows and swept. After sweep, PA reclaimed yellow line (previous equal lows). Our plan here is continuation for supply level (red box)" ... "However something unknown happened and pushed all
+      prices lower resulting as a loss." ... "Setup was B because of less confirmations, we executed because of tapping demand level + liquidity sweep that happened. I would definitely take these types of trades because of high reward"
+    fields: [grading, inducements, open_questions]
+    note: "The first real sweep-reclaim-retest trade. It had no CH in the trade's direction, which required_conditions lists as required: asked, not resolved. All supply-demand trades retagged \"1.30\"."
+    resulting_version: "1.30"

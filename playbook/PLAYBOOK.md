@@ -4,16 +4,16 @@ Consolidated knowledge (system prompt §27). Every entry must cite the evidence 
 trade IDs, n, and the `./tj` output it rests on. An entry without evidence does not belong
 here; it belongs in a trade record's `evidence.hypotheses`.
 
-Status: **INITIALIZATION.** 11 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013,
-T-0014, T-0017), 3 missed (T-0002; T-0015 and T-0016, the BERA examples), 3 not taken (T-0005, T-0008, T-0011; counterfactual only). Overall (`./tj stats`): +2.26R
-expectancy, 95% CI [+0.67, +3.80], profit factor 7.21, n=11, LOW tier. The interval sat at [-0.20, +3.38] at n=7: a few
-trades move it a lot. Eleven trades cannot separate skill from luck. Nothing below is established.
+Status: **INITIALIZATION.** 12 measured trades (T-0001, T-0003, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013,
+T-0014, T-0017, T-0018), 3 missed (T-0002; T-0015 and T-0016, the BERA examples), 3 not taken (T-0005, T-0008, T-0011; counterfactual only). Overall (`./tj stats`): +1.99R
+expectancy, 95% CI [+0.48, +3.50], profit factor 5.76, n=12, LOW tier. The interval sat at [-0.20, +3.38] at n=7: a few
+trades move it a lot. Twelve trades cannot separate skill from luck. Nothing below is established.
 
 ## Strategies
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.29 | unvalidated | 10 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014, T-0017) | n=10: +2.19R, 95% CI [+0.46, +3.88] (LOW) |
+| supply-demand-structure | 1.30 | unvalidated | 11 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014, T-0017, T-0018) | n=11: +1.90R, 95% CI [+0.29, +3.54] (LOW) |
 | key-level-sr | 1.6 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -44,13 +44,14 @@ _None._
   trader as it grows; the trader decides. Status: hypothesis.
 - **Counter-trend trades.** The trader calls T-0007 (short at ATH, bullish bias) risky but worth it for a very
   solid setup at 4.12R; graded like any other setup, "just a bit riskier" (2026-09-27). `./tj stats --by
-  trend`: with-trend n=7 (+2.67R, 95% CI [+0.74, +4.54]), counter-trend n=4 (+1.53R, no CI below n=5: T-0004 -1.00R,
-  T-0007 +4.12R, T-0014 -1.00R, "we went against the trend so it had potential risk", T-0017 +4.00R). The trend label
-  is derived from the regime tag, so T-0004 counts as counter-trend against its bullish 30m regime. Four trades cannot
-  be compared with seven. Within them: both winners are ATH supply shorts after a 4H CH with the supply untouched
-  (T-0007 S, T-0017 A: "risky ... but worth when you have enough data", 2026-10-22); both losers had a named defect
-  (T-0004 a D, executed on an unconfirmed 5m CH; T-0014 a B at a zone retested many times that failed mid-range). n=2
-  against n=2: hypothesis. Why T-0007 was S and T-0017 A is asked (v1.29).
+  trend`: with-trend n=7 (+2.67R, 95% CI [+0.74, +4.54]), counter-trend n=5 (+1.02R, 95% CI [-1.00, +3.07]: T-0004
+  -1.00R, T-0007 +4.12R, T-0014 -1.00R, "we went against the trend so it had potential risk", T-0017 +4.00R, T-0018
+  -1.00R). The trend label is derived from the regime tag, so T-0004 counts as counter-trend against its bullish 30m
+  regime, and T-0018's bearish tag is the agent's chart reading (lower highs and lows on the 4h), not the trader's.
+  Five trades cannot be compared with seven. Within them: both winners are ATH supply shorts after a 4H CH with the
+  supply untouched (T-0007 S, T-0017 A: "risky ... but worth when you have enough data", 2026-10-22); the three losers
+  each had a named weakness (T-0004 a D, executed on an unconfirmed 5m CH; T-0014 a B at a zone retested many times
+  that failed mid-range; T-0018 a B with no CH). n=2 against n=3: hypothesis. Why T-0007 was S and T-0017 A is asked.
   A 4h CH needs no 1D confirmation ("It's not necessary but you can definitely have a look on 1D as well"); aligned
   multi-timeframe CHs are "a valid one" (2026-10-17). Against the daily the zone decides the grade: T-0015 (BERA, fresh
   demand with extra data) is A, T-0014 (a retested zone that failed mid-range) was B ("we had extra data + demand didnt
@@ -110,8 +111,9 @@ _None._
 - **A sweep is not a signal; the reversal after it is.** "Just because a level gets swept doesn't mean anything. For
   example when equal lows get swept and price fails to reverse (has no power) it can be a continuation to the downside
   so setup gets invalidated and any levels close to them are getting failed" (2026-10-20). The examples reversed from
-  the zone after the sweep: T-0012 (measured, +6.68R), T-0015 and T-0016 (missed, COUNTERFACTUAL). No recorded trade
-  shows the no-power case yet (n=0). Resting limits beyond equal highs/lows stay when the data is already there: "You
+  the zone after the sweep: T-0012 (measured, +6.68R), T-0015 and T-0016 (missed, COUNTERFACTUAL). The first real
+  sweep-reclaim-retest trade, T-0018 (FET, 30m, at the top of a 4h demand, no CH), lost 1R to one 6% candle that went
+  into the demand. No recorded trade shows the no-power case yet (n=0). Resting limits beyond equal highs/lows stay when the data is already there: "You
   can place limit orders just how trade T-0012 was, since there was a liquidity level there a bullish CH and an
   unmitigated demand level ... if there wasn't any CH or demand area, we wait for reclaim level/reverse and then we can
   place our limit orders" (2026-10-20). T-0012 and T-0016 rested with a CH and an unmitigated zone; T-0015 rested at
@@ -125,20 +127,25 @@ _None._
   nothing, it could be a trap or nothing important" (2026-10-20). Shown on a drawing, not a trade
   (`journal/charts/EX-2026-10-20-hype-failed-reclaim.png`; "asset and prices are irrelevant", "Ignore RR"): n=0 real examples. The same shape as
   key-level-sr's deviation_retest (T-0003, n=1). Status: rule (stated), untested.
+- **A lower-timeframe stop inside a deep higher-timeframe zone.** T-0018: the 30m stop sat just inside the top of a 4h
+  demand about 14% deep; one candle went into the zone (to 0.13311), not below it, and took the stop. The tight stop
+  is what made 11.42R possible: with the stop below the zone the same target pays 1.44R (tj), under the 2.5R minimum.
+  The zone's depth was known before the entry. n=1. Status: hypothesis.
 - **After a zone fails, trade the extremes.** "My main entries after our loss at T-0014 would be either our supply level
   above or last demand below" (2026-10-17): on AAVE the red supply about 179.6-182.8 (stop above the about 187.1 equal
   highs, 4.52R to 140.69) or the demand about 135.2-140.4, not the failed 157.36-160.26 zone. n=1 (T-0014). Status: rule
   (stated).
 - **Entry precision (heat on winners).** `./tj build` excursions: median MAE on winners 0.18R, worst 0.38R (n=7: T-0001
   0.18R, T-0003 0.08R, T-0006 0.33R, T-0007 0.03R, T-0012 0.38R, T-0013 0.31R, T-0017 0.10R); the losers ran +0.28R
-  (T-0004), +0.63R (T-0009), +1.65R (T-0010) and +0.46R (T-0014) before their stops (median 0.54R). This measures the
-  trader's "sniper entries" (S criterion). No winner has gone 0.4R against yet. Descriptive only, n=11. Status: observation.
-- **Drawdown planning (outlook).** `./tj build` Monte Carlo, 100 trades x 2,000 paths from the 11 measured trades. As
-  sampled: median worst drawdown 4.0R (95%: 6.0R), losing streak 4 (95%: 6). At the low win rate the sample still
-  allows (35%, 95% Wilson bound; +0.81R per trade with the +4.12R average win): drawdown 9.0R (95%: 15.8R, about 16% of
-  equity at 1% risk, not compounded), losing streak 8 (95%: 14), and no run ends below zero. The average win rests on 7
-  winners, one of them +6.68R: a smaller real average win pulls the low scenario toward zero. Plan for the second
-  scenario, not the first. Status: risk planning figure (n=11), not a forecast.
+  (T-0004), +0.63R (T-0009), +1.65R (T-0010), +0.46R (T-0014) and +0.32R (T-0018) before their stops (median 0.46R).
+  This measures the trader's "sniper entries" (S criterion). No winner has gone 0.4R against yet. Descriptive only,
+  n=12. Status: observation.
+- **Drawdown planning (outlook).** `./tj build` Monte Carlo, 100 trades x 2,000 paths from the 12 measured trades. As
+  sampled: median worst drawdown 5.0R (95%: 8.0R), losing streak 5 (95%: 8). At the low win rate the sample still
+  allows (32%, 95% Wilson bound; +0.64R per trade with the +4.12R average win): drawdown 10.0R (95%: 17.9R, about 18% of
+  equity at 1% risk, not compounded), losing streak 9 (95%: 16), and 0.45% of runs end below zero. The average win
+  rests on 7 winners, one of them +6.68R: a smaller real average win pulls the low scenario toward zero. Plan for the
+  second scenario, not the first. Status: risk planning figure (n=12), not a forecast.
 - **Valid setups still lose.** T-0010 (NEAR short, graded A, process 4.20/5) lost -1.00R to NEAR-specific bullish news
   after the entry, having run +1.65R first: loss type E, BAD OUTCOME / GOOD PROCESS. Keep the process. Status:
   observation (n=1).
@@ -192,10 +199,13 @@ Rules the trader stated after T-0004 (2026-09-26). These are the trader's rules,
 - S also (2026-10-10): "CH+DEMAND+ Avoiding inducement + Very good RR" (T-0012, 6.68R).
 - A also (2026-10-13): "our data was good enough to execute with confirmations and our reward was 3,11" (T-0013).
 - B also (2026-10-16): "even though we had solid confirmations and good RR we went against the trend" (T-0014, -1R).
-- `./tj stats --by trader_grade`: S n=2 (+5.40R: T-0007, T-0012), A n=4 (+2.52R; T-0010 lost), B n=2 (-1.00R each: T-0009,
-  T-0014; the skipped B, T-0011, would also have lost 1R, COUNTERFACTUAL), C n=1 (+2.94R), D n=1 (-1.00R). Every B so far
-  has lost, which matches the trader's own definition ("it could be a risky execution"), but n=2 measured says nothing
-  yet. Status: observation.
+- B also (2026-11-08): "less confirmations, we executed because of tapping demand level + liquidity sweep that happened.
+  I would definitely take these types of trades because of high reward" (T-0018, 11.42R planned, -1R; no CH: asked).
+- `./tj stats --by trader_grade`: S n=2 (+5.40R: T-0007, T-0012), A n=5 (+2.82R, 95% CI [+0.82, +4.11]; T-0010 lost), B
+  n=3 (-1.00R each: T-0009, T-0014, T-0018; the skipped B, T-0011, would also have lost 1R, COUNTERFACTUAL), C n=1
+  (+2.94R), D n=1 (-1.00R). Every B so far has lost, which matches the trader's own definition ("it could be a risky
+  execution"). n=3 says nothing yet: the trader takes B setups for their reward (T-0018 aimed at 11.42R), and at that
+  size a few winners would carry many losses. Status: observation.
 
 ## High-quality setups
 _None._
@@ -254,6 +264,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-11-08 | T-0018 FETUSDC long -1.00R (Hyperliquid; a 30m sweep and reclaim of equal lows at the top of a 4h demand, no CH, grade B, 11.42R planned; one 6% candle through the stop; BAD OUTCOME / GOOD PROCESS). supply-demand-structure v1.30 (CHG-031, clarification): the B example and the first real sweep-reclaim-retest trade. Open: whether the HTF CH is required (T-0018's validity and loss type wait on it); T-0018's leverage and stop fill. INC-024: BTC added to the profile's instruments | T-0018 charts (30m, 4h); trader's review |
 | 2026-10-22 | T-0017 HYPEUSDT short +4.00R (the unmitigated ATH supply after a 4H bearish CH, the $$ liquidity swept into it, counter-trend against the bullish daily, grade A; GOOD OUTCOME / GOOD PROCESS). supply-demand-structure v1.29 (CHG-030, clarification): counter-trend at ATH levels with enough data; freshness judged when the CH forms; an untested target stays valid whatever happens after the TP (a zone traded through afterwards is a failed one). Open: T-0007's S versus T-0017's A against the trend; T-0017's execution timeframe | T-0017 charts (4h, 1D, 1h); trader's review |
 | 2026-10-20 | supply-demand-structure v1.28 (CHG-029, clarification): the failed-reclaim entry model holds only the drawn sequence; the drawing's prices and asset removed at the trader's word (INC-023) | trader's note |
 | 2026-10-20 | supply-demand-structure v1.27 (CHG-028, clarification): the failed reclaim (swept equal lows not reclaimed: a continuation short on the retest, stop above the latest high before the break; longs mirror), only at a key level, never where previous data shows nothing. Entry model and taxonomy tag `failed_reclaim`. No real example yet. Open: measuring the reclaim / failed reclaim for the bot | trader's drawing and notes |
