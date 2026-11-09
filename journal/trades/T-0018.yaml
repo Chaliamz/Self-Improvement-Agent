@@ -22,7 +22,7 @@ regime: [bearish]             # chart reading (not stated by the trader): lower 
 
 strategy:
   id: supply-demand-structure
-  version: "1.31"             # recorded at v1.30; retagged by CHG-032 (clarification)
+  version: "1.32"             # recorded at v1.30; retagged through CHG-033 (clarifications)
   experiment: null
   variant: null
 

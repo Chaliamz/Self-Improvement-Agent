@@ -13,7 +13,7 @@ trades move it a lot. Twelve trades cannot separate skill from luck. Nothing bel
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.31 | unvalidated | 11 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014, T-0017, T-0018) | n=11: +1.90R, 95% CI [+0.29, +3.54] (LOW) |
+| supply-demand-structure | 1.32 | unvalidated | 11 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014, T-0017, T-0018) | n=11: +1.90R, 95% CI [+0.29, +3.54] (LOW) |
 | key-level-sr | 1.6 | unvalidated | 1 (T-0003) | n=1: +2.94R, no CI below n=5 (LOW). Now scoped to day trading and swings; n=0 there |
 
 ## Established rules
@@ -120,7 +120,11 @@ _None._
   so setup gets invalidated and any levels close to them are getting failed" (2026-10-20). The examples reversed from
   the zone after the sweep: T-0012 (measured, +6.68R), T-0015 and T-0016 (missed, COUNTERFACTUAL). The first real
   sweep-reclaim-retest trade, T-0018 (FET, 30m, at the top of a 4h demand, no CH), lost 1R to one 6% candle that went
-  into the demand. No recorded trade shows the no-power case yet (n=0). Resting limits beyond equal highs/lows stay when the data is already there: "You
+  into the demand. How the bot reads it (2026-11-09): "identify a wick and see next candles if they close equally or
+  very close to the first one, then when price breaks (sweep) and reclaims, it's a form of possible reversal to continue
+  on opposite direction": the level is the first wick, later candles close at or very near it, the sweep breaks it, and
+  the reclaim is a close back beyond it on the level's timeframe. "Very close" and the reclaim's timing are bot
+  parameters to calibrate. No recorded trade shows the no-power case yet (n=0). Resting limits beyond equal highs/lows stay when the data is already there: "You
   can place limit orders just how trade T-0012 was, since there was a liquidity level there a bullish CH and an
   unmitigated demand level ... if there wasn't any CH or demand area, we wait for reclaim level/reverse and then we can
   place our limit orders" (2026-10-20). T-0012 and T-0016 rested with a CH and an unmitigated zone; T-0015 rested at
@@ -272,6 +276,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-11-09 | supply-demand-structure v1.32 (CHG-033, clarification): equal highs/lows are a wick with later candles closing at or very near it; the reclaim after the sweep is a close back beyond the level, "a form of possible reversal" (the bot question on measuring it is closed; tolerance and timing are calibration parameters). T-0007's S: "because there was a form of confirmation (CH)"; T-0017 had a 4H CH too, so asked again | trader's answers |
 | 2026-11-08 | supply-demand-structure v1.31 (CHG-032, clarification): the HTF CH is most likely required; without it, more confluences. T-0018 reclassified invalid, loss type D, entered_before_confirmation; 15x and the stop fill at 0.139411 recorded; its label is now BAD OUTCOME / MIXED PROCESS (INC-026: the process grade ignored setup validity, fixed). INC-025: an edit-script quoting error caught before commit | trader's answers |
 | 2026-11-08 | T-0018 FETUSDC long -1.00R (Hyperliquid; a 30m sweep and reclaim of equal lows at the top of a 4h demand, no CH, grade B, 11.42R planned; one 6% candle through the stop; BAD OUTCOME / GOOD PROCESS). supply-demand-structure v1.30 (CHG-031, clarification): the B example and the first real sweep-reclaim-retest trade. Open: whether the HTF CH is required (T-0018's validity and loss type wait on it); T-0018's leverage and stop fill. INC-024: BTC added to the profile's instruments | T-0018 charts (30m, 4h); trader's review |
 | 2026-10-22 | T-0017 HYPEUSDT short +4.00R (the unmitigated ATH supply after a 4H bearish CH, the $$ liquidity swept into it, counter-trend against the bullish daily, grade A; GOOD OUTCOME / GOOD PROCESS). supply-demand-structure v1.29 (CHG-030, clarification): counter-trend at ATH levels with enough data; freshness judged when the CH forms; an untested target stays valid whatever happens after the TP (a zone traded through afterwards is a failed one). Open: T-0007's S versus T-0017's A against the trend; T-0017's execution timeframe | T-0017 charts (4h, 1D, 1h); trader's review |

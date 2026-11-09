@@ -481,3 +481,14 @@ changes:
     fields: [required_conditions, grading, open_questions]
     note: "Answers the v1.30 question. T-0018 reclassified: setup invalid, loss type D (no HTF CH, no extra confluences), mistake entered_before_confirmation; leverage 15x and the stop fill at 0.139411 recorded. All supply-demand trades retagged \"1.31\"."
     resulting_version: "1.31"
+  - id: CHG-033
+    kind: clarification
+    date: 2026-11-09
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-11-09. On T-0007's S against the trend: "because there was a form of confirmation (CH)". On measuring the
+      reclaim for the bot: "identify a wick and see next candles if they close equally or very close to the first one, then when price breaks (sweep) and reclaims, it's a form of possible reversal to continue on opposite direction."
+    fields: [inducements, grading, open_questions]
+    note: "The reclaim is now measurable (a close back beyond the swept level, on the level's timeframe); 'very close' and the reclaim's timing are bot parameters. T-0017 also had a 4H CH, so the grading question is asked again. The resting-limit question stays. All supply-demand trades retagged \"1.32\"."
+    resulting_version: "1.32"

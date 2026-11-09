@@ -41,7 +41,7 @@ tags:
     introduced_in: T-0001
   reclaim:
     label: Reclaim (support reclaim)
-    definition: "Price closes back above a level it swept (in T-0001 the former inducement / equal lows) and holds it as support. Used as a secondary entry."
+    definition: "Price closes back above a level it swept (in T-0001 the former inducement / equal lows) and holds it as support. Used as a secondary entry. 'when price breaks (sweep) and reclaims, it's a form of possible reversal to continue on opposite direction' (trader, 2026-11-09)."
     introduced_in: T-0001
   extreme_supply:
     label: Extreme supply level
