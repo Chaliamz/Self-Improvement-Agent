@@ -88,7 +88,7 @@ grading:
   b_criteria: "Decent R:R but few confluences: 'it could be a risky execution'. T-0009: 'Setup B because of FVG ignorance but decent confirmations'."
   c_criteria: "A setup taken without the full process, 'regardless of win' (T-0003: only the 1m timeframe)."
   d_criteria: "A poor trade plus a mistake: 'D would definitely be a poor trade+mistake'."
-  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S, T-0013: A, T-0014: B, T-0015: A, T-0016: S, T-0017: A, T-0018: B}
+  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S, T-0013: A, T-0014: B, T-0015: A, T-0016: S, T-0017: S, T-0018: B}
 
 # News filter (trader, 2026-09-27). Applies to NEW entries only: open trades are kept.
 news_filter:
@@ -193,7 +193,7 @@ sources:
   grading.examples.T-0015: "Trader, 2026-10-18: 'Long setup on BERA would be A because of inducement-unmitigated demand level and a great RR'"
   grading.examples.T-0016: "Trader, 2026-10-18: 'Short setup would be S because either though RR was lower than Long, our confirmations could help us identify our TP level much easier'"
   grading.examples.T-0018: "Trader, 2026-11-08: 'Setup was B because of less confirmations, we executed because of tapping demand level + liquidity sweep that happened. I would definitely take these types of trades because of high reward'"
-  grading.examples.T-0017: "Trader, 2026-10-22: 'Setup was definitely A, because we went against the trend (Daily is still bullish or even Higher Time frames) Our confirmations were strong enough giving us good RR'"
+  grading.examples.T-0017: "Trader, 2026-11-09: 'it was actually S, you can make the adjustments' (graded A on 2026-10-22: 'Setup was definitely A, because we went against the trend (Daily is still bullish or even Higher Time frames) Our confirmations were strong enough giving us good RR')"
   grading.examples.T-0014: "Trader, 2026-10-16: 'Setup was B, because even though we had solid confirmations and good RR we went against the trend so it had potential risk'"
   grading.examples.T-0013: "Trader, 2026-10-13: 'Setup was A because our data was good enough to execute with confirmations and our reward was 3,11 which is very good for us'"
   grading.examples.T-0012: "Trader, 2026-10-10: 'Setup was definitely S, because it met our criteria (CH+DEMAND+ Avoiding inducement) + Very good RR'"

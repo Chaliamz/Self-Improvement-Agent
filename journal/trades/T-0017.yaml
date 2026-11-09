@@ -12,9 +12,9 @@ direction: "short"
 session: null
 timeframes:
   htf: "1D"                   # trader: "4H chart we are on ATH (All Time High) levels, you can see on 1D chart as well"; "Daily is still bullish"
-  execution: null             # not stated: the supply, the $$ line and the limit appear on both the 4h and the 1h (asked)
-  chain: ["1D", "4h", "1h"]
-  detail: []
+  execution: "4h"             # trader (2026-11-09): "The entry read on 4H ... we executed on 4H"
+  chain: ["1D", "4h"]
+  detail: ["1h"]              # "we looked on 1H as well to identify some specific levels, we couldnt find anything important because of choppy conditions"
   top_down: true              # 1D trend and ATH, 4H CH and zones, 1H detail
 
 setups: [supply_level, choch, inducement, liquidity_sweep, fvg]
@@ -22,7 +22,7 @@ regime: [bullish]             # the daily (and higher) trend is bullish at ATH l
 
 strategy:
   id: supply-demand-structure
-  version: "1.32"             # recorded at v1.29; retagged through CHG-033 (clarifications)
+  version: "1.33"             # recorded at v1.29; retagged through CHG-034 (clarifications)
   experiment: null
   variant: null
 
@@ -86,6 +86,9 @@ journal:
     frames) Our confirmations were strong enough giving us good RR." "We couldnt know if price could push even lower than
     demand level but thats irrelevant as long as it was untested. After hitting TP it proved that demand had no power so
     it's a failed one." "Result: WIN."
+    Answers (2026-11-09): the grade, "it was actually S, you can make the adjustments" (asked why T-0007, also an ATH
+    short against the trend with a 4H CH, was S: "because there was a form of confirmation (CH)"). The execution
+    timeframe: "The entry read on 4H but we looked on 1H as well to identify some specific levels, we couldnt find anything important because of choppy conditions so we executed on 4H."
 
 evidence:
   observed:
@@ -104,7 +107,7 @@ evidence:
     - "Resting limit (v1.26): the CH and the unmitigated supply were in place before the sweep, so the limit could rest beyond the $$ highs: T-0012 mirrored."
     - "Checklist v1.29: 1 pass (the supply drawn from the ATH candle that started the CH move, unmitigated when the CH formed); 2 pass (the $$ highs swept into the supply, then the reversal); 3 pass on the 4H (price broke and closed below the about 89.6 low; the daily still bullish: counter-trend, a 4h CH is enough, 2026-10-17); 4 pass (the limit at the supply's lower edge); 5 pass (about 0.3 above the ATH swing, beyond the zone's 98.063 top); 6 pass (12x = 43.7% of the margin, liquidation 2.14x away, within 20x; 4.00R); 7 pass (no entry at the $$ highs; they were left to be swept into the supply); 8 unverified (16:00 New York)."
     - "The FVG is the trader's confluence; its location is not stated and not resolvable at these zooms."
-    - "Counter-trend at ATH levels: 'risky ... but worth when you have enough data'. T-0007 (SPX500, S) and T-0017 (A) are the two ATH shorts against the trend; the grades differ (asked in v1.29)."
+    - "Counter-trend at ATH levels: 'risky ... but worth when you have enough data'. T-0007 (SPX500) and T-0017 are the two ATH shorts against the trend, both with a 4H CH, both S (T-0017 regraded from A, 2026-11-09)."
     - "After the TP the demand was traded through (about 76.1) and price returned inside it; the trader: 'it proved that demand had no power so it's a failed one'. By the trader's rule this does not change the trade: the target was untested when the CH formed."
   hypotheses:
     - "Liquidity forming under a zone before the CH points to the retest of that zone: T-0012 (mirrored) and T-0017 measured, T-0016 COUNTERFACTUAL. n=2 measured."
@@ -118,7 +121,7 @@ review:
     execution: 5              # limit at the zone as planned, filled on the sweep; the stop beyond the ATH swing
     risk: 5                   # 1%, 12x = 43.7% of the margin, liquidation 2.14x away, within 20x
     management: 5             # held seven days to the planned target
-  trader_grade: "A"           # trader: "Setup was definitely A, because we went against the trend (Daily is still bullish or even Higher Time frames)"
+  trader_grade: "S"           # trader (2026-11-09): "it was actually S, you can make the adjustments"; graded A on 2026-10-22 ("definitely A, because we went against the trend")
   setup_validity: valid
   followed_plan: true
   loss_type: null
@@ -134,5 +137,4 @@ review:
   strategy_change: "no"
   evidence_strength: low
 
-open_questions:
-  - "Which timeframe was the entry read on: the 4H (the CH and the supply) or the 1H? The supply, the $$ line and the limit appear on both charts; the strategy keeps 4h execution for great setups (T-0006, T-0007)."
+open_questions: []
