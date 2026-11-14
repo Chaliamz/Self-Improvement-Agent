@@ -503,3 +503,13 @@ changes:
     fields: [timeframes, trend_context, grading, inducements, open_questions]
     note: "T-0017 regraded S (trader_grade) and recorded as a 4h execution with the 1h as detail. Both strategy questions closed: no question remains open. All supply-demand trades retagged \"1.33\"."
     resulting_version: "1.33"
+  - id: CHG-035
+    kind: clarification
+    date: 2026-11-14
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-11-14 (T-0019, SEIUSDC short): "our goal here is reaching one of 2 green boxes either IDM (Inducement) or Extreme demand down below" ... "there was a bearish englulfing reaction at 29/10/26 03:00 and formed a Bearish CH" ... "Since our highest liquidity level has been swept and the level below as well, we could execute this short position as a continuation setup considering that sellers are stronger once again. So we execute short position on our new supply level that formed Bearish CH and our goal is our first demand level which was inducement" ... "S because even though it was a risky level, RR was huge and continuation was very likely with liquidity sweeps and Bearish CH on 1H"
+    fields: [required_conditions, confirmation, zones, inducements, target_model, grading]
+    note: "The bot reading of the HTF CH in a continuation (the 4H's latest CH in the trade's direction, the entry's CH on the 1H) is the agent's, labelled as such. New tag engulfing; idm an alias of inducement. All supply-demand trades retagged \"1.34\"."
+    resulting_version: "1.34"

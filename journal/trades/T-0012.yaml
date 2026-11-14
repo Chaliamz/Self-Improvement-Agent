@@ -22,7 +22,7 @@ regime: [bullish]             # trader: "a 4H reversal CH showing a high possibi
 
 strategy:
   id: supply-demand-structure
-  version: "1.33"             # recorded at v1.16; retagged through CHG-034 (clarifications)
+  version: "1.34"             # recorded at v1.16; retagged through CHG-035 (clarifications)
   experiment: null
   variant: null
 

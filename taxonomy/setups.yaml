@@ -33,6 +33,7 @@ tags:
     introduced_in: T-0015
   inducement:
     label: Inducement
+    aliases: [idm]             # the trader's abbreviation: 'IDM (Inducement)' (T-0019)
     definition: "Equal lows = liquidity resting below (equal highs: above). A confluence only when price sweeps it into the zone. 'AVOID Inducements at all costs': never enter at one (trader, 2026-09-27)."
     introduced_in: T-0001
   extreme_demand:
@@ -59,6 +60,10 @@ tags:
     label: Failed reclaim (liquidity sweep and failed to reclaim)
     definition: "Equal lows swept, then price returns to the swept level from below and fails to reclaim it ('has no power'): a continuation, shorted on the retest; longs mirror with equal highs. Only at a key level: 'This is important to apply this setup since we are in a key level (HTF demand/supply, support/resistance level, if we get a CH as well that would be even better for us) don't execute this while on previous data there's nothing, it could be a trap or nothing important' (trader, 2026-10-20)."
     introduced_in: "trader schematic 2026-10-20 (journal/charts/EX-2026-10-20-hype-failed-reclaim.png)"
+  engulfing:
+    label: Engulfing candle (bearish / bullish engulfing)
+    definition: "A candle whose body engulfs the previous candle's body, in the opposite direction (the standard reading; the trader has not defined it). The trader's CH trigger in T-0019: 'there was a bearish englulfing reaction at 29/10/26 03:00 and formed a Bearish CH' (trader, 2026-11-14)."
+    introduced_in: T-0019
   retest:
     label: Retest
     definition: "Price returns to a level it just broke or lost and tests it from the other side."

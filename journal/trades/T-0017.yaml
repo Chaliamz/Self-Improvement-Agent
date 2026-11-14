@@ -22,7 +22,7 @@ regime: [bullish]             # the daily (and higher) trend is bullish at ATH l
 
 strategy:
   id: supply-demand-structure
-  version: "1.33"             # recorded at v1.29; retagged through CHG-034 (clarifications)
+  version: "1.34"             # recorded at v1.29; retagged through CHG-035 (clarifications)
   experiment: null
   variant: null
 

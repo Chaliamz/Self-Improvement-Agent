@@ -56,6 +56,7 @@ instruments:                          # list of markets/assets traded
   - "BERAUSDT perpetual (BloFin)"
   - "BTC (chart: TradingView CRYPTO BTCUSD index; exchange not stated)"
   - "FETUSDC perpetual (Hyperliquid)"
+  - "SEIUSDC perpetual (Hyperliquid)"
 sessions: "24/7"                      # "no, no we trade 24/7 regardless" (2026-09-28): no days or hours avoided besides red USD news
 timeframes:                           # notation: m minutes, h hours, D days, W weeks, M months
   swing_day:                          # swing and day trading (trader, 2026-09-28): the bot's focus
@@ -88,7 +89,7 @@ grading:
   b_criteria: "Decent R:R but few confluences: 'it could be a risky execution'. T-0009: 'Setup B because of FVG ignorance but decent confirmations'."
   c_criteria: "A setup taken without the full process, 'regardless of win' (T-0003: only the 1m timeframe)."
   d_criteria: "A poor trade plus a mistake: 'D would definitely be a poor trade+mistake'."
-  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S, T-0013: A, T-0014: B, T-0015: A, T-0016: S, T-0017: S, T-0018: B}
+  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S, T-0013: A, T-0014: B, T-0015: A, T-0016: S, T-0017: S, T-0018: B, T-0019: S}
 
 # News filter (trader, 2026-09-27). Applies to NEW entries only: open trades are kept.
 news_filter:
@@ -134,6 +135,8 @@ terminology:
   retest: "Price returns to a broken level and tests it from the other side."
   reclaim-retest-accept: "Long sequence: level reclaimed, retested from above, and held."
   CH: "The trader's chart label for CHoCH."
+  IDM: "Inducement, abbreviated: 'IDM (Inducement)'. T-0019: the first demand above the extreme demand, the first target ('our goal is our first demand level which was inducement')."
+  bearish engulfing: "The candle that formed T-0019's CH: 'there was a bearish englulfing reaction at 29/10/26 03:00 and formed a Bearish CH'. Not defined by the trader; read as a candle whose body engulfs the previous one."
   ATH: "All Time High: 'we are on ATH (All Time High) levels' (T-0007, T-0017). A short there is counter-trend while the HTF is bullish: 'It's a risky decision to go against but worth when you have enough data that can potentially reward you well' (2026-10-22)."
   failed zone: "A zone price trades through after the TP: 'After hitting TP it proved that demand had no power so it's a failed one' (2026-10-22, T-0017). It does not change the trade: the target was untested."
   liquidity sweep and failed to reclaim: "Equal lows swept, price returns to the swept level from below and fails to reclaim it: a continuation, shorted on the retest (longs mirror). Only at a key level (HTF demand/supply or S/R, a CH even better); never where previous data shows nothing: 'it could be a trap or nothing important' (2026-10-20, schematic). Strategy entry model failed_reclaim."
@@ -190,8 +193,10 @@ sources:
   instruments.BERAUSDT: "T-0015/T-0016 charts (BloFin BERAUSDT perpetual, 4h, 1h and 1D), 2026-10-18"
   instruments.BTCUSD: "T-0013 charts (TradingView CRYPTO BTCUSD index), 2026-10-13; added 2026-11-08 (INC-024)"
   instruments.FETUSDC: "T-0018 charts (Hyperliquid FETUSDC perpetual, 30m and 4h), 2026-11-08"
+  instruments.SEIUSDC: "T-0019 charts (Hyperliquid SEIUSDC perpetual, 1D, 4h and 1h), 2026-11-14"
   grading.examples.T-0015: "Trader, 2026-10-18: 'Long setup on BERA would be A because of inducement-unmitigated demand level and a great RR'"
   grading.examples.T-0016: "Trader, 2026-10-18: 'Short setup would be S because either though RR was lower than Long, our confirmations could help us identify our TP level much easier'"
+  grading.examples.T-0019: "Trader, 2026-11-14: 'S because even though it was a risky level, RR was huge and continuation was very likely with liquidity sweeps and Bearish CH on 1H'"
   grading.examples.T-0018: "Trader, 2026-11-08: 'Setup was B because of less confirmations, we executed because of tapping demand level + liquidity sweep that happened. I would definitely take these types of trades because of high reward'"
   grading.examples.T-0017: "Trader, 2026-11-09: 'it was actually S, you can make the adjustments' (graded A on 2026-10-22: 'Setup was definitely A, because we went against the trend (Daily is still bullish or even Higher Time frames) Our confirmations were strong enough giving us good RR')"
   grading.examples.T-0014: "Trader, 2026-10-16: 'Setup was B, because even though we had solid confirmations and good RR we went against the trend so it had potential risk'"
@@ -219,6 +224,8 @@ sources:
   terminology.equal highs/lows (T-0015 answer): "Trader, 2026-10-20: 'Due to liquidity level we can't know if that green area from start could be a CH because of demand and FVG ... And yes that limit rested at 0.2101' ... 'Yes CH and demand level are important ones especially when demand level or supply are unmitigated having FVG. The more confluences there are, the better.'"
   terminology.liquidity sweep and failed to reclaim: "Trader, 2026-10-20, with a drawing ('asset and prices are irrelevant'): '(1) about liquidity sweep and failed to reclaim, I was mentioning this example. Ignore RR it's just an example for you to understand because every Price Action (PA) is different' ... 'This is important to apply this setup since we are in a key level (HTF demand/supply, support/resistance level, if we get a CH as well that would be even better for us) don't execute this while on previous data there's nothing, it could be a trap or nothing important.'"
   terminology.equal highs/lows (identification): "Trader, 2026-11-09: 'identify a wick and see next candles if they close equally or very close to the first one, then when price breaks (sweep) and reclaims, it's a form of possible reversal to continue on opposite direction.'"
+  terminology.IDM: "Trader, 2026-11-14 (T-0019): 'our goal here is reaching one of 2 green boxes either IDM (Inducement) or Extreme demand down below'"
+  terminology.bearish engulfing: "Trader, 2026-11-14 (T-0019): 'there was a bearish englulfing reaction at 29/10/26 03:00 and formed a Bearish CH'"
   terminology.ATH: "Trader, 2026-10-22 (T-0017): '4H chart we are on ATH (All Time High) levels, you can see on 1D chart as well. It's a risky decision to go against but worth when you have enough data that can potentially reward you well.'"
   terminology.failed zone: "Trader, 2026-10-22 (T-0017): 'We couldnt know if price could push even lower than demand level but thats irrelevant as long as it was untested. After hitting TP it proved that demand had no power so it's a failed one.'"
   terminology.Premium Level: "Trader, 2026-10-14: 'yes exactly. since we are above 0.5 we are looking for day trading, maybe for swing as well if we see some extra confirmations but its risky. 61.8-78.6-88.6 we can focus on swings as well.'"
