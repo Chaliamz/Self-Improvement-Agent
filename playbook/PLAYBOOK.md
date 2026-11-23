@@ -13,7 +13,7 @@ trades move it a lot. Fourteen trades cannot separate skill from luck. Nothing b
 
 | Strategy | Version | Status | Measured trades | Expectancy (95% CI) |
 |---|---|---|---:|---|
-| supply-demand-structure | 1.34 | unvalidated | 12 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014, T-0017, T-0018, T-0019) | n=12: +2.39R, 95% CI [+0.67, +4.19] (LOW) |
+| supply-demand-structure | 1.35 | unvalidated | 12 (T-0001, T-0004, T-0006, T-0007, T-0009, T-0010, T-0012, T-0013, T-0014, T-0017, T-0018, T-0019) | n=12: +2.39R, 95% CI [+0.67, +4.19] (LOW) |
 | key-level-sr | 1.7 | unvalidated | 2 (T-0003, T-0020) | n=2: +4.00R, no CI below n=5 (LOW). Scoped to day trading and swings: n=1 there (T-0020, +5.06R) |
 
 ## Established rules
@@ -296,6 +296,7 @@ _None._
 ## Change log
 | Date | Change | Evidence |
 |---|---|---|
+| 2026-11-24 | The trader's standing request, "keep an eye to make questions so you understand clearly and make the bot work perfectly", written into CLAUDE.md. supply-demand-structure v1.35 (CHG-036): four questions on the agent's inferred readings (continuation CH, equal-level detector, reclaim timing, the chart 'X'); three bot questions in automation.yaml (strategy choice, re-entry, time in trade). Readiness stage 1 back to 3/5 until answered | trader's request |
 | 2026-11-24 | T-0020 BTCUSDC long +5.06R (Hyperliquid; key-level-sr: after a parabolic drop through the failed green demand, the red key level flipped and was retested from above; target in the latest supply; no CH; grade A; GOOD OUTCOME / GOOD PROCESS; mistake stop_inside_zone, named by the trader). key-level-sr v1.7 (CHG-007, clarification): the first day/swing example; the stop below the zone the level sits in; no CH required, its absence the risk; T-0003 retagged. New mistake tag stop_inside_zone. Asked: T-0020's risk % | T-0020 charts (1h, 4h, July 4h); trader's review |
 | 2026-11-14 | T-0019 SEIUSDC short +7.76R (Hyperliquid; both 4H liquidity levels swept on Oct 28, a new 1H supply from the sweep candle, a bearish engulfing 1H CH, the retest; target the IDM demand; against the bullish daily, with the bearish 4H; grade S; GOOD OUTCOME / GOOD PROCESS). supply-demand-structure v1.34 (CHG-035, clarification): the continuation entry at a zone the sweep created, the IDM as the first target, the engulfing CH trigger; the agent's bot reading of the HTF CH in a continuation (the 4H's latest CH in the trade's direction, the entry's CH on the 1H). New tag engulfing; idm an alias of inducement | T-0019 charts (1D, 4h, 1h); trader's review |
 | 2026-11-09 | supply-demand-structure v1.33 (CHG-034, clarification): T-0017 regraded S by the trader and recorded as a 4h execution (the 1h for detail, choppy); counter-trend does not cap the grade (T-0007, T-0017); with no power after a sweep, no limit (an unfilled one near it is cancelled). No strategy question open: automation readiness stage 1 at 4/5 (12/20 measured trades left) | trader's answers |

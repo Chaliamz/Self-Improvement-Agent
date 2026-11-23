@@ -12,7 +12,10 @@ venue:
 # Questions the bot's specification still needs answered (shown in the terminal's Data gaps).
 # Answered 2026-10-13: leverage on tight stops is capped at 20x ("we should stick to the maximum of 20X leverage for
 # safety reasons, that's obviously for tight stops with low % of invalidation and meets our criteria").
-open_questions: []
+open_questions:
+  - "Strategy choice: when a chart has both a key S/R level and a supply/demand zone, which strategy rules the trade? T-0020 was filed under key-level-sr (a flipped key level, no CH needed); supply-demand-structure needs the HTF CH. May the bot take a key-level flip without any CH, as on T-0020?"
+  - "Re-entry: after a stop-out, may the bot enter the same setup again (the zone or level still valid), and how many times? The strategies say nothing (reentry: null)."
+  - "Time in trade: is there a maximum holding time, or a condition to close early when price ranges without reaching the stop or the target? Today the rule is 'Hold until TP hits' (max_hold: null)."
 
 # Trade alerts (trader, 2026-09-28): "you can send alerts when we entered on a trade or exited on SL or TP. Trade will
 # be full analyzed about how you executed, entry and exit prices, risk on $ and leverage, and type of setup."

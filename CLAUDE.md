@@ -143,6 +143,14 @@ The trader asked to be told about every potential bug, in the terminal. The mome
    Never delete or reword a committed entry: status and fix may change, history may not.
 4. Say so in the reply, plainly, with the incident ID.
 
+## Asking questions (the trader's standing request)
+
+"keep an eye to make questions so you understand clearly and make the bot work perfectly" (trader, 2026-11-24). After every trade, answer or rule, look for what the bot still could not decide
+mechanically (a threshold, a timeframe, a tie between rules, an undefined term, a reading the agent inferred) and ask:
+strategy questions in the current strategy version's `open_questions`, bot-behaviour questions in
+`playbook/automation.yaml` `open_questions`, facts about one trade in that record's `open_questions`. Few, sharp, ranked,
+each answerable in a line; label every inferred bot reading as the agent's until the trader confirms it.
+
 ## Hard rules
 
 - `null` over a guess. Always. A plausible number is worse than a missing one.

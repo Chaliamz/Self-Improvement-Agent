@@ -513,3 +513,13 @@ changes:
     fields: [required_conditions, confirmation, zones, inducements, target_model, grading]
     note: "The bot reading of the HTF CH in a continuation (the 4H's latest CH in the trade's direction, the entry's CH on the 1H) is the agent's, labelled as such. New tag engulfing; idm an alias of inducement. All supply-demand trades retagged \"1.34\"."
     resulting_version: "1.34"
+  - id: CHG-036
+    kind: clarification
+    date: 2026-11-24
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-11-24: "keep an eye to make questions so you understand clearly and make the bot work perfectly"
+    fields: [open_questions]
+    note: "Opens four questions on readings the agent inferred (the continuation CH, the equal-level detector, the reclaim's timeframe and timing) and the chart 'X'. Bot-behaviour questions go to playbook/automation.yaml. All supply-demand trades retagged \"1.35\"."
+    resulting_version: "1.35"
