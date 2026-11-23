@@ -22,6 +22,7 @@ tags:
   outside_strategy:            {label: Traded outside the strategy}
   oversized_position:          {label: Oversized position, aliases: [oversizing]}
   excessive_leverage:          {label: Excessive leverage}
+  stop_inside_zone:            {label: "Stop placed inside the zone instead of beyond it: 'I placed my SL a bit above than expected. Practically SL had to be below Green box'", introduced_in: T-0020}
   moved_stop:                  {label: Moved stop against the plan}
   widened_stop:                {label: Widened stop}
   removed_stop:                {label: Removed stop}

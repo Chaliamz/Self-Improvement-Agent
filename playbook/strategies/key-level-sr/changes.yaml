@@ -99,3 +99,13 @@ changes:
     fields: [leverage_model]
     note: "Account-wide (profile leverage.max_leverage = 20). T-0003 used 20x: unchanged, retagged \"1.6\"."
     resulting_version: "1.6"
+  - id: CHG-007
+    kind: clarification
+    date: 2026-11-24
+    status: adopted
+    rule_changed: false
+    statement: >-
+      Trader, 2026-11-24 (T-0020, BTCUSDC long): "There wasnt any CH so we were expecting to take risks on that level, flipping from resistance to support and go for long. Why? Price didn't make any correction and move was parabolic, so a bounce is likely to happen." ... "I placed my SL a bit above than expected. Practically SL had to be below Green box" ... "Setup A because we had few confluences, we had only support/resistance level and sweep which worked very well, however we didn't have any CH so trade was risky enough."
+    fields: [scope, required_conditions, stop_model, common_mistakes, grading]
+    note: "The first day/swing trade under this strategy. T-0003 retagged \"1.7\"."
+    resulting_version: "1.7"

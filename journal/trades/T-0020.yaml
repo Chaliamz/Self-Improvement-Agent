@@ -1,0 +1,127 @@
+# Trade record. Unknown = null. NEVER fill a field with a guess (§26).
+# Units: prices/money in quote currency, size in base units,
+#        *_pct in PERCENT (1.0 = 1%), *_rate in DECIMAL (0.0005 = 5 bps).
+
+id: T-0020
+status: closed
+opened: 2026-11-22            # trader: "22/11/26 05:00" (UTC+2); the position tool starts at the Nov 22 05:00 1h bar
+closed: 2026-11-23            # trader: "23/11/26 16:00"; the Nov 23 16:00 1h bar spiked to about 64,564 through the 63,794 target
+asset: "BTCUSDC"
+market: "crypto perp (Hyperliquid)"
+direction: "long"
+session: null
+timeframes:
+  htf: "4h"                   # the trader's charts (2) and (3): the key level's history and the failed demand
+  execution: "1h"             # chart (1): "Going back to (1) we see that PA flipped that level so we took that retest"
+  chain: ["4h", "1h"]
+  detail: []
+  top_down: true
+
+setups: [key_level, reclaim, retest, liquidity_sweep]
+regime: [high_volatility]     # chart reading: "a massive selling pressure" (trader), about 64,000 to 55,380 in two days, then a parabolic recovery; the trend bias was not stated
+
+strategy:
+  id: key-level-sr
+  version: "1.7"              # recorded at v1.6; retagged by CHG-007 (clarification)
+  experiment: null
+  variant: null
+
+plan:
+  entry: 59270.0              # position-tool label: the red key level (line label 59,270.9), retested from above
+  stop: 58375.7               # position-tool label: inside the green demand; the trader: "Practically SL had to be below Green box"
+  targets: [63794.0]          # position-tool label: inside the latest supply (red box about 63,611-64,065): "focus on latest supply (red box)"
+  invalidation: "Price back below the flipped key level and its retest low: stop 58,375.7 (by the trader's own rule it belonged below the green demand, about 57,846)."
+  entry_model: reclaim_retest_accept
+  split_entries: []
+  split_share: null
+  confluences:
+    - "Red line key level that supported and resisted later on PA"
+    - "The huge green demand level failed and swept everything there"
+  confirmations:
+    - "The level flipped from resistance to support; the retest taken"
+    - "Price didn't make any correction and the move was parabolic, so a bounce was likely"
+
+risk:
+  account_equity: null
+  risk_amount: null
+  risk_pct: null              # not stated this time (asked)
+  leverage: 15                # trader: "Leverage: 15X - Invalidation: 1,5%"; tj: 1.509% stop, 22.6% of the margin at the stop
+  margin_mode: isolated       # the trader's standing rule
+  size: null
+  notional: null
+
+fills:
+  entry_avg: null
+  exits:
+    - {price: 63794.0, reason: "Target filled (trader: 'Result: WIN'): the Nov 23 16:00 1h spike to about 64,564"}
+  fees: null
+  duration_minutes: 2100      # stated: "22/11/26 05:00 - 23/11/26 16:00"
+  orders_filled: null
+  worst_price: 58754.0        # about: the Nov 22 ~07:00 1h wick below the line, the lowest price between the entry and the target
+  best_price: 63794.0         # the target filled
+
+result:
+  pnl: null
+  r: null                     # derived price-based from the target exit
+  hypothetical_r: null
+
+journal:
+  before: |
+    Reconstructed from the trader's account on 2026-11-24 (after the outcome, so not hindsight-proof).
+    "This one was a bit different approach to execute. We witnessed a massive selling pressure and no level was
+    respected." Charts (2) + (3): the red line key level supported and resisted later on. "Our huge green demand level
+    failed and sweeped everything there. There wasnt any CH so we were expecting to take risks on that level, flipping
+    from resistance to support and go for long. Why? Price didn't make any correction and move was parabolic, so a bounce
+    is likely to happen." Chart (1): "PA flipped that level so we took that retest to focus on latest supply (red box)".
+    Invalidation 1.5%, 15x; RR 5.06.
+  during: |
+    Nov 22 05:00: the long at the retest of the red line (59,270). About 07:00 a wick to about 58,754, below the line and
+    above the stop (0.58R against); then a climb to about 62,100 (Nov 23 05:00) and the Nov 23 16:00 spike to about
+    64,564 through the 63,794 target. Price was back at about 61,233 at the screenshot (Nov 24 00:12).
+  after: |
+    Trader: "I placed my SL a bit above than expected. Practically SL had to be below Green box." "Result: WIN." "Setup A
+    because we had few confluences, we had only support/resistance level and sweep which worked very well, however we
+    didn't have any CH so trade was risky enough."
+
+evidence:
+  observed:
+    - "Hyperliquid BTCUSDC perpetual ('Bitcoin Perpetual Contract'), 1h (Nov 15-25), 4h (Nov 14-27) and 4h (Jun 21-Jul 17, the level's history), chart time UTC+2, screenshots Nov 24 00:12. Position tool: entry 59,270.0, stop 58,375.7, target 63,794.0 (tj: 1.509% stop, 5.06R; the trader: 1.5% and 5.06). 1h calibrated on the axis ticks (67,000 at y 106, 56,000 at y 833: 0.0661 px per 1; the tool's labels fall within 1 px) and the date labels (about 124.8 px per day)."
+    - "Levels: a red line at 59,270.9 (the key level) and another at 66,727.5; the green demand about 57,846-61,099 (on the July 4h chart drawn from the Jul 1 low, under the red line's late-June lows); a yellow line marked 'X' at about 62,010 over the Nov 15-19 lows; the red box (latest supply) about 63,611-64,065, drawn from the Nov 19 ~15:00 high (about 64,034)."
+    - "The drop: from about 64,034 (Nov 19) through the yellow line and the green demand to about 57,755 (Nov 20 21:00) and about 55,380 (Nov 21 08:00); then a rally to about 60,978 (Nov 21 16:00) and the retest of the red line from above (about 59,329, Nov 22 04:48)."
+    - "After the entry: a wick to about 58,754 (Nov 22 ~07:00), then about 60,358-62,098 through Nov 23 05:00, and the Nov 23 16:00 spike to about 64,564; about 61,233 at the screenshot."
+    - "tj size: 15x = 22.6% of the margin at the stop; isolated liquidation about 55,597 (4.11x the stop distance). COUNTERFACTUAL: a stop below the green demand (57,800) is a 2.48% stop and 3.08R to the same target."
+    - "News: the entry (Nov 22 05:00 UTC+2) is a Sunday; 23:00 New York on Saturday. No release window."
+  interpreted:
+    - "key-level-sr, not supply-demand-structure: the entry is the flip of a key S/R level (resistance on Nov 21, support on the Nov 22 retest, support in late June), reclaimed, retested from above and accepted: the strategy's reclaim_retest_accept. key-level-sr requires no CH; the trader names its absence as the risk."
+    - "The failed demand: the green box was traded through to about 55,380 ('failed and sweeped everything'); the long came from the key level inside it after a parabolic move with no correction."
+    - "The stop: 58,375.7 sat inside the green demand; the trader puts the correct stop below it. With that stop the trade still pays 3.08R, above the 2.5R minimum (tj), unlike T-0018, where the rule-correct stop left 1.44R. Two trades with the stop inside the zone: T-0018 stopped by a move that stayed inside it, T-0020 not."
+    - "Checklist key-level-sr v1.6: the level validated by several reactions (late-June supports, the Nov 21 resistance, the Nov 22 retest): pass; reclaimed, retested from above and accepted: pass; stop beyond the latest swing before the break: inside the zone, against the trader's own rule (mistake); 5.06R at entry, 3.08R with the rule-correct stop: pass either way; 15x = 22.6% of the margin, within 20x: pass."
+  hypotheses:
+    - "Stops inside a zone: T-0018 (stopped, the move stayed inside the zone) and T-0020 (won; the trader: the stop belonged below the zone). n=2."
+    - "After a parabolic move with no correction, a bounce from a flipped key level (T-0020). n=1."
+  charts: [journal/charts/T-0020-btc-1h.png, journal/charts/T-0020-btc-4h.png, journal/charts/T-0020-btc-4h-jul.png]
+
+review:
+  scores:
+    setup: 3                  # a flipped key level and a sweep; no CH, few confluences (the trader's A, "risky enough")
+    context: 3                # after a parabolic drop with no correction; a failed demand
+    execution: 4              # the retest taken at the level as planned
+    risk: 3                   # 15x = 22.6% of the margin; the stop inside the zone, against the trader's own rule; risk % not stated
+    management: 5             # held through the wick below the line to the planned target
+  trader_grade: "A"           # trader: "Setup A because we had few confluences, we had only support/resistance level and sweep which worked very well, however we didn't have any CH so trade was risky enough"
+  setup_validity: valid       # key-level-sr's reclaim_retest_accept; no CH required there
+  followed_plan: true
+  loss_type: null
+  mistakes: [stop_inside_zone]   # trader: "I placed my SL a bit above than expected. Practically SL had to be below Green box"
+  behaviors: [did_top_down, followed_setup, took_planned_profits]
+  outside_control: []
+  lesson: >-
+    A long from a flipped key level after a parabolic drop through a failed demand: the retest from above held and the
+    target in the latest supply filled for +5.06R. The stop sat inside the demand; the trader puts it below the zone,
+    where the trade still pays 3.08R (tj). A good outcome does not make the tight stop right.
+  actionable_change: "Place the stop below the zone the level sits in (trader, 2026-11-24: 'Practically SL had to be below Green box')."
+  strategy_change: "no"
+  evidence_strength: low
+
+open_questions:
+  - "Risk: not stated this time. Was it 1% as usual?"

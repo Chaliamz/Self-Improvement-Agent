@@ -57,6 +57,7 @@ instruments:                          # list of markets/assets traded
   - "BTC (chart: TradingView CRYPTO BTCUSD index; exchange not stated)"
   - "FETUSDC perpetual (Hyperliquid)"
   - "SEIUSDC perpetual (Hyperliquid)"
+  - "BTCUSDC perpetual (Hyperliquid)"
 sessions: "24/7"                      # "no, no we trade 24/7 regardless" (2026-09-28): no days or hours avoided besides red USD news
 timeframes:                           # notation: m minutes, h hours, D days, W weeks, M months
   swing_day:                          # swing and day trading (trader, 2026-09-28): the bot's focus
@@ -89,7 +90,7 @@ grading:
   b_criteria: "Decent R:R but few confluences: 'it could be a risky execution'. T-0009: 'Setup B because of FVG ignorance but decent confirmations'."
   c_criteria: "A setup taken without the full process, 'regardless of win' (T-0003: only the 1m timeframe)."
   d_criteria: "A poor trade plus a mistake: 'D would definitely be a poor trade+mistake'."
-  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S, T-0013: A, T-0014: B, T-0015: A, T-0016: S, T-0017: S, T-0018: B, T-0019: S}
+  examples: {T-0001: A, T-0003: C, T-0004: D, T-0006: A, T-0007: S, T-0009: B, T-0010: A, T-0011: B, T-0012: S, T-0013: A, T-0014: B, T-0015: A, T-0016: S, T-0017: S, T-0018: B, T-0019: S, T-0020: A}
 
 # News filter (trader, 2026-09-27). Applies to NEW entries only: open trades are kept.
 news_filter:
@@ -193,9 +194,11 @@ sources:
   instruments.BERAUSDT: "T-0015/T-0016 charts (BloFin BERAUSDT perpetual, 4h, 1h and 1D), 2026-10-18"
   instruments.BTCUSD: "T-0013 charts (TradingView CRYPTO BTCUSD index), 2026-10-13; added 2026-11-08 (INC-024)"
   instruments.FETUSDC: "T-0018 charts (Hyperliquid FETUSDC perpetual, 30m and 4h), 2026-11-08"
+  instruments.BTCUSDC: "T-0020 charts (Hyperliquid BTCUSDC perpetual, 1h and 4h), 2026-11-24"
   instruments.SEIUSDC: "T-0019 charts (Hyperliquid SEIUSDC perpetual, 1D, 4h and 1h), 2026-11-14"
   grading.examples.T-0015: "Trader, 2026-10-18: 'Long setup on BERA would be A because of inducement-unmitigated demand level and a great RR'"
   grading.examples.T-0016: "Trader, 2026-10-18: 'Short setup would be S because either though RR was lower than Long, our confirmations could help us identify our TP level much easier'"
+  grading.examples.T-0020: "Trader, 2026-11-24: 'Setup A because we had few confluences, we had only support/resistance level and sweep which worked very well, however we didn't have any CH so trade was risky enough.'"
   grading.examples.T-0019: "Trader, 2026-11-14: 'S because even though it was a risky level, RR was huge and continuation was very likely with liquidity sweeps and Bearish CH on 1H'"
   grading.examples.T-0018: "Trader, 2026-11-08: 'Setup was B because of less confirmations, we executed because of tapping demand level + liquidity sweep that happened. I would definitely take these types of trades because of high reward'"
   grading.examples.T-0017: "Trader, 2026-11-09: 'it was actually S, you can make the adjustments' (graded A on 2026-10-22: 'Setup was definitely A, because we went against the trend (Daily is still bullish or even Higher Time frames) Our confirmations were strong enough giving us good RR')"
